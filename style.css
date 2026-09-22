@@ -15,6 +15,10 @@ html, body {
   color: white;
 }
 
+body {
+  background: red !important;
+}
+
 /* CONTENT LAYER */
 .page {
   position: relative;
@@ -27,22 +31,15 @@ html, body {
 
 .stars {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  width: 100vw;
-  height: 100vh;
-
-  z-index: -1;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
 
-  background: #000000;
+  background: #000;
 }
 
 .stars::before {
-  content: "Letsgoooo!";
+  content: "";
   position: absolute;
   inset: 0;
 
@@ -50,12 +47,11 @@ html, body {
     radial-gradient(1px 1px at 10% 20%, white, transparent),
     radial-gradient(1px 1px at 30% 80%, white, transparent),
     radial-gradient(1px 1px at 70% 40%, white, transparent),
-    radial-gradient(3px 2px at 90% 10%, white, transparent),
+    radial-gradient(1px 1px at 90% 10%, white, transparent),
     radial-gradient(1px 1px at 50% 60%, white, transparent),
-    radial-gradient(2px 4px at 20% 90%, white, transparent);
+    radial-gradient(1px 1px at 20% 90%, white, transparent);
 
-  background-size: 400px 400px;
-  opacity: 0.35;
+  opacity: 0.5;
 }
 
 /* =========================
