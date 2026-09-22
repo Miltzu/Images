@@ -16,35 +16,40 @@
 
 <body>
 
-<!-- tausta -->
+<!-- FIX: background layer MUST be first -->
 <div class="stars"></div>
 
-<!-- HERO -->
-<div class="hero-card">
-  <h2>Astrophotography and stuff</h2>
-  <p>Curated collection of deep sky images. Images coming soon..</p>
-</div>
+<!-- FIX: content wrapper for layering -->
+<div class="page">
 
-<header>
-  <h1>Image Gallery</h1>
-  <p>Astrophotography images, obviously</p>
-</header>
-
-<section id="gallery" class="gallery"></section>
-
-<!-- lightbox -->
-<div id="lightbox" class="lightbox" onclick="closeLightbox()">
-  <img id="lightbox-img">
-  <div id="text" class="caption"></div>
-</div>
-
-<footer class="footer">
-  <div class="footer-content">
-    <span>Miltzu</span>
-    <span>•</span>
-    <span>© 2026</span>
+  <!-- HERO -->
+  <div class="hero-card">
+    <h2>Astrophotography and stuff</h2>
+    <p>Curated collection of deep sky images. Images coming soon..</p>
   </div>
-</footer>
+
+  <header>
+    <h1>Image Gallery</h1>
+    <p>Astrophotography images, obviously</p>
+  </header>
+
+  <section id="gallery" class="gallery"></section>
+
+  <!-- lightbox -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img">
+    <div id="text" class="caption"></div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <span>Miltzu</span>
+      <span>•</span>
+      <span>© 2026</span>
+    </div>
+  </footer>
+
+</div>
 
 <script src="script.js"></script>
 
