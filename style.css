@@ -3,7 +3,6 @@
 /* =========================
    BASE
 ========================= */
-
 html, body {
   height: 100%;
   width: 100%;
@@ -19,70 +18,41 @@ body {
   overflow-x: hidden;
 }
 
-.page {
-  position: relative;
-  z-index: 1;
-}
-
 /* =========================
-   HERO CARD
-========================= */
-
-.hero-card {
-  position: relative;
-  z-index: 2;
-
-  max-width: 900px;
-  margin: 30px auto 10px;
-  padding: 26px;
-
-  border-radius: 16px;
-
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.10);
-
-  backdrop-filter: blur(12px);
-
-  text-align: center;
-}
-
-/* =========================
-   STAR BACKGROUND (FIXED)
+   STAR BACKGROUND
 ========================= */
 
 .stars {
   position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  z-index: -1;
   pointer-events: none;
 
-  background: radial-gradient(circle at center, #0b0f1a 0%, #05060a 60%, #03040a 100%);
+  background: #000000;
 }
 
 .stars::before {
-  content: "";
+  content: "Letsgoooo!";
   position: absolute;
   inset: 0;
 
   background-image:
-    radial-gradient(1px 1px at 3% 7%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 11% 63%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 19% 28%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 27% 84%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 33% 12%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1px 1px at 41% 71%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 52% 36%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 61% 91%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 68% 22%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 83% 14%, rgba(255,255,255,0.75), transparent),
-    radial-gradient(1px 1px at 91% 76%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 97% 33%, rgba(255,255,255,0.7), transparent);
+    radial-gradient(1px 1px at 10% 20%, white, transparent),
+    radial-gradient(1px 1px at 30% 80%, white, transparent),
+    radial-gradient(1px 1px at 70% 40%, white, transparent),
+    radial-gradient(1px 1px at 90% 10%, white, transparent),
+    radial-gradient(1px 1px at 50% 60%, white, transparent),
+    radial-gradient(1px 1px at 20% 90%, white, transparent);
 
-  background-size: 100% 100%;
-  opacity: 0.55;
+  background-size: 400px 400px;
+  opacity: 0.35;
 }
 
 /* =========================
@@ -92,8 +62,6 @@ body {
 header {
   text-align: center;
   padding: 80px 20px 40px;
-  position: relative;
-  z-index: 2;
 }
 
 header h1 {
@@ -113,7 +81,7 @@ header p {
 }
 
 /* =========================
-   GALLERY
+   GALLERY GRID
 ========================= */
 
 .gallery {
@@ -123,9 +91,6 @@ header p {
   padding: 40px;
   max-width: 1200px;
   margin: auto;
-
-  position: relative;
-  z-index: 2;
 }
 
 /* =========================
@@ -178,7 +143,7 @@ header p {
 }
 
 /* =========================
-   INFO
+   INFO TEXT
 ========================= */
 
 .info {
@@ -199,7 +164,7 @@ header p {
   line-height: 1.4;
 }
 
-/* META */
+/* META BAR */
 
 .meta-bar {
   margin-top: 10px;
@@ -218,19 +183,23 @@ header p {
 }
 
 /* =========================
-   LIGHTBOX (UNCHANGED STYLE)
+   LIGHTBOX - Kuvien näyttösetti ! 
 ========================= */
 
 .lightbox {
   position: fixed;
   inset: 0;
   display: none;
+
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   background: rgba(5, 5, 10, 0.96);
+
   overflow: hidden;
   cursor: grab;
+
   z-index: 999;
 }
 
@@ -238,30 +207,37 @@ header p {
   cursor: grabbing;
 }
 
+/* IMAGE */
 .lightbox img {
   max-width: 90vw;
   max-height: 85vh;
+
   width: auto;
   height: auto;
+
   transform: scale(1);
   user-select: none;
   will-change: transform;
 
   border-radius: 14px;
 
+  /* METALLINEN KEHYS */
   border: 5px solid rgba(200, 205, 220, 0.35);
 
+  /* 🪞 SISÄ + ULKO VARJO (metallireunus feel) */
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.08) inset,
     0 0 0 1px rgba(0, 0, 0, 0.6),
     0 25px 80px rgba(0, 0, 0, 0.85);
 
+  /* “cold metal” tausta */
   background: linear-gradient(
     145deg,
     rgba(255,255,255,0.06),
     rgba(0,0,0,0.25)
   );
 
+  /* kevyt terävyys */
   outline: 1px solid rgba(255,255,255,0.06);
   outline-offset: -3px;
 }
@@ -283,4 +259,64 @@ header p {
   margin-top: 6px;
   font-size: 14px;
   color: #a0a0ad;
+}
+
+/* CLOSE BUTTON */
+
+.close {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  font-size: 34px;
+  cursor: pointer;
+  color: #fff;
+  opacity: 0.8;
+  transition: 0.2s;
+}
+
+.close:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.footer {
+  width: 100%;
+  padding: 25px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.footer-content {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+/* Kuvien uppaus !! */ 
+
+.dropzone {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 30px;
+  border: 2px dashed rgba(255,255,255,0.2);
+  border-radius: 12px;
+  text-align: center;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: 0.2s;
+  user-select: none;
+}
+
+.dropzone:hover {
+  border-color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.9);
+}
+
+.dropzone.dragover {
+  background: rgba(255,255,255,0.05);
 }
