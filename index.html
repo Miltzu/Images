@@ -10,38 +10,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
 
-<body>
-
-
-<!DOCTYPE html>
-<html lang="fi">
-<head>
-<meta charset="UTF-8">
-<title>Gallery</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="style.css">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<!-- EXIF PITÄÄ OLLA ENNEN script.js -->
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-
 </head>
-
-<div id="dropzone" class="dropzone">
-  Vedä kuvat tähän tai klikkaa lisätäksesi
-  <input type="file" id="fileInput" multiple accept="image/*">
-</div>
 
 <body>
 
 <!-- tausta -->
 <div class="stars"></div>
+
+<!-- dropzone -->
+<div id="dropzone" class="dropzone">
+  Vedä kuvat tähän tai klikkaa lisätäksesi
+  <input type="file" id="fileInput" multiple accept="image/*">
+</div>
 
 <header>
   <h1>Image Gallery</h1>
@@ -50,11 +32,9 @@
 
 <section id="gallery" class="gallery"></section>
 
-<!-- LIGHTBOX -->
+<!-- lightbox -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
   <img id="lightbox-img">
-
-  <!-- FIX: id match JS:lle -->
   <div id="text" class="caption"></div>
 </div>
 
@@ -66,7 +46,6 @@
   </div>
 </footer>
 
-<!-- script -->
 <script src="script.js"></script>
 
 </body>
