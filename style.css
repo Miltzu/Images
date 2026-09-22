@@ -1,26 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* =========================
-   BASE
+   BASE (CLEAN + STABLE)
 ========================= */
+
+* {
+  box-sizing: border-box;
+}
 
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  background: #05060a;
+  width: 100%;
+  min-height: 100%;
   overflow-x: hidden;
 }
 
 body {
-  margin: 0;
   font-family: "Inter", sans-serif;
-  background: #05060a;
   color: #fff;
-  overflow-x: hidden;
+
+  /* single source of truth for background */
+  background-color: #05060a;
 
   position: relative;
-  z-index: 1;
 }
 
 /* =========================
