@@ -20,28 +20,35 @@ body {
 
 .hero-card {
   max-width: 900px;
-  margin: 20px auto;
-  padding: 30px;
+  margin: 30px auto 10px;
+  padding: 26px 28px;
 
   border-radius: 16px;
-  background: radial-gradient(circle at top, rgba(120,120,255,0.12), transparent 60%),
-              rgba(255,255,255,0.03);
 
-  border: 1px solid rgba(255,255,255,0.08);
-  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
 
   backdrop-filter: blur(12px);
+
+  text-align: center;
+
+  color: #e8e8f0;
+
+  position: relative;
+  z-index: 2; /* 🔥 tärkeä fix */
 }
 
 .hero-card h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .hero-card p {
   margin-top: 10px;
   font-size: 13px;
   color: #a7a7b3;
+  line-height: 1.5;
 }
 
 /* =========================
