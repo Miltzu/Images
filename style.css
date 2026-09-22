@@ -23,6 +23,18 @@ body {
   z-index: 1;
 }
 
+body::after {
+  content: "CSS LOADED OK";
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: red;
+  color: white;
+  z-index: 99999;
+  padding: 10px;
+}
+
+
 /* =========================
    HERO CARD
 ========================= */
@@ -298,13 +310,3 @@ header p {
   color: #a0a0ad;
 }
 
-body::after {
-  content: "CSS LOADED OK";
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  background: red;
-  color: white;
-  z-index: 99999;
-  padding: 10px;
-}
