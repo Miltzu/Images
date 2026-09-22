@@ -297,3 +297,14 @@ header p {
   font-size: 14px;
   color: #a0a0ad;
 }
+
+body::after {
+  content: "CSS LOADED OK";
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: red;
+  color: white;
+  z-index: 99999;
+  padding: 10px;
+}
