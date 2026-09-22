@@ -1,42 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* =========================
-   BASE (NO LAYOUT BREAKS)
+   BASE RESET (TÄRKEIN FIX)
 ========================= */
+* {
+  box-sizing: border-box;
+}
 
 html, body {
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100%;
+}
+
+body {
   font-family: "Inter", sans-serif;
-  background: #000; /* HARD BLACK FIX */
+  background: #05060a;
   color: #fff;
   overflow-x: hidden;
-}
-
-/* IMPORTANT: prevents “one image full screen bug” */
-img {
-  max-width: 100%;
-  display: block;
-}
-
-/* PAGE LAYER */
-.page {
-  position: relative;
-  z-index: 2;
 }
 
 /* =========================
    STAR BACKGROUND (FIXED)
 ========================= */
-
 .stars {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: #000;
+  background: radial-gradient(circle at center, #0b0f1a 0%, #05060a 60%, #03040a 100%);
 }
 
 .stars::before {
@@ -45,44 +38,54 @@ img {
   inset: 0;
 
   background-image:
-    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 80% 25%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 60% 40%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.5), transparent);
+    radial-gradient(1px 1px at 10% 20%, white, transparent),
+    radial-gradient(1px 1px at 30% 80%, white, transparent),
+    radial-gradient(1px 1px at 70% 40%, white, transparent),
+    radial-gradient(1px 1px at 90% 10%, white, transparent),
+    radial-gradient(1px 1px at 50% 60%, white, transparent),
+    radial-gradient(1px 1px at 20% 90%, white, transparent);
 
-  background-size: 100% 100%;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 /* =========================
-   HERO
+   LAYERING FIX (TÄRKEÄ)
 ========================= */
+.page {
+  position: relative;
+  z-index: 1;
+}
 
+/* =========================
+   HERO CARD
+========================= */
 .hero-card {
   max-width: 900px;
   margin: 30px auto 10px;
   padding: 26px;
+
   text-align: center;
 
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 16px;
+
   backdrop-filter: blur(12px);
 }
 
 /* =========================
    HEADER
 ========================= */
-
 header {
   text-align: center;
-  padding: 60px 20px 20px;
+  padding: 80px 20px 40px;
 }
 
 header h1 {
-  font-size: 44px;
+  font-size: 48px;
   margin: 0;
+  font-weight: 600;
+  letter-spacing: -1px;
 }
 
 header p {
@@ -91,29 +94,87 @@ header p {
 }
 
 /* =========================
-   GALLERY FIX
+   GALLERY (CRITICAL FIX)
+   -> estää yhden kuvan räjäyttämästä layoutin
 ========================= */
-
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 22px;
   padding: 40px;
   max-width: 1200px;
   margin: auto;
 }
 
-/* CARD SAFE */
+/* =========================
+   CARD (CRITICAL FIX)
+========================= */
 .card {
-  border-radius: 16px;
   overflow: hidden;
+  border-radius: 18px;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* CRITICAL FIX: no giant images */
+/* 🔥 TÄMÄ ESTÄÄ "YHDEN KUVAN RÄJÄHDYKSEN" */
 .card img {
   width: 100%;
   height: 260px;
   object-fit: cover;
+  display: block;
+}
+
+/* =========================
+   INFO
+========================= */
+.info {
+  padding: 14px 16px;
+}
+
+.info h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.info p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* =========================
+   LIGHTBOX
+========================= */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: rgba(0,0,0,0.96);
+  z-index: 999;
+}
+
+.lightbox img {
+  max-width: 90vw;
+  max-height: 85vh;
+
+  border-radius: 14px;
+  border: 5px solid rgba(200, 205, 220, 0.35);
+}
+
+.caption {
+  margin-top: 15px;
+  text-align: center;
+  color: #ccc;
+}
+
+/* =========================
+   FOOTER
+========================= */
+.footer {
+  padding: 30px;
+  text-align: center;
+  color: rgba(255,255,255,0.5);
 }
