@@ -22,33 +22,40 @@ html, body {
 }
 
 /* =========================
-   STAR BACKGROUND (VARMA TOIMINTA)
+   STAR BACKGROUND
 ========================= */
 
 .stars {
   position: fixed;
-  inset: 0;
-  z-index: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  z-index: -1;
   pointer-events: none;
 
-  background: radial-gradient(circle at center, #05060a 0%, #000 70%, #000 100%);
+  background: #000000;
 }
 
 .stars::before {
-  content: "";
+  content: "Letsgoooo!";
   position: absolute;
   inset: 0;
 
   background-image:
-    radial-gradient(1px 1px at 10% 20%, #fff, transparent),
-    radial-gradient(1px 1px at 25% 80%, #fff, transparent),
-    radial-gradient(1px 1px at 40% 30%, #fff, transparent),
-    radial-gradient(1px 1px at 55% 60%, #fff, transparent),
-    radial-gradient(1px 1px at 70% 10%, #fff, transparent),
-    radial-gradient(1px 1px at 85% 75%, #fff, transparent),
-    radial-gradient(1px 1px at 95% 40%, #fff, transparent);
+    radial-gradient(1px 1px at 10% 20%, white, transparent),
+    radial-gradient(1px 1px at 30% 80%, white, transparent),
+    radial-gradient(1px 1px at 70% 40%, white, transparent),
+    radial-gradient(3px 2px at 90% 10%, white, transparent),
+    radial-gradient(1px 1px at 50% 60%, white, transparent),
+    radial-gradient(2px 4px at 20% 90%, white, transparent);
 
-  opacity: 0.5;
+  background-size: 400px 400px;
+  opacity: 0.35;
 }
 
 /* =========================
