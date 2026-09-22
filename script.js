@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const lightbox = document.getElementById("lightbox");
   const lightboxImg = document.getElementById("lightbox-img");
   const lightboxText = document.getElementById("text");
+  const starfield = document.getElementById("starfield");
 
   if (!gallery || !lightbox || !lightboxImg) return;
 
@@ -16,18 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let startX = 0;
   let startY = 0;
 
-  // =========================
-  // OPEN LIGHTBOX
-  // =========================
   function openLightbox(src, title = "", desc = "") {
     lightbox.style.display = "flex";
     lightboxImg.src = src;
 
     if (lightboxText) {
-      lightboxText.innerHTML = `
-        <h2>${title}</h2>
-        <p>${desc}</p>
-      `;
+      lightboxText.innerHTML = `<h2>${title}</h2><p>${desc}</p>`;
     }
 
     resetTransform();
@@ -52,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
-  // LOAD GALLERY
+  // GALLERY
   // =========================
   fetch("images.json")
     .then(res => res.json())
@@ -80,44 +75,17 @@ document.addEventListener("DOMContentLoaded", () => {
         card.appendChild(info);
         gallery.appendChild(card);
 
-        // EXIF SAFE
-        imageEl.onload = function () {
-          if (typeof EXIF === "undefined") {
-            info.querySelector(".meta-bar").innerHTML =
-              `<span class="meta-pill">no exif</span>`;
-            return;
-          }
-
-          EXIF.getData(imageEl, function () {
-            const camera = EXIF.getTag(this, "Model") || "Unknown";
-            const iso = EXIF.getTag(this, "ISOSpeedRatings") || "?";
-            const shutter = EXIF.getTag(this, "ExposureTime") || "?";
-            const date = EXIF.getTag(this, "DateTimeOriginal") || "?";
-
-            const cleanDate = date !== "?" ? date.split(" ")[0] : "?";
-
-            info.querySelector(".meta-bar").innerHTML = `
-              <span class="meta-pill">${camera}</span>
-              <span class="meta-pill">ISO ${iso}</span>
-              <span class="meta-pill">${shutter}</span>
-              <span class="meta-pill">${cleanDate}</span>
-            `;
-          });
-        };
-
         card.addEventListener("click", () => {
           openLightbox(img.file, img.title, img.desc);
         });
       });
-    })
-    .catch(err => console.error("Gallery load failed:", err));
+    });
 
   // =========================
   // LIGHTBOX EVENTS
   // =========================
   window.closeLightbox = closeLightbox;
 
-  // ZOOM
   document.addEventListener("wheel", (e) => {
     if (lightbox.style.display !== "flex") return;
 
@@ -129,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTransform();
   }, { passive: false });
 
-  // DRAG START
   document.addEventListener("mousedown", (e) => {
     if (lightbox.style.display !== "flex") return;
 
@@ -138,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
     startY = e.clientY - posY;
   });
 
-  // DRAG MOVE
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
 
@@ -152,4 +118,34 @@ document.addEventListener("DOMContentLoaded", () => {
     isDragging = false;
   });
 
+  // =========================
+  // ⭐ STARFIELD (FIXED)
+  // =========================
+  if (starfield) {
+    const STAR_COUNT = 250;
+
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const star = document.createElement("div");
+      star.className = "star";
+
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const size = Math.random() * 2.2;
+
+      const duration = 2 + Math.random() * 6;
+      const delay = Math.random() * 5;
+
+      star.style.left = x + "vw";
+      star.style.top = y + "vh";
+      star.style.width = size + "px";
+      star.style.height = size + "px";
+
+      star.style.animationDuration = duration + "s";
+      star.style.animationDelay = delay + "s";
+
+      star.style.opacity = 0.4 + Math.random() * 0.6;
+
+      starfield.appendChild(star);
+    }
+  }
 });
