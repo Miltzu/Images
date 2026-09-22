@@ -155,4 +155,3 @@ if (starfield) {
     starfield.appendChild(star);
   }
 }
-});
