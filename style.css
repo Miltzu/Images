@@ -94,27 +94,20 @@ body {
   height: 2px;
 
   background: white;
-
-  /* PERFECT CIRCLE ALWAYS */
   border-radius: 50%;
 
-  /* NO scaling animation = no flicker */
-  opacity: 0.6;
+  opacity: 0.4;
 
-  /* crisp rendering */
-  box-shadow: 0 0 6px rgba(255,255,255,0.4);
+  box-shadow: 0 0 6px rgba(255,255,255,0.35);
 
+  animation: twinkle 8s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
   will-change: opacity;
 }
 
-/* only subtle twinkle (NO transform) */
 @keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50%      { opacity: 1; }
-}
-
-.star {
-  animation: twinkle 4s ease-in-out infinite;
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.7; }
 }
 
 
