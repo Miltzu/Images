@@ -74,6 +74,10 @@ body::after {
    STAR BACKGROUND (FIXED)
 ========================= */
 
+/* =========================
+   STAR BACKGROUND (FINAL)
+========================= */
+
 .stars {
   position: fixed;
   inset: 0;
@@ -82,32 +86,49 @@ body::after {
   z-index: 0;
   pointer-events: none;
 
-   background: #182212;
+  background: radial-gradient(circle at top, #0b1020 0%, #05060a 60%, #02030a 100%);
+  overflow: hidden;
 }
 
-/* REAL STAR FIELD (non-symmetrical improved distribution) */
+/* LAYER 1 - isot tähdet */
 .stars::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -200%;
 
   background-image:
-    radial-gradient(1px 1px at 3% 7%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 11% 63%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 19% 28%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 27% 84%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 33% 12%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1px 1px at 41% 71%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 52% 36%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 61% 91%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 68% 22%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 83% 14%, rgba(255,255,255,0.75), transparent),
-    radial-gradient(1px 1px at 91% 76%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 97% 33%, rgba(255,255,255,0.7), transparent);
+    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1.5px 1.5px at 30% 80%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 70% 40%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.3px 1.3px at 50% 60%, rgba(255,255,255,0.75), transparent),
+    radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.8px 1.8px at 80% 70%, rgba(255,255,255,0.85), transparent);
 
-  background-size: 100% 100%;
-  opacity: 0.55;
+  background-size: 400px 400px;
+  opacity: 0.9;
+
+  animation: drift 140s linear infinite;
+}
+
+/* LAYER 2 - pienet tähdet */
+.stars::after {
+  content: "";
+  position: absolute;
+  inset: -200%;
+
+  background-image:
+    radial-gradient(1px 1px at 15% 35%, rgba(200,220,255,0.8), transparent),
+    radial-gradient(1px 1px at 60% 75%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 85% 50%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 40% 10%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 25% 85%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 95% 90%, rgba(255,255,255,0.5), transparent);
+
+  background-size: 500px 500px;
+  opacity: 0.6;
+
+  animation: drift2 220s linear infinite;
 }
 
 /* =========================
