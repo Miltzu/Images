@@ -119,33 +119,39 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =========================
-  // ⭐ STARFIELD (FIXED)
-  // =========================
-  if (starfield) {
-    const STAR_COUNT = 250;
+// ⭐ STARFIELD (FIXED)
+// =========================
+if (starfield) {
+  const STAR_COUNT = 250;
 
-    for (let i = 0; i < STAR_COUNT; i++) {
-      const star = document.createElement("div");
-      star.className = "star";
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
 
-      const x = Math.random() * 100;
-      const y = Math.random() * 100;
-      const size = Math.random() * 2.2;
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
 
-      const duration = 2 + Math.random() * 6;
-      const delay = Math.random() * 5;
+    // enemmän pieniä tähtiä, vähemmän isoja
+    const size = Math.random() < 0.85 ? 1 : (1.5 + Math.random());
 
-      star.style.left = x + "vw";
-      star.style.top = y + "vh";
-      star.style.width = size + "px";
-      star.style.height = size + "px";
+    // HITAAMPI twinkle
+    const duration = 6 + Math.random() * 14; // 6–20s (selvästi rauhallisempi)
 
-      star.style.animationDuration = duration + "s";
-      star.style.animationDelay = delay + "s";
+    // pidempi, hajautettu delay
+    const delay = Math.random() * 20;
 
-      star.style.opacity = 0.4 + Math.random() * 0.6;
+    star.style.left = x + "vw";
+    star.style.top = y + "vh";
 
-      starfield.appendChild(star);
-    }
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+
+    star.style.animationDuration = duration + "s";
+    star.style.animationDelay = delay + "s";
+
+    // tasaisempi kirkkaus (vähemmän “välkyntä”)
+    star.style.opacity = 0.25 + Math.random() * 0.5;
+
+    starfield.appendChild(star);
   }
-});
+}
