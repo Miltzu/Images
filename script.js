@@ -11,9 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let isDragging = false;
   let startX, startY;
 
-  // ----------------------------
-  // GALLERY LOAD
-  // ----------------------------
+  // =========================
+  // LOAD IMAGES
+  // =========================
   fetch("images.json")
     .then(res => res.json())
     .then(images => {
@@ -41,14 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
         card.appendChild(info);
         gallery.appendChild(card);
 
-        // ----------------------------
-        // EXIF (SAFE CHECK)
-        // ----------------------------
+        // EXIF
         imageEl.onload = function () {
 
           if (typeof EXIF === "undefined") {
             info.querySelector(".meta-bar").innerHTML =
-              `<span class="meta-pill">no exif lib</span>`;
+              `<span class="meta-pill">no exif</span>`;
             return;
           }
 
@@ -70,49 +68,45 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         };
 
-        // LIGHTBOX OPEN
+        // CLICK OPEN
         card.addEventListener("click", () => {
           openLightbox(img.file, img.title, img.desc);
         });
 
       });
     })
-    .catch(err => {
-      console.error("Gallery load failed:", err);
-    });
+    .catch(err => console.error("Gallery load failed:", err));
 
-  // ----------------------------
+  // =========================
   // LIGHTBOX
-  // ----------------------------
+  // =========================
   window.openLightbox = function (src, title, desc) {
-
-    if (!lightbox || !lightboxImg) return;
 
     lightbox.style.display = "flex";
     lightboxImg.src = src;
 
-    if (lightboxText) {
-      lightboxText.innerHTML = `<h2>${title}</h2><p>${desc}</p>`;
-    }
+    lightboxText.innerHTML = `
+      <h2>${title}</h2>
+      <p>${desc}</p>
+    `;
 
     scale = 1;
     posX = 0;
     posY = 0;
 
-    lightboxImg.style.transform = `translate(0px,0px) scale(1)`;
+    updateTransform();
   };
 
   window.closeLightbox = function () {
-    if (lightbox) lightbox.style.display = "none";
+    lightbox.style.display = "none";
   };
 
-  // ----------------------------
-  // ZOOM (SAFE)
-  // ----------------------------
+  // =========================
+  // ZOOM
+  // =========================
   document.addEventListener("wheel", (e) => {
 
-    if (!lightbox || lightbox.style.display !== "flex") return;
-    if (!lightboxImg) return;
+    if (lightbox.style.display !== "flex") return;
 
     e.preventDefault();
 
@@ -122,12 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTransform();
   }, { passive: false });
 
-  // ----------------------------
+  // =========================
   // PAN
-  // ----------------------------
+  // =========================
   document.addEventListener("mousedown", (e) => {
 
-    if (!lightbox || lightbox.style.display !== "flex") return;
+    if (lightbox.style.display !== "flex") return;
 
     isDragging = true;
     startX = e.clientX - posX;
@@ -149,87 +143,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateTransform() {
-    if (!lightboxImg) return;
     lightboxImg.style.transform =
       `translate(${posX}px, ${posY}px) scale(${scale})`;
   }
 
 });
-
-
-
-const gallery = document.getElementById("gallery");
-const fileInput = document.getElementById("fileInput");
-const dropzone = document.getElementById("dropzone");
-
-let images = JSON.parse(localStorage.getItem("images") || "[]");
-
-function renderImage(img) {
-  const card = document.createElement("div");
-  card.className = "card";
-
-  card.innerHTML = `
-    <img src="${img.src}">
-    <div class="info">
-      <h3>${img.name}</h3>
-      <p>${img.desc}</p>
-    </div>
-  `;
-
-  card.onclick = () => openLightbox(img.src, img.name, img.desc);
-  gallery.appendChild(card);
-}
-
-function renderAll() {
-  gallery.innerHTML = "";
-  images.forEach(renderImage);
-}
-
-function addFiles(files) {
-  for (let file of files) {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const img = {
-        src: e.target.result,
-        name: file.name.split(".")[0],
-        desc: "Uploaded image"
-      };
-
-      images.push(img);
-      localStorage.setItem("images", JSON.stringify(images));
-      renderImage(img);
-    };
-
-    reader.readAsDataURL(file);
-  }
-}
-
-/* CLICK upload */
-fileInput.addEventListener("change", (e) => {
-  addFiles(e.target.files);
-});
-
-/* DROP upload */
-dropzone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropzone.classList.add("dragover");
-});
-
-dropzone.addEventListener("dragleave", () => {
-  dropzone.classList.remove("dragover");
-});
-
-dropzone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropzone.classList.remove("dragover");
-  addFiles(e.dataTransfer.files);
-});
-
-/* click opens file picker */
-dropzone.addEventListener("click", () => {
-  fileInput.click();
-});
-
-/* initial load */
-renderAll();
