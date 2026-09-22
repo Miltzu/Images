@@ -3,6 +3,7 @@
 /* =========================
    BASE
 ========================= */
+
 html, body {
   margin: 0;
   padding: 0;
@@ -17,7 +18,14 @@ body {
   background: #05060a;
   color: #fff;
   overflow-x: hidden;
+
+  position: relative;
+  z-index: 1;
 }
+
+/* =========================
+   HERO CARD
+========================= */
 
 .hero-card {
   position: relative;
@@ -51,7 +59,7 @@ body {
 }
 
 /* =========================
-   STAR BACKGROUND
+   STAR BACKGROUND (FIXED)
 ========================= */
 
 .stars {
@@ -65,24 +73,29 @@ body {
   background: radial-gradient(circle at center, #0b0f1a 0%, #05060a 60%, #03040a 100%);
 }
 
-/* REAL STAR FIELD */
+/* REAL STAR FIELD (non-symmetrical improved distribution) */
 .stars::before {
   content: "";
   position: absolute;
   inset: 0;
 
   background-image:
-    radial-gradient(1px 1px at 12% 23%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 67% 18%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 34% 72%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 81% 64%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 45% 41%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 19% 88%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1px 1px at 92% 32%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 58% 9%, rgba(255,255,255,0.6), transparent);
+    radial-gradient(1px 1px at 3% 7%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 11% 63%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 19% 28%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 27% 84%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 33% 12%, rgba(255,255,255,0.85), transparent),
+    radial-gradient(1px 1px at 41% 71%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 52% 36%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 61% 91%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 68% 22%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 74% 58%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 83% 14%, rgba(255,255,255,0.75), transparent),
+    radial-gradient(1px 1px at 91% 76%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 97% 33%, rgba(255,255,255,0.7), transparent);
 
   background-size: 100% 100%;
-  opacity: 0.45;
+  opacity: 0.55;
 }
 
 /* =========================
@@ -92,6 +105,8 @@ body {
 header {
   text-align: center;
   padding: 80px 20px 40px;
+  position: relative;
+  z-index: 2;
 }
 
 header h1 {
@@ -111,7 +126,7 @@ header p {
 }
 
 /* =========================
-   GALLERY GRID
+   GALLERY
 ========================= */
 
 .gallery {
@@ -121,6 +136,9 @@ header p {
   padding: 40px;
   max-width: 1200px;
   margin: auto;
+
+  position: relative;
+  z-index: 2;
 }
 
 /* =========================
@@ -173,7 +191,7 @@ header p {
 }
 
 /* =========================
-   INFO TEXT
+   INFO
 ========================= */
 
 .info {
@@ -194,7 +212,7 @@ header p {
   line-height: 1.4;
 }
 
-/* META BAR */
+/* META */
 
 .meta-bar {
   margin-top: 10px;
@@ -213,23 +231,19 @@ header p {
 }
 
 /* =========================
-   LIGHTBOX - Kuvien näyttösetti ! 
+   LIGHTBOX (UNCHANGED STYLE)
 ========================= */
 
 .lightbox {
   position: fixed;
   inset: 0;
   display: none;
-
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
   background: rgba(5, 5, 10, 0.96);
-
   overflow: hidden;
   cursor: grab;
-
   z-index: 999;
 }
 
@@ -237,37 +251,30 @@ header p {
   cursor: grabbing;
 }
 
-/* IMAGE */
 .lightbox img {
   max-width: 90vw;
   max-height: 85vh;
-
   width: auto;
   height: auto;
-
   transform: scale(1);
   user-select: none;
   will-change: transform;
 
   border-radius: 14px;
 
-  /* METALLINEN KEHYS */
   border: 5px solid rgba(200, 205, 220, 0.35);
 
-  /* 🪞 SISÄ + ULKO VARJO (metallireunus feel) */
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.08) inset,
     0 0 0 1px rgba(0, 0, 0, 0.6),
     0 25px 80px rgba(0, 0, 0, 0.85);
 
-  /* “cold metal” tausta */
   background: linear-gradient(
     145deg,
     rgba(255,255,255,0.06),
     rgba(0,0,0,0.25)
   );
 
-  /* kevyt terävyys */
   outline: 1px solid rgba(255,255,255,0.06);
   outline-offset: -3px;
 }
@@ -290,5 +297,3 @@ header p {
   font-size: 14px;
   color: #a0a0ad;
 }
-
-
