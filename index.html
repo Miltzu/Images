@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Kuvagalleria</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      width: 100%;
+      display: block;
+    }
+
+    .info {
+      padding: 15px;
+    }
+
+    .info h3 {
+      margin: 0 0 5px;
+    }
+
+    .info p {
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      display: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 70%;
+      border-radius: 10px;
+    }
+
+    .lightbox .caption {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 30px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Mun kuvagalleria</h1>
+  <p>Tässä kokoelma kuvistani ✨</p>
+</header>
+
+<section class="gallery">
+
+  <div class="card" onclick="openLightbox('kuva1.jpg','Kuva 1','Tämä on lyhyt kuvaus kuvasta.')">
+    <img src="kuva1.jpg" alt="">
+    <div class="info">
+      <h3>Kuva 1</h3>
+      <p>Tämä on lyhyt kuvaus kuvasta.</p>
+    </div>
+  </div>
+
+  <div class="card" onclick="openLightbox('kuva2.jpg','Kuva 2','Toinen kuva ja sen tarina.')">
+    <img src="kuva2.jpg" alt="">
+    <div class="info">
+      <h3>Kuva 2</h3>
+      <p>Toinen kuva ja sen tarina.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <span class="close" onclick="closeLightbox()">×</span>
+  <img id="lightbox-img">
+  <div class="caption">
+    <h2 id="lightbox-title"></h2>
+    <p id="lightbox-text"></p>
+  </div>
+</div>
+
+<script>
+  function openLightbox(src, title, text) {
+    document.getElementById("lightbox").style.display = "flex";
+    document.getElementById("lightbox-img").src = src;
+    document.getElementById("lightbox-title").innerText = title;
+    document.getElementById("lightbox-text").innerText = text;
+  }
+
+  function closeLightbox() {
+    document.getElementById("lightbox").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
