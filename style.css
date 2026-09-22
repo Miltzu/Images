@@ -97,9 +97,9 @@ body::after {
   inset: -200%;
 
   background-image:
-    radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(3px 4px at 10% 20%, rgba(255,255,255,0.9), transparent),
     radial-gradient(1.5px 1.5px at 30% 80%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(2px 2px at 70% 40%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(3px 5px at 70% 40%, rgba(255,255,255,0.8), transparent),
     radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6), transparent),
     radial-gradient(1.3px 1.3px at 50% 60%, rgba(255,255,255,0.75), transparent),
     radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.6), transparent),
@@ -130,6 +130,30 @@ body::after {
 
   animation: drift2 220s linear infinite;
 }
+
+#starfield {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #0b1020 0%, #05060a 60%, #02030a 100%);
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: twinkle linear infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50%      { opacity: 1;   transform: scale(1.4); }
+}
+
 
 /* =========================
    HEADER
