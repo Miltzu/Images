@@ -159,6 +159,7 @@ header::after {
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -227,6 +228,32 @@ header::after {
   background: var(--glow-green-faint);
   border: 1px solid var(--glow-green-soft);
   color: var(--glow-green);
+}
+
+/* Coming soon placeholder — add class="gallery coming-soon" to #gallery
+   in the HTML to blur every card and show the label. Remove the class
+   once real photos are ready; no other change needed. */
+
+.gallery.coming-soon .card {
+  cursor: default;
+  pointer-events: none;
+}
+
+.gallery.coming-soon .card::after {
+  content: "Coming soon";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1, 5, 13, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  text-shadow: 0 0 18px var(--glow-green-soft);
 }
 
 /* --------------------------------------------------------------------------
