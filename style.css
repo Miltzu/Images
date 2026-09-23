@@ -3,14 +3,6 @@
    Palette: black background, starfield, green glow accent on cards
    ========================================================================== */
 
-/* TEMP DIAGNOSTIC — jos näet punaisen taustan ja magenta-reunan
-   livenä, CSS latautuu oikein ja voimme poistaa tämän lohkon.
-   Jos et näe mitään muutosta, ongelma on deploy/cache eikä CSS. */
-body {
-  background: red !important;
-  outline: 14px solid magenta !important;
-}
-
 :root {
   --space-black: #000000;
 
