@@ -5,6 +5,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const lightboxText = document.getElementById("text");
   const starfield = document.getElementById("starfield");
 
+  
+  // =========================
+// ⭐ STARFIELD (FIXED)
+// =========================
+if (starfield) {
+  const STAR_COUNT = 250;
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+
+    // enemmän pieniä tähtiä, vähemmän isoja
+    const size = Math.random() < 0.85 ? 1 : (1.5 + Math.random());
+
+    // HITAAMPI twinkle
+    const duration = 6 + Math.random() * 14; // 6–20s (selvästi rauhallisempi)
+
+    // pidempi, hajautettu delay
+    const delay = Math.random() * 20;
+
+    star.style.left = x + "vw";
+    star.style.top = y + "vh";
+
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+
+    star.style.animationDuration = duration + "s";
+    star.style.animationDelay = delay + "s";
+
+    // tasaisempi kirkkaus (vähemmän “välkyntä”)
+    star.style.opacity = 0.25 + Math.random() * 0.5;
+
+    starfield.appendChild(star);
+  }
+}
+  
   if (!gallery || !lightbox || !lightboxImg) return;
 
   // =========================
@@ -118,41 +157,4 @@ document.addEventListener("DOMContentLoaded", () => {
     isDragging = false;
   });
 
-  // =========================
-// ⭐ STARFIELD (FIXED)
-// =========================
-if (starfield) {
-  const STAR_COUNT = 250;
-
-  for (let i = 0; i < STAR_COUNT; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-
-    const x = Math.random() * 100;
-    const y = Math.random() * 100;
-
-    // enemmän pieniä tähtiä, vähemmän isoja
-    const size = Math.random() < 0.85 ? 1 : (1.5 + Math.random());
-
-    // HITAAMPI twinkle
-    const duration = 6 + Math.random() * 14; // 6–20s (selvästi rauhallisempi)
-
-    // pidempi, hajautettu delay
-    const delay = Math.random() * 20;
-
-    star.style.left = x + "vw";
-    star.style.top = y + "vh";
-
-    star.style.width = size + "px";
-    star.style.height = size + "px";
-
-    star.style.animationDuration = duration + "s";
-    star.style.animationDelay = delay + "s";
-
-    // tasaisempi kirkkaus (vähemmän “välkyntä”)
-    star.style.opacity = 0.25 + Math.random() * 0.5;
-
-    starfield.appendChild(star);
-  }
-}
 });
