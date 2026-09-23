@@ -1,7 +1,15 @@
 /* ==========================================================================
-   Gallery — deep sky theme
-   Palette: deepskyblue atmosphere fading to space-dark, green glow accent
+   Gallery — deep space theme
+   Palette: black background, starfield, green glow accent on cards
    ========================================================================== */
+
+/* TEMP DIAGNOSTIC — jos näet punaisen taustan ja magenta-reunan
+   livenä, CSS latautuu oikein ja voimme poistaa tämän lohkon.
+   Jos et näe mitään muutosta, ongelma on deploy/cache eikä CSS. */
+body {
+  background: red !important;
+  outline: 14px solid magenta !important;
+}
 
 :root {
   --space-black: #000000;
@@ -42,80 +50,33 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Starfield
+   Starfield — populated by script.js: 250 individually positioned .star
+   elements, each with its own random size, opacity, duration and delay
+   set inline. CSS only supplies the shape and the twinkle keyframes;
+   duration/delay come from the inline styles and override the values here.
    -------------------------------------------------------------------------- */
 
-.stars {
+#starfield {
   position: fixed;
   inset: 0;
   z-index: -1;
+  overflow: hidden;
   pointer-events: none;
-  background-repeat: no-repeat;
-  background-image:
-    radial-gradient(1px 1px at 6% 14%, rgba(255,255,255,0.50) 50%, transparent 100%),
-    radial-gradient(0.8px 0.8px at 13% 63%, rgba(255,255,255,0.40) 50%, transparent 100%),
-    radial-gradient(1.6px 1.6px at 21% 38%, rgba(255,255,255,0.75) 50%, transparent 100%),
-    radial-gradient(0.9px 0.9px at 27% 82%, rgba(207,233,255,0.45) 50%, transparent 100%),
-    radial-gradient(1.2px 1.2px at 34% 9%, rgba(255,255,255,0.55) 50%, transparent 100%),
-    radial-gradient(2px 2px at 41% 55%, rgba(255,255,255,0.85) 50%, transparent 100%),
-    radial-gradient(0.8px 0.8px at 48% 27%, rgba(255,255,255,0.40) 50%, transparent 100%),
-    radial-gradient(1.3px 1.3px at 56% 71%, rgba(207,233,255,0.60) 50%, transparent 100%),
-    radial-gradient(1px 1px at 63% 18%, rgba(255,255,255,0.50) 50%, transparent 100%),
-    radial-gradient(1.8px 1.8px at 69% 46%, rgba(255,255,255,0.80) 50%, transparent 100%),
-    radial-gradient(0.9px 0.9px at 77% 88%, rgba(255,255,255,0.42) 50%, transparent 100%),
-    radial-gradient(1.4px 1.4px at 83% 33%, rgba(207,233,255,0.65) 50%, transparent 100%),
-    radial-gradient(1px 1px at 89% 60%, rgba(255,255,255,0.50) 50%, transparent 100%),
-    radial-gradient(2.2px 2.2px at 94% 12%, rgba(255,255,255,0.90) 50%, transparent 100%),
-    radial-gradient(0.8px 0.8px at 4% 92%, rgba(255,255,255,0.38) 50%, transparent 100%),
-    radial-gradient(1.2px 1.2px at 58% 95%, rgba(207,233,255,0.50) 50%, transparent 100%);
 }
 
-/* Two independently-timed layers of stars that fade in and out slowly.
-   Different durations and negative delays keep them out of sync with
-   each other, so the twinkle reads as random rather than a uniform pulse. */
-
-.stars::before,
-.stars::after {
-  content: "";
+.star {
   position: absolute;
-  inset: 0;
-  background-repeat: no-repeat;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, rgba(255, 255, 255, 0.35) 55%, transparent 100%);
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
-.stars::before {
-  background-image:
-    radial-gradient(1.6px 1.6px at 11% 45%, rgba(255,255,255,0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 24% 75%, rgba(255,255,255,0.6) 50%, transparent 100%),
-    radial-gradient(2px 2px at 37% 20%, rgba(255,255,255,0.95) 50%, transparent 100%),
-    radial-gradient(0.9px 0.9px at 52% 88%, rgba(207,233,255,0.55) 50%, transparent 100%),
-    radial-gradient(1.4px 1.4px at 67% 34%, rgba(255,255,255,0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 81% 66%, rgba(207,233,255,0.6) 50%, transparent 100%),
-    radial-gradient(1.8px 1.8px at 92% 41%, rgba(255,255,255,0.9) 50%, transparent 100%);
-  animation: twinkle-a 11s ease-in-out infinite;
-  animation-delay: -3s;
-}
-
-.stars::after {
-  background-image:
-    radial-gradient(1.2px 1.2px at 8% 68%, rgba(255,255,255,0.75) 50%, transparent 100%),
-    radial-gradient(0.9px 0.9px at 19% 30%, rgba(207,233,255,0.5) 50%, transparent 100%),
-    radial-gradient(1.6px 1.6px at 31% 90%, rgba(255,255,255,0.85) 50%, transparent 100%),
-    radial-gradient(1px 1px at 46% 12%, rgba(255,255,255,0.55) 50%, transparent 100%),
-    radial-gradient(2px 2px at 61% 58%, rgba(255,255,255,0.9) 50%, transparent 100%),
-    radial-gradient(0.9px 0.9px at 74% 25%, rgba(207,233,255,0.5) 50%, transparent 100%),
-    radial-gradient(1.4px 1.4px at 88% 78%, rgba(255,255,255,0.8) 50%, transparent 100%);
-  animation: twinkle-b 15s ease-in-out infinite;
-  animation-delay: -7s;
-}
-
-@keyframes twinkle-a {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
-}
-
-@keyframes twinkle-b {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.95; }
+@keyframes twinkle {
+  0%   { filter: brightness(0.55); }
+  100% { filter: brightness(1.6); }
 }
 
 /* --------------------------------------------------------------------------
@@ -205,13 +166,11 @@ header::after {
   gap: 28px;
 }
 
-.gallery img,
-.gallery .gallery-item,
-.gallery a {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-radius: var(--radius);
   background: rgba(3, 11, 26, 0.6);
   box-shadow:
@@ -221,45 +180,88 @@ header::after {
   cursor: pointer;
 }
 
-.gallery .gallery-item {
-  overflow: hidden;
-  padding: 0;
-  border: none;
-}
-
-.gallery .gallery-item img {
-  box-shadow: none;
-  transition: transform 0.4s ease;
-}
-
-.gallery .gallery-item:hover img {
-  transform: scale(1.06);
-}
-
-.gallery img:hover,
-.gallery .gallery-item:hover,
-.gallery a:hover {
+.card:hover,
+.card:focus-visible {
+  outline: none;
   transform: translateY(-4px);
   box-shadow:
     0 0 0 1.5px var(--glow-green),
     0 0 34px var(--glow-green-soft);
 }
 
-.gallery img:focus-visible,
-.gallery .gallery-item:focus-visible,
-.gallery a:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--glow-green),
-    0 0 30px var(--glow-green-soft);
+.card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
-.gallery figcaption,
-.gallery .caption {
-  margin-top: 10px;
+.card:hover img {
+  transform: scale(1.06);
+}
+
+.card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px 18px;
+}
+
+.card .info h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card .info p {
+  margin: 0;
   font-size: 0.85rem;
+  line-height: 1.5;
   color: var(--text-muted);
-  text-align: center;
+}
+
+.meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.meta-pill {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--glow-green-faint);
+  border: 1px solid var(--glow-green-soft);
+  color: var(--glow-green);
+}
+
+/* Coming soon placeholder — add class="gallery coming-soon" to #gallery
+   in the HTML to blur every card and show the label. Remove the class
+   once real photos are ready; no other change needed. */
+
+.gallery.coming-soon .card {
+  cursor: default;
+  pointer-events: none;
+}
+
+.gallery.coming-soon .card::after {
+  content: "Coming soon";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1, 5, 13, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  text-shadow: 0 0 18px var(--glow-green-soft);
 }
 
 /* --------------------------------------------------------------------------
@@ -288,19 +290,37 @@ header::after {
   object-fit: contain;
   border-radius: 12px;
   box-shadow: 0 0 50px var(--glow-green-soft), 0 20px 60px rgba(0, 0, 0, 0.6);
-  animation: lightbox-in 0.25s ease;
+  transform-origin: center center;
+  cursor: grab;
+  animation: lightbox-fade-in 0.2s ease;
 }
 
-.lightbox .caption {
+.lightbox .caption,
+.lightbox #text {
   color: var(--text-muted);
   font-size: 0.95rem;
   max-width: 640px;
   text-align: center;
 }
 
-@keyframes lightbox-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+.lightbox .caption h2,
+.lightbox #text h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.lightbox .caption p,
+.lightbox #text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+@keyframes lightbox-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------
@@ -365,13 +385,11 @@ header::after {
    -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .stars::before,
-  .stars::after {
+  .star {
     animation: none;
   }
-  .gallery img,
-  .gallery .gallery-item,
-  .gallery .gallery-item img {
+  .card,
+  .card img {
     transition: none;
   }
 }
