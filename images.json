@@ -1,17 +1,17 @@
 [
   {
     "file": "images/kuva1.jpg",
-    "title": "Kuva 1",
+    "title": "-",
     "desc": "Northern lights"
   },
   {
-    "file": "images/kuva2.jpg",
-    "title": "Kuva 2",
+    "file": "images/kuva2.png",
+    "title": "-",
     "desc": "M27 (HOO)"
   },
   {
     "file": "images/kuva3.jpg",
-    "title": "Kuva 3",
+    "title": "-",
     "desc": "Kolmas hetki"
   }
 ]
