@@ -3,14 +3,6 @@
    Palette: black background, starfield, green glow accent on cards
    ========================================================================== */
 
-/* TEMP DIAGNOSTIC — jos näet punaisen taustan ja magenta-reunan
-   livenä, CSS latautuu oikein ja voimme poistaa tämän lohkon.
-   Jos et näe mitään muutosta, ongelma on deploy/cache eikä CSS. */
-body {
-  background: red !important;
-  outline: 14px solid magenta !important;
-}
-
 :root {
   --space-black: #000000;
 
@@ -391,5 +383,432 @@ header::after {
   .card,
   .card img {
     transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Site navigation (index.html, projektit.html, equipment.html, loki.html)
+   -------------------------------------------------------------------------- */
+
+.site-nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.site-nav a {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.site-nav a:hover {
+  color: var(--text-primary);
+  border-color: var(--glow-green-soft);
+}
+
+.site-nav a.active {
+  color: var(--text-primary);
+  background: var(--glow-green-faint);
+  border-color: var(--glow-green-soft);
+  box-shadow: 0 0 16px var(--glow-green-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Gallery category tabs (Deepsky / Aurinko / Wide field / ...)
+   -------------------------------------------------------------------------- */
+
+.gallery-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: rgba(3, 11, 26, 0.6);
+  border: 1px solid var(--glow-green-faint);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--glow-green-soft);
+}
+
+.tab-btn.active {
+  color: #04150e;
+  background: var(--glow-green);
+  border-color: var(--glow-green);
+}
+
+/* --------------------------------------------------------------------------
+   Equipment page
+   -------------------------------------------------------------------------- */
+
+.equipment-section {
+  margin-bottom: 44px;
+}
+
+.equipment-section h2 {
+  margin: 0 0 18px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.equipment-card {
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  background: rgba(3, 11, 26, 0.6);
+  box-shadow: 0 0 0 1px var(--glow-green-soft), 0 0 18px var(--glow-green-faint);
+}
+
+.equipment-card.highlight {
+  border: 1px solid var(--glow-green-soft);
+}
+
+.equipment-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.equipment-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.muted-note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------------------------
+   Projects page (imaging projects/targets — populated from projects.json)
+   -------------------------------------------------------------------------- */
+
+.projects-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.project-card {
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  background: rgba(3, 11, 26, 0.6);
+  box-shadow: 0 0 0 1px var(--glow-green-soft), 0 0 18px var(--glow-green-faint);
+}
+
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.project-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-pill {
+  font-size: 0.68rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: capitalize;
+  background: var(--glow-green-faint);
+  color: var(--glow-green);
+  border: 1px solid var(--glow-green-soft);
+  white-space: nowrap;
+}
+
+.project-card p {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Log page
+   -------------------------------------------------------------------------- */
+
+.log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.log-entry {
+  padding: 16px 20px;
+  border-left: 2px solid var(--glow-green);
+  background: rgba(3, 11, 26, 0.5);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.log-date {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--glow-green);
+  margin-bottom: 4px;
+}
+
+.log-entry p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Language switch (FI / EN)
+   -------------------------------------------------------------------------- */
+
+.lang-switch {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.lang-btn {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  background: rgba(3, 11, 26, 0.6);
+  border: 1px solid var(--glow-green-faint);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.lang-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--glow-green-soft);
+}
+
+.lang-btn.active {
+  color: #04150e;
+  background: var(--glow-green);
+  border-color: var(--glow-green);
+}
+
+/* --------------------------------------------------------------------------
+   Lightbox prev/next navigation
+   -------------------------------------------------------------------------- */
+
+.lightbox-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(3, 11, 26, 0.6);
+  border: 1px solid var(--glow-green-soft);
+  color: var(--text-primary);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 101;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lightbox-nav:hover {
+  background: var(--glow-green-faint);
+  box-shadow: 0 0 20px var(--glow-green-soft);
+}
+
+.lightbox-prev {
+  left: 24px;
+}
+
+.lightbox-next {
+  right: 24px;
+}
+
+@media (max-width: 640px) {
+  .lightbox-nav {
+    width: 38px;
+    height: 38px;
+    font-size: 1.4rem;
+  }
+  .lightbox-prev {
+    left: 8px;
+  }
+  .lightbox-next {
+    right: 8px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Gallery view toggle (with info / images only)
+   -------------------------------------------------------------------------- */
+
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: rgba(3, 11, 26, 0.6);
+  border: 1px solid var(--glow-green-faint);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.view-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.view-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--glow-green-soft);
+}
+
+.view-btn.active {
+  color: #04150e;
+  background: var(--glow-green);
+  border-color: var(--glow-green);
+}
+
+.gallery.compact-view {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.gallery.compact-view .card .info {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Sijainti taivaalla (Aladin Lite -paneeli, ei oletuksena päällä)
+   -------------------------------------------------------------------------- */
+
+.sky-location-btn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(3, 11, 26, 0.6);
+  border: 1px solid var(--glow-green-soft);
+  color: var(--text-primary);
+  cursor: pointer;
+  z-index: 101;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sky-location-btn.visible {
+  display: flex;
+}
+
+.sky-location-btn:hover {
+  background: var(--glow-green-faint);
+  box-shadow: 0 0 20px var(--glow-green-soft);
+}
+
+.sky-location-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sky-panel {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: min(90vw, 480px);
+  height: 360px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--glow-green-soft);
+  box-shadow: 0 0 40px var(--glow-green-soft), 0 10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 102;
+  background: #000;
+}
+
+.sky-panel.open {
+  display: block;
+}
+
+#aladin-div {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 640px) {
+  .sky-location-btn {
+    right: 8px;
+    bottom: 70px;
+  }
+  .sky-panel {
+    right: 8px;
+    left: 8px;
+    bottom: 128px;
+    width: auto;
+    height: 260px;
   }
 }

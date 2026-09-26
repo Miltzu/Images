@@ -5,9 +5,8 @@
 <title>Gallery</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="/Images/style.css?v=7"> <!-- V6 = Coming soon-teksti-->
-<script src="script.js?v=2"></script> <!--Versionumerot-->
-<section id="gallery" class="gallery coming-soon"></section> <!-- Coming soon homma-->
+<link rel="stylesheet" href="style.css?v=8">
+<script src="script.js?v=3"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,29 +17,83 @@
 
 <body>
 
-<!-- FIX: background layer MUST be first -->
-<div class="stars"></div>
 <div id="starfield"></div>
 
-<!-- FIX: content wrapper for layering -->
 <div class="page">
+
+  <nav class="site-nav">
+    <a href="index.html" class="active" data-fi="Galleria" data-en="Gallery">Galleria</a>
+    <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+    <a href="equipment.html" data-fi="Equipment" data-en="Equipment">Equipment</a>
+    <a href="loki.html" data-fi="Loki" data-en="Log">Loki</a>
+  </nav>
+
+  <div class="lang-switch">
+    <button class="lang-btn active" data-lang="fi">FI</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+  </div>
 
   <!-- HERO -->
   <div class="hero-card">
-    <h2>Astrophotography and stuff</h2>
-    <p>Curated collection of deep sky images. Images coming soon..</p>
+    <h2 data-fi="Astrokuvausta ja muuta" data-en="Astrophotography and stuff">Astrokuvausta ja muuta</h2>
+    <p data-fi="Kuratoitu kokoelma deep sky -kuvia. Kuvat tulossa pian.." data-en="Curated collection of deep sky images. Images coming soon..">Kuratoitu kokoelma deep sky -kuvia. Kuvat tulossa pian..</p>
   </div>
 
   <header>
-    <h1>Image Gallery</h1>
-    <p>Astrophotography images, obviously</p>
+    <h1 data-fi="Kuvagalleria" data-en="Image Gallery">Kuvagalleria</h1>
+    <p data-fi="Astrokuvia, tietenkin" data-en="Astrophotography images, obviously">Astrokuvia, tietenkin</p>
   </header>
 
-  <section id="gallery" class="gallery"></section>
+  <div class="gallery-tabs">
+    <button class="tab-btn active" data-category="all" data-fi="Kaikki" data-en="All">Kaikki</button>
+    <button class="tab-btn" data-category="deepsky" data-fi="Deepsky" data-en="Deep sky">Deepsky</button>
+    <button class="tab-btn" data-category="aurinko" data-fi="Aurinko" data-en="Sun">Aurinko</button>
+    <button class="tab-btn" data-category="widefield" data-fi="Wide field" data-en="Wide field">Wide field</button>
+    <button class="tab-btn" data-category="planeetta" data-fi="Planeetta" data-en="Planets">Planeetta</button>
+  </div>
+
+  <div class="view-toggle">
+    <button class="view-btn" data-view="compact" title="Vain kuvat" aria-label="Vain kuvat">
+      <svg viewBox="0 0 20 20" fill="currentColor">
+        <rect x="1" y="1" width="4.5" height="4.5" rx="1"/>
+        <rect x="7.75" y="1" width="4.5" height="4.5" rx="1"/>
+        <rect x="14.5" y="1" width="4.5" height="4.5" rx="1"/>
+        <rect x="1" y="7.75" width="4.5" height="4.5" rx="1"/>
+        <rect x="7.75" y="7.75" width="4.5" height="4.5" rx="1"/>
+        <rect x="14.5" y="7.75" width="4.5" height="4.5" rx="1"/>
+      </svg>
+    </button>
+    <button class="view-btn active" data-view="info" title="Infojen kanssa" aria-label="Infojen kanssa">
+      <svg viewBox="0 0 20 20" fill="currentColor">
+        <rect x="1" y="1" width="18" height="11" rx="1.5"/>
+        <rect x="1" y="14.5" width="18" height="2" rx="1"/>
+        <rect x="1" y="17.5" width="11" height="2" rx="1"/>
+      </svg>
+    </button>
+  </div>
+
+  <section id="gallery" class="gallery coming-soon"></section>
 
   <!-- lightbox -->
   <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Edellinen">‹</button>
     <img id="lightbox-img">
+    <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Seuraava">›</button>
+
+    <button id="skyLocationBtn" class="sky-location-btn" title="Sijainti taivaalla" aria-label="Sijainti taivaalla">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="10" cy="10" r="3"/>
+        <line x1="10" y1="1" x2="10" y2="4"/>
+        <line x1="10" y1="16" x2="10" y2="19"/>
+        <line x1="1" y1="10" x2="4" y2="10"/>
+        <line x1="16" y1="10" x2="19" y2="10"/>
+      </svg>
+    </button>
+
+    <div id="skyPanel" class="sky-panel">
+      <div id="aladin-div"></div>
+    </div>
+
     <div id="text" class="caption"></div>
   </div>
 
