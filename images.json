@@ -5,10 +5,12 @@
     "desc": "Northern lights"
   },
   {
-    "file": "images/kuva2.png",
-    "title": "-",
-    "desc": "M27 (HOO)"
-  },
+  "file": "images/kuva2.png",
+  "title": "-",
+  "desc": "M27 (HOO)",
+  "category": "deepsky",
+  "reveal": true
+},
   {
     "file": "images/kuva3.jpg",
     "title": "-",
