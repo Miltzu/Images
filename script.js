@@ -37,11 +37,15 @@ if (starfield) {
     // enemmän pieniä tähtiä, vähemmän isoja
     const size = rand() < 0.85 ? 1 : (1.5 + rand());
 
-    // HITAAMPI twinkle
-    const duration = 6 + rand() * 14; // 6–20s (selvästi rauhallisempi)
+    // SELVÄSTI HITAAMPI ja tasaisempi twinkle: 18-45s täysi kierto
+    const duration = 18 + rand() * 27;
 
-    // pidempi, hajautettu delay
-    const delay = rand() * 20;
+    // pitkä, hajautettu delay ettei tähdet syty samassa tahdissa
+    const delay = rand() * 30;
+
+    // pieni ja sulava kirkkausvaihtelu per tähti (ei rajua välkyntää)
+    const minOpacity = 0.2 + rand() * 0.3;   // 0.2–0.5
+    const maxOpacity = Math.min(minOpacity + 0.2 + rand() * 0.2, 1); // +0.2–0.4
 
     star.style.left = x + "vw";
     star.style.top = y + "vh";
@@ -52,8 +56,8 @@ if (starfield) {
     star.style.animationDuration = duration + "s";
     star.style.animationDelay = delay + "s";
 
-    // tasaisempi kirkkaus (vähemmän “välkyntä”)
-    star.style.opacity = 0.25 + rand() * 0.5;
+    star.style.setProperty("--min-opacity", minOpacity.toFixed(2));
+    star.style.setProperty("--max-opacity", maxOpacity.toFixed(2));
 
     starfield.appendChild(star);
   }
@@ -185,6 +189,7 @@ if (starfield) {
     resetTransform();
     registerView(img.file);
     updateSkyButton(img);
+    updateDownloadLink(img.file);
   }
 
   function nextImage() {
@@ -205,6 +210,15 @@ if (starfield) {
 
     resetTransform();
     updateSkyButton({ ra, dec, fov });
+    updateDownloadLink(src);
+  }
+
+  function updateDownloadLink(src) {
+    const dl = document.getElementById("lightboxDownload");
+    if (dl) {
+      dl.href = src;
+      dl.setAttribute("download", src.split("/").pop());
+    }
   }
 
   function closeLightbox() {
@@ -264,6 +278,7 @@ if (starfield) {
         if (img.ra !== undefined) card.dataset.ra = img.ra;
         if (img.dec !== undefined) card.dataset.dec = img.dec;
         if (img.fov !== undefined) card.dataset.fov = img.fov;
+        if (img.reveal) card.classList.add("revealed");
 
         const imageEl = document.createElement("img");
         imageEl.src = img.file;
@@ -279,7 +294,7 @@ if (starfield) {
           <h3>${img.title || ""}</h3>
           <p>${img.desc || ""}</p>
           <div class="meta-bar">
-            <span class="meta-pill">loading...</span>
+            <span class="meta-pill exif-pill">EXIF...</span>
             <span class="meta-pill view-pill">${initialViews} katselua</span>
           </div>
         `;
@@ -287,6 +302,35 @@ if (starfield) {
         card.appendChild(imageEl);
         card.appendChild(info);
         gallery.appendChild(card);
+
+        // EXIF-tiedot (toimii JPG:lle, ei PNG:lle koska PNG ei kanna EXIF-dataa)
+        if (window.EXIF) {
+          EXIF.getData(imageEl, function () {
+            const pill = card.querySelector(".exif-pill");
+            if (!pill) return;
+
+            const model = EXIF.getTag(this, "Model");
+            const iso = EXIF.getTag(this, "ISOSpeedRatings");
+            const exposure = EXIF.getTag(this, "ExposureTime");
+            const fNumber = EXIF.getTag(this, "FNumber");
+
+            const parts = [];
+            if (model) parts.push(model);
+            if (iso) parts.push("ISO " + iso);
+            if (exposure) {
+              const expText = (exposure && exposure.numerator !== undefined)
+                ? exposure.numerator + "/" + exposure.denominator
+                : exposure;
+              parts.push(expText + "s");
+            }
+            if (fNumber) parts.push("f/" + fNumber);
+
+            pill.textContent = parts.length ? parts.join(" · ") : "Ei EXIF-tietoa";
+          });
+        } else {
+          const pill = card.querySelector(".exif-pill");
+          if (pill) pill.textContent = "Ei EXIF-tietoa";
+        }
 
         card.addEventListener("click", () => {
           rebuildVisibleImages();
@@ -341,6 +385,11 @@ if (starfield) {
 
   const lightboxPrev = document.getElementById("lightboxPrev");
   const lightboxNext = document.getElementById("lightboxNext");
+  const lightboxDownload = document.getElementById("lightboxDownload");
+
+  if (lightboxDownload) {
+    lightboxDownload.addEventListener("click", (e) => e.stopPropagation());
+  }
 
   if (lightboxPrev) {
     lightboxPrev.addEventListener("click", (e) => {
@@ -355,6 +404,77 @@ if (starfield) {
       nextImage();
     });
   }
+
+  // =========================
+  // KOSKETUSTUKI (mobiili): nipistys-zoomaus, raahaus zoomattuna,
+  // swipe vaihtaa kuvaa kun ei olla zoomattu
+  // =========================
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartPosX = 0;
+  let touchStartPosY = 0;
+  let lastTouchDistance = null;
+  let isPinching = false;
+
+  function getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  lightboxImg.addEventListener("touchstart", (e) => {
+    if (lightbox.style.display !== "flex") return;
+
+    if (e.touches.length === 2) {
+      isPinching = true;
+      lastTouchDistance = getTouchDistance(e.touches);
+    } else if (e.touches.length === 1) {
+      isPinching = false;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartPosX = posX;
+      touchStartPosY = posY;
+    }
+  }, { passive: true });
+
+  lightboxImg.addEventListener("touchmove", (e) => {
+    if (lightbox.style.display !== "flex") return;
+
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dist = getTouchDistance(e.touches);
+      if (lastTouchDistance) {
+        scale += (dist - lastTouchDistance) * 0.01;
+        scale = Math.min(Math.max(1, scale), 4);
+        updateTransform();
+      }
+      lastTouchDistance = dist;
+    } else if (e.touches.length === 1 && scale > 1.02) {
+      // panoroidaan vain kun kuva on zoomattu sisään
+      e.preventDefault();
+      posX = touchStartPosX + (e.touches[0].clientX - touchStartX);
+      posY = touchStartPosY + (e.touches[0].clientY - touchStartY);
+      updateTransform();
+    }
+  }, { passive: false });
+
+  lightboxImg.addEventListener("touchend", (e) => {
+    if (isPinching) {
+      isPinching = false;
+      lastTouchDistance = null;
+      return;
+    }
+
+    if (scale > 1.02) return; // zoomattuna ei swipetä kuvien välillä
+
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) nextImage(); else prevImage();
+    }
+  }, { passive: true });
 
   // =========================
   // SIJAINTI TAIVAALLA (Aladin Lite, ladataan vain pyydettäessä)

@@ -5,8 +5,8 @@
 <title>Gallery</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="style.css?v=8">
-<script src="script.js?v=3"></script>
+<link rel="stylesheet" href="style.css?v=10">
+<script src="script.js?v=6"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,7 +24,7 @@
   <nav class="site-nav">
     <a href="index.html" class="active" data-fi="Galleria" data-en="Gallery">Galleria</a>
     <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
-    <a href="equipment.html" data-fi="Equipment" data-en="Equipment">Equipment</a>
+    <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
     <a href="loki.html" data-fi="Loki" data-en="Log">Loki</a>
   </nav>
 
@@ -48,7 +48,8 @@
     <button class="tab-btn active" data-category="all" data-fi="Kaikki" data-en="All">Kaikki</button>
     <button class="tab-btn" data-category="deepsky" data-fi="Deepsky" data-en="Deep sky">Deepsky</button>
     <button class="tab-btn" data-category="aurinko" data-fi="Aurinko" data-en="Sun">Aurinko</button>
-    <button class="tab-btn" data-category="widefield" data-fi="Wide field" data-en="Wide field">Wide field</button>
+    <button class="tab-btn" data-category="revontuli" data-fi="Revontuli" data-en="Aurora">Revontuli</button>
+    <button class="tab-btn" data-category="widefield" data-fi="Laajakulma" data-en="Wide field">Laajakulma</button>
     <button class="tab-btn" data-category="planeetta" data-fi="Planeetta" data-en="Planets">Planeetta</button>
   </div>
 
@@ -79,6 +80,13 @@
     <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Edellinen">‹</button>
     <img id="lightbox-img">
     <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Seuraava">›</button>
+
+    <a id="lightboxDownload" class="lightbox-download" download title="Lataa kuva" aria-label="Lataa kuva">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M10 2v10M10 12l-4-4M10 12l4-4"/>
+        <path d="M3 16h14"/>
+      </svg>
+    </a>
 
     <button id="skyLocationBtn" class="sky-location-btn" title="Sijainti taivaalla" aria-label="Sijainti taivaalla">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
