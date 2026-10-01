@@ -2,18 +2,27 @@
   {
     "file": "images/kuva1.jpg",
     "title": "-",
-    "desc": "Northern lights"
+    "desc": "Northern lights",
+    "category": "revontuli",
+    "reveal": true,
+    "ra": 0,
+    "dec": 60
   },
   {
-  "file": "images/kuva2.png",
-  "title": "-",
-  "desc": "M27 (HOO)",
-  "category": "deepsky",
-  "reveal": true
-},
+    "file": "images/kuva2.png",
+    "title": "-",
+    "desc": "Saturnus",
+    "category": "planeetta",
+    "reveal": true,
+    "integration": "5h 20min",
+    "telescope": "C11 XLT",
+    "filters": "HOO",
+    "date": "12.9.2026"
+  },
   {
     "file": "images/kuva3.jpg",
     "title": "-",
-    "desc": "Kolmas hetki"
+    "desc": "Kolmas hetki",
+    "category": "deepsky"
   }
 ]

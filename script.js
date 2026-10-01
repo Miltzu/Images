@@ -142,9 +142,6 @@ if (starfield) {
   let scale = 1;
   let posX = 0;
   let posY = 0;
-  let isDragging = false;
-  let startX = 0;
-  let startY = 0;
 
   let currentImages = [];
   let currentIndex = -1;
@@ -171,8 +168,23 @@ if (starfield) {
         desc: card.dataset.desc,
         ra: card.dataset.ra !== undefined ? parseFloat(card.dataset.ra) : undefined,
         dec: card.dataset.dec !== undefined ? parseFloat(card.dataset.dec) : undefined,
-        fov: card.dataset.fov !== undefined ? parseFloat(card.dataset.fov) : undefined
+        fov: card.dataset.fov !== undefined ? parseFloat(card.dataset.fov) : undefined,
+        integration: card.dataset.integration,
+        telescope: card.dataset.telescope,
+        filters: card.dataset.filters,
+        date: card.dataset.date
       }));
+  }
+
+  function buildCaptionHTML(imgData) {
+    const pills = [];
+    if (imgData.integration) pills.push(`<span class="meta-pill">${imgData.integration}</span>`);
+    if (imgData.telescope) pills.push(`<span class="meta-pill">${imgData.telescope}</span>`);
+    if (imgData.filters) pills.push(`<span class="meta-pill">${imgData.filters}</span>`);
+    if (imgData.date) pills.push(`<span class="meta-pill">${imgData.date}</span>`);
+
+    const metaHTML = pills.length ? `<div class="meta-bar">${pills.join("")}</div>` : "";
+    return `<h2>${imgData.title || ""}</h2><p>${imgData.desc || ""}</p>${metaHTML}`;
   }
 
   function showImageAt(index) {
@@ -183,7 +195,7 @@ if (starfield) {
     lightboxImg.src = img.file;
 
     if (lightboxText) {
-      lightboxText.innerHTML = `<h2>${img.title}</h2><p>${img.desc}</p>`;
+      lightboxText.innerHTML = buildCaptionHTML(img);
     }
 
     resetTransform();
@@ -200,17 +212,17 @@ if (starfield) {
     showImageAt(currentIndex - 1);
   }
 
-  function openLightbox(src, title = "", desc = "", ra, dec, fov) {
+  function openLightbox(imgData) {
     lightbox.style.display = "flex";
-    lightboxImg.src = src;
+    lightboxImg.src = imgData.file;
 
     if (lightboxText) {
-      lightboxText.innerHTML = `<h2>${title}</h2><p>${desc}</p>`;
+      lightboxText.innerHTML = buildCaptionHTML(imgData);
     }
 
     resetTransform();
-    updateSkyButton({ ra, dec, fov });
-    updateDownloadLink(src);
+    updateSkyButton(imgData);
+    updateDownloadLink(imgData.file);
   }
 
   function updateDownloadLink(src) {
@@ -278,6 +290,10 @@ if (starfield) {
         if (img.ra !== undefined) card.dataset.ra = img.ra;
         if (img.dec !== undefined) card.dataset.dec = img.dec;
         if (img.fov !== undefined) card.dataset.fov = img.fov;
+        if (img.integration) card.dataset.integration = img.integration;
+        if (img.telescope) card.dataset.telescope = img.telescope;
+        if (img.filters) card.dataset.filters = img.filters;
+        if (img.date) card.dataset.date = img.date;
         if (img.reveal) card.classList.add("revealed");
 
         const imageEl = document.createElement("img");
@@ -337,7 +353,7 @@ if (starfield) {
           currentIndex = currentImages.findIndex(i => i.file === img.file);
 
           registerView(img.file);
-          openLightbox(img.file, img.title, img.desc, img.ra, img.dec, img.fov);
+          openLightbox(img);
         });
       });
     });
@@ -387,8 +403,14 @@ if (starfield) {
   const lightboxNext = document.getElementById("lightboxNext");
   const lightboxDownload = document.getElementById("lightboxDownload");
 
+  // Klikkaus itse kuvaan ei saa sulkea lightboxia (vain tausta sulkee).
+  // Muuten jokainen normaali klikkaus kuvaan (esim. raahauksen jälkeinen
+  // nosto) sulki koko lightboxin heti.
+  lightboxImg.addEventListener("click", (e) => e.stopPropagation());
+
   if (lightboxDownload) {
     lightboxDownload.addEventListener("click", (e) => e.stopPropagation());
+    lightboxDownload.addEventListener("mousedown", (e) => e.stopPropagation());
   }
 
   if (lightboxPrev) {
@@ -396,6 +418,7 @@ if (starfield) {
       e.stopPropagation();
       prevImage();
     });
+    lightboxPrev.addEventListener("mousedown", (e) => e.stopPropagation());
   }
 
   if (lightboxNext) {
@@ -403,6 +426,7 @@ if (starfield) {
       e.stopPropagation();
       nextImage();
     });
+    lightboxNext.addEventListener("mousedown", (e) => e.stopPropagation());
   }
 
   // =========================
@@ -522,6 +546,7 @@ if (starfield) {
       const isOpen = skyPanel.classList.toggle("open");
       if (isOpen) goToSkyPosition();
     });
+    skyLocationBtn.addEventListener("mousedown", (e) => e.stopPropagation());
 
     skyPanel.addEventListener("click", (e) => e.stopPropagation());
     skyPanel.addEventListener("mousedown", (e) => e.stopPropagation());
@@ -546,26 +571,5 @@ if (starfield) {
 
     updateTransform();
   }, { passive: false });
-
-  document.addEventListener("mousedown", (e) => {
-    if (lightbox.style.display !== "flex") return;
-
-    isDragging = true;
-    startX = e.clientX - posX;
-    startY = e.clientY - posY;
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-
-    posX = e.clientX - startX;
-    posY = e.clientY - startY;
-
-    updateTransform();
-  });
-
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
 
 });
