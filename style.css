@@ -176,7 +176,6 @@ header::after {
 .card:hover,
 .card:focus-visible {
   outline: none;
-  transform: translateY(-4px);
   box-shadow:
     0 0 0 1.5px var(--glow-green),
     0 0 34px var(--glow-green-soft);
@@ -281,8 +280,10 @@ header::after {
   max-width: min(90vw, 1100px);
   max-height: 78vh;
   object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 0 50px var(--glow-green-soft), 0 20px 60px rgba(0, 0, 0, 0.6);
+  border-radius: 2px;
+  outline: 1px solid rgba(61, 255, 160, 0.35);
+  outline-offset: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   transform-origin: center center;
   cursor: grab;
   animation: lightbox-fade-in 0.2s ease;
@@ -309,6 +310,12 @@ header::after {
   margin: 0;
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+.lightbox .caption .meta-bar,
+.lightbox #text .meta-bar {
+  justify-content: center;
+  margin-top: 10px;
 }
 
 @keyframes lightbox-fade-in {
