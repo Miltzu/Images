@@ -169,6 +169,31 @@ a { color: inherit; }
   box-shadow: 0 0 10px var(--accent-soft);
 }
 
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.social-link:hover {
+  color: var(--accent);
+}
+
+.social-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.footer .social-link {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
 .lang-switch {
   display: flex;
   border: 1px solid var(--line-strong);
@@ -575,6 +600,8 @@ a { color: inherit; }
   gap: 18px;
   padding: 32px 90px;
   overflow-y: auto;
+  touch-action: pan-y;          /* ei selaimen omaa sivuzoomia lightboxissa */
+  overscroll-behavior: contain;
   background: rgba(0, 0, 0, 0.94);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -591,6 +618,7 @@ a { color: inherit; }
   outline-offset: 6px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
   transform-origin: center center;
+  touch-action: none;           /* nipistys ohjaa vain kuvan omaa zoomia */
   cursor: default;
   animation: lightbox-fade-in 0.2s ease;
 }
@@ -1088,7 +1116,8 @@ body.lightbox-open {
     right: 10px;
   }
 
-  .lang-switch { margin-left: auto; }
+  .site-header .social-link { margin-left: auto; }
+  .lang-switch { margin-left: 0; }
 
   .page { padding: 0 16px 56px; }
 

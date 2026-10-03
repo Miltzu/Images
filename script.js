@@ -350,31 +350,49 @@ if (starfield) {
     return `<h2>${imgData.title || ""}</h2>${imgData.desc ? `<p>${imgData.desc}</p>` : ""}${dataHTML}`;
   }
 
-  // Lightbox näyttää ensin kevyen esikatselukuvan (yleensä jo selaimen
-  // välimuistissa) ja vaihtaa täysikokoiseen heti kun se on ladattu.
+  // Lightboxin kuva ladataan vaiheittain:
+  //   1. esikatselukuva (images/thumbs/, yleensä jo välimuistissa)
+  //   2. näyttöversio  (images/large/, pisin sivu 3200 px)
+  // Alkuperäistä (voi olla 45 Mpix) EI ladata puhelimella koskaan, koska
+  // se kaataa mobiiliselaimen muistin loppuessa. Tietokoneella alkuperäinen
+  // ladataan vain jos näyttöversiota ei ole. Lataa-nappi antaa aina alkuperäisen.
+  const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
   let lightboxToken = 0;
+
+  function largePath(file) {
+    return thumbPath(file).replace("/thumbs/", "/large/").replace(/^thumbs\//, "large/");
+  }
 
   function loadLightboxImage(file) {
     const token = ++lightboxToken;
-    let usingThumb = true;
+    let shownStage = "thumb";
 
     lightboxImg.onerror = () => {
-      // esikatselukuvaa ei ole -> suoraan alkuperäinen
-      if (token === lightboxToken && usingThumb) {
-        usingThumb = false;
-        lightboxImg.src = file;
-      }
+      // esikatselukuvaa ei ole -> kokeillaan näyttöversiota, sitten alkuperäistä
+      if (token !== lightboxToken) return;
+      if (shownStage === "thumb") { shownStage = "large"; lightboxImg.src = largePath(file); }
+      else if (shownStage === "large") { shownStage = "original"; lightboxImg.onerror = null; lightboxImg.src = file; }
     };
     lightboxImg.src = thumbPath(file);
 
-    const full = new Image();
-    full.onload = () => {
+    const large = new Image();
+    large.onload = () => {
       if (token !== lightboxToken) return; // käyttäjä vaihtoi jo kuvaa
-      usingThumb = false;
+      shownStage = "large";
       lightboxImg.onerror = null;
-      lightboxImg.src = file;
+      lightboxImg.src = large.src;
     };
-    full.src = file;
+    large.onerror = () => {
+      if (token !== lightboxToken || isTouchDevice) return;
+      const full = new Image();
+      full.onload = () => {
+        if (token !== lightboxToken) return;
+        lightboxImg.onerror = null;
+        lightboxImg.src = file;
+      };
+      full.src = file;
+    };
+    large.src = largePath(file);
   }
 
   function showImageAt(index) {
