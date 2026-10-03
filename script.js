@@ -110,31 +110,51 @@ if (starfield) {
         }
 
         projects.forEach(p => {
-          const card = document.createElement("div");
-          card.className = "project-card";
+          const article = document.createElement("article");
+          article.className = "project";
 
-          const updatesHTML = (p.updates || []).slice().reverse().map(u => `
-            <div class="project-update">
-              ${u.date ? `<span class="update-date">${u.date}</span>` : ""}
-              ${u.text ? `<p>${u.text}</p>` : ""}
-              ${u.image ? `<img class="update-image" src="${u.image}" alt="" loading="lazy">` : ""}
-            </div>
+          // Uusin merkintä ylimpänä; projects.json:iin lisätään aina loppuun
+          const entriesHTML = (p.updates || []).slice().reverse().map(u => `
+            <li class="entry${u.image ? " has-image" : ""}">
+              ${u.image ? `
+                <a class="entry-media" href="${u.image}" target="_blank" rel="noopener">
+                  <img src="${u.image}" alt="${p.name || ""}" loading="lazy">
+                </a>` : ""}
+              <div class="entry-body">
+                ${u.date ? `<time>${u.date}</time>` : ""}
+                ${u.text ? `<p>${u.text}</p>` : ""}
+              </div>
+            </li>
           `).join("");
 
-          card.innerHTML = `
-            <div class="project-header">
-              <h3>${p.name || ""}</h3>
+          const pills = [];
+          if (p.category) pills.push(`<span class="meta-pill">${p.category}</span>`);
+          if (p.integration) pills.push(`<span class="meta-pill">${p.integration}</span>`);
+
+          article.innerHTML = `
+            <header class="project-head">
+              <div>
+                <h2>${p.name || ""}</h2>
+                ${p.desc ? `<p class="project-desc">${p.desc}</p>` : ""}
+                ${pills.length ? `<div class="meta-bar">${pills.join("")}</div>` : ""}
+              </div>
               <span class="status-pill">${p.status || "suunnitteilla"}</span>
-            </div>
-            <p>${p.desc || ""}</p>
-            <div class="meta-bar">
-              ${p.integration ? `<span class="meta-pill">${p.integration}</span>` : ""}
-              ${p.category ? `<span class="meta-pill">${p.category}</span>` : ""}
-            </div>
-            ${updatesHTML ? `<div class="project-updates">${updatesHTML}</div>` : ""}
+            </header>
+            ${entriesHTML ? `<ol class="timeline">${entriesHTML}</ol>` : ""}
           `;
 
-          projectsList.appendChild(card);
+          // Jos kuvaa ei löydy, näytetään polku eikä rikkinäistä kuvaketta
+          article.querySelectorAll(".entry-media img").forEach(imgEl => {
+            imgEl.addEventListener("error", () => {
+              const link = imgEl.closest(".entry-media");
+              const missing = document.createElement("div");
+              missing.className = "entry-missing";
+              missing.textContent = "Kuvaa ei löytynyt: " + imgEl.getAttribute("src");
+              link.replaceWith(missing);
+            });
+          });
+
+          projectsList.appendChild(article);
         });
       })
       .catch(() => {

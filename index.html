@@ -2,119 +2,125 @@
 <html lang="fi">
 <head>
 <meta charset="UTF-8">
-<title>Gallery</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="style.css?v=17">
-<script src="script.js?v=13"></script>
+<title>Miltzu — Astrokuvat</title>
+<meta name="description" content="Miltzun astrokuvia: deep sky, planeetat, Kuu, Aurinko ja revontulet.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
+<link rel="stylesheet" href="style.css?v=18">
+<script src="script.js?v=14"></script>
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
-
 <body>
 
 <div id="starfield"></div>
 
-<div class="page">
-
-  <nav class="site-nav">
-    <a href="index.html" class="active" data-fi="Galleria" data-en="Gallery">Galleria</a>
-    <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
-    <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
-    <a href="loki.html" data-fi="Loki" data-en="Log">Loki</a>
-  </nav>
-
-  <div class="lang-switch">
-    <button class="lang-btn active" data-lang="fi">FI</button>
-    <button class="lang-btn" data-lang="en">EN</button>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="brand" href="index.html">Miltzu<span>.</span></a>
+    <nav class="site-nav">
+      <a href="index.html" class="active" data-fi="Galleria" data-en="Gallery">Galleria</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+      <a href="loki.html" data-fi="Loki" data-en="Log">Loki</a>
+    </nav>
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="fi">FI</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
   </div>
+</header>
 
-  <!-- HERO -->
-  <div class="hero-card">
-    <h2 data-fi="Astrokuvausta ja muuta" data-en="Astrophotography and stuff">Astrokuvausta ja muuta</h2>
+<main class="page">
+
+  <section class="hero">
+    <h1 data-fi="Astrokuvausta ja muuta" data-en="Astrophotography and stuff">Astrokuvausta ja muuta</h1>
     <p data-fi="Kuratoitu kokoelma deep sky -kuvia. Kuvat tulossa pian.." data-en="Curated collection of deep sky images. Images coming soon..">Kuratoitu kokoelma deep sky -kuvia. Kuvat tulossa pian..</p>
+  </section>
+
+  <div class="section-head">
+    <div>
+      <h2 data-fi="Kuvagalleria" data-en="Image Gallery">Kuvagalleria</h2>
+      <p data-fi="Astrokuvia, tietenkin" data-en="Astrophotography images, obviously">Astrokuvia, tietenkin</p>
+    </div>
   </div>
 
-  <header>
-    <h1 data-fi="Kuvagalleria" data-en="Image Gallery">Kuvagalleria</h1>
-    <p data-fi="Astrokuvia, tietenkin" data-en="Astrophotography images, obviously">Astrokuvia, tietenkin</p>
-  </header>
+  <div class="gallery-toolbar">
+    <div class="gallery-tabs">
+      <button class="tab-btn active" data-category="all" data-fi="Kaikki" data-en="All">Kaikki</button>
+      <button class="tab-btn" data-category="deepsky" data-fi="Deepsky" data-en="Deep sky">Deepsky</button>
+      <button class="tab-btn" data-category="planeetta" data-fi="Planeetta" data-en="Planets">Planeetta</button>
+      <button class="tab-btn" data-category="kuu" data-fi="Kuu" data-en="Moon">Kuu</button>
+      <button class="tab-btn" data-category="aurinko" data-fi="Aurinko" data-en="Sun">Aurinko</button>
+      <button class="tab-btn" data-category="revontuli" data-fi="Revontuli" data-en="Aurora">Revontuli</button>
+      <button class="tab-btn" data-category="widefield" data-fi="Laajakulma" data-en="Wide field">Laajakulma</button>
+    </div>
 
-  <div class="gallery-tabs">
-    <button class="tab-btn active" data-category="all" data-fi="Kaikki" data-en="All">Kaikki</button>
-    <button class="tab-btn" data-category="deepsky" data-fi="Deepsky" data-en="Deep sky">Deepsky</button>
-    <button class="tab-btn" data-category="aurinko" data-fi="Aurinko" data-en="Sun">Aurinko</button>
-    <button class="tab-btn" data-category="kuu" data-fi="Kuu" data-en="Moon">Kuu</button>
-    <button class="tab-btn" data-category="revontuli" data-fi="Revontuli" data-en="Aurora">Revontuli</button>
-    <button class="tab-btn" data-category="widefield" data-fi="Laajakulma" data-en="Wide field">Laajakulma</button>
-    <button class="tab-btn" data-category="planeetta" data-fi="Planeetta" data-en="Planets">Planeetta</button>
-  </div>
-
-  <div class="view-toggle">
-    <button class="view-btn" data-view="compact" title="Vain kuvat" aria-label="Vain kuvat">
-      <svg viewBox="0 0 20 20" fill="currentColor">
-        <rect x="1" y="1" width="4.5" height="4.5" rx="1"/>
-        <rect x="7.75" y="1" width="4.5" height="4.5" rx="1"/>
-        <rect x="14.5" y="1" width="4.5" height="4.5" rx="1"/>
-        <rect x="1" y="7.75" width="4.5" height="4.5" rx="1"/>
-        <rect x="7.75" y="7.75" width="4.5" height="4.5" rx="1"/>
-        <rect x="14.5" y="7.75" width="4.5" height="4.5" rx="1"/>
-      </svg>
-    </button>
-    <button class="view-btn active" data-view="info" title="Infojen kanssa" aria-label="Infojen kanssa">
-      <svg viewBox="0 0 20 20" fill="currentColor">
-        <rect x="1" y="1" width="18" height="11" rx="1.5"/>
-        <rect x="1" y="14.5" width="18" height="2" rx="1"/>
-        <rect x="1" y="17.5" width="11" height="2" rx="1"/>
-      </svg>
-    </button>
+    <div class="view-toggle">
+      <button class="view-btn" data-view="compact" title="Vain kuvat" aria-label="Vain kuvat">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <rect x="1" y="1" width="4.5" height="4.5" rx="1"/>
+          <rect x="7.75" y="1" width="4.5" height="4.5" rx="1"/>
+          <rect x="14.5" y="1" width="4.5" height="4.5" rx="1"/>
+          <rect x="1" y="7.75" width="4.5" height="4.5" rx="1"/>
+          <rect x="7.75" y="7.75" width="4.5" height="4.5" rx="1"/>
+          <rect x="14.5" y="7.75" width="4.5" height="4.5" rx="1"/>
+        </svg>
+      </button>
+      <button class="view-btn active" data-view="info" title="Infojen kanssa" aria-label="Infojen kanssa">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <rect x="1" y="1" width="18" height="11" rx="1.5"/>
+          <rect x="1" y="14.5" width="18" height="2" rx="1"/>
+          <rect x="1" y="17.5" width="11" height="2" rx="1"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <section id="gallery" class="gallery coming-soon"></section>
 
-  <!-- lightbox -->
-  <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-    <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Edellinen">‹</button>
-    <img id="lightbox-img">
-    <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Seuraava">›</button>
+</main>
 
-    <a id="lightboxDownload" class="lightbox-download" download title="Lataa kuva" aria-label="Lataa kuva">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M10 2v10M10 12l-4-4M10 12l4-4"/>
-        <path d="M3 16h14"/>
-      </svg>
-    </a>
+<!-- lightbox -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Edellinen">‹</button>
+  <img id="lightbox-img" alt="">
+  <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Seuraava">›</button>
 
-    <button id="skyLocationBtn" class="sky-location-btn" title="Sijainti taivaalla" aria-label="Sijainti taivaalla">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="10" cy="10" r="3"/>
-        <line x1="10" y1="1" x2="10" y2="4"/>
-        <line x1="10" y1="16" x2="10" y2="19"/>
-        <line x1="1" y1="10" x2="4" y2="10"/>
-        <line x1="16" y1="10" x2="19" y2="10"/>
-      </svg>
-    </button>
+  <a id="lightboxDownload" class="lightbox-download" download title="Lataa kuva" aria-label="Lataa kuva">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M10 2v10M10 12l-4-4M10 12l4-4"/>
+      <path d="M3 16h14"/>
+    </svg>
+  </a>
 
-    <div id="skyPanel" class="sky-panel">
-      <div id="aladin-div"></div>
-    </div>
+  <button id="skyLocationBtn" class="sky-location-btn" title="Sijainti taivaalla" aria-label="Sijainti taivaalla">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="10" cy="10" r="3"/>
+      <line x1="10" y1="1" x2="10" y2="4"/>
+      <line x1="10" y1="16" x2="10" y2="19"/>
+      <line x1="1" y1="10" x2="4" y2="10"/>
+      <line x1="16" y1="10" x2="19" y2="10"/>
+    </svg>
+  </button>
 
-    <div id="text" class="caption"></div>
+  <div id="skyPanel" class="sky-panel">
+    <div id="aladin-div"></div>
   </div>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <span>Miltzu</span>
-      <span>•</span>
-      <span>© 2026</span>
-    </div>
-  </footer>
-
+  <div id="text" class="caption"></div>
 </div>
+
+<footer class="footer">
+  <div class="footer-content">
+    <span>Miltzu</span>
+    <span>•</span>
+    <span>© 2026</span>
+  </div>
+</footer>
 
 </body>
 </html>
