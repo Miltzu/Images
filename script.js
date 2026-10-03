@@ -253,18 +253,20 @@ if (starfield) {
 
   if (!gallery || !lightbox || !lightboxImg) return;
 
-  // =========================
-  // LIGHTBOX STATE
-  // =========================
-  let scale = 1;
-  let posX = 0;
-  let posY = 0;
+  const lbFrame = document.getElementById("lbFrame");
+  const lbStage = document.getElementById("lbStage");
+  const skyGrid = document.getElementById("skyGrid");
+  const skyBtn = document.getElementById("skyLocationBtn");
 
   let currentImages = [];
   let currentIndex = -1;
+  let currentData = null;
 
-  // Katselutilastojen nollaus: kun tätä numeroa nostetaan, jokaisen
-  // kävijän selaimen vanhat katselumäärät tyhjennetään kerran.
+  // =========================
+  // KATSELUTILASTOT
+  // =========================
+  // Kun tätä numeroa nostetaan, jokaisen kävijän selaimen vanhat
+  // katselumäärät tyhjennetään kerran.
   const VIEW_RESET_VERSION = "2";
   try {
     if (localStorage.getItem("viewCountVersion") !== VIEW_RESET_VERSION) {
@@ -292,54 +294,52 @@ if (starfield) {
     return document.documentElement.lang === "en";
   }
 
+  function num(v) {
+    const n = parseFloat(v);
+    return isNaN(n) ? undefined : n;
+  }
+
   function rebuildVisibleImages() {
     currentImages = Array.from(gallery.querySelectorAll(".card"))
       .filter(card => card.style.display !== "none")
-      .map(card => ({
-        file: card.dataset.file,
-        category: card.dataset.category,
-        title: card.dataset.title,
-        desc: card.dataset.desc,
-        ra: card.dataset.ra !== undefined ? parseFloat(card.dataset.ra) : undefined,
-        dec: card.dataset.dec !== undefined ? parseFloat(card.dataset.dec) : undefined,
-        fov: card.dataset.fov !== undefined ? parseFloat(card.dataset.fov) : undefined,
-        integration: card.dataset.integration,
-        telescope: card.dataset.telescope,
-        filters: card.dataset.filters,
-        date: card.dataset.date
-      }));
+      .map(card => card._data);
   }
 
+  // =========================
+  // KOORDINAATTIEN MUOTOILU
+  // =========================
   function formatRa(deg) {
-    const h = deg / 15;
-    const hh = Math.floor(h);
-    const mm = Math.floor((h - hh) * 60);
-    const ss = Math.round(((h - hh) * 60 - mm) * 60);
+    deg = ((deg % 360) + 360) % 360;
+    const totalSec = Math.round(deg / 15 * 3600);
+    const hh = Math.floor(totalSec / 3600) % 24;
+    const mm = Math.floor((totalSec % 3600) / 60);
+    const ss = totalSec % 60;
     return `${hh}h ${String(mm).padStart(2, "0")}m ${String(ss).padStart(2, "0")}s`;
   }
 
   function formatDec(deg) {
     const sign = deg < 0 ? "−" : "+";
-    const a = Math.abs(deg);
-    const dd = Math.floor(a);
-    const mm = Math.floor((a - dd) * 60);
-    const ss = Math.round(((a - dd) * 60 - mm) * 60);
+    const totalSec = Math.round(Math.abs(deg) * 3600);
+    const dd = Math.floor(totalSec / 3600);
+    const mm = Math.floor((totalSec % 3600) / 60);
+    const ss = totalSec % 60;
     return `${sign}${dd}° ${String(mm).padStart(2, "0")}′ ${String(ss).padStart(2, "0")}″`;
   }
 
   // Kuvan tekniset tiedot omana laatikkonaan lightboxin alla
-  function buildCaptionHTML(imgData) {
+  function buildCaptionHTML(d) {
     const en = isEnglish();
     const rows = [];
-    if (imgData.integration) rows.push([en ? "Integration" : "Integraatio", imgData.integration]);
-    if (imgData.telescope) rows.push([en ? "Telescope" : "Kaukoputki", imgData.telescope]);
-    if (imgData.filters) rows.push([en ? "Filters" : "Suodattimet", imgData.filters]);
-    if (imgData.date) rows.push([en ? "Date" : "Päivämäärä", imgData.date]);
-    if (!isNaN(imgData.ra) && imgData.ra !== undefined && imgData.ra !== null) {
-      rows.push(["RA", formatRa(parseFloat(imgData.ra))]);
-    }
-    if (!isNaN(imgData.dec) && imgData.dec !== undefined && imgData.dec !== null) {
-      rows.push(["Dec", formatDec(parseFloat(imgData.dec))]);
+    if (d.integration) rows.push([en ? "Integration" : "Integraatio", d.integration]);
+    if (d.telescope) rows.push([en ? "Telescope" : "Kaukoputki", d.telescope]);
+    if (d.filters) rows.push([en ? "Filters" : "Suodattimet", d.filters]);
+    if (d.date) rows.push([en ? "Date" : "Päivämäärä", d.date]);
+    if (d.ra !== undefined) rows.push(["RA", formatRa(d.ra)]);
+    if (d.dec !== undefined) rows.push(["Dec", formatDec(d.dec)]);
+    if (d.fov !== undefined) {
+      rows.push([en ? "Field width" : "Kuvakentän leveys",
+        d.fov >= 1 ? d.fov.toFixed(2).replace(".", en ? "." : ",") + "°"
+                   : Math.round(d.fov * 60) + "′"]);
     }
 
     const dataHTML = rows.length
@@ -347,15 +347,16 @@ if (starfield) {
           `<div class="data-cell"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`
       : "";
 
-    return `<h2>${imgData.title || ""}</h2>${imgData.desc ? `<p>${imgData.desc}</p>` : ""}${dataHTML}`;
+    return `<h2>${d.title || ""}</h2>${d.desc ? `<p>${d.desc}</p>` : ""}${dataHTML}`;
   }
 
-  // Lightboxin kuva ladataan vaiheittain:
-  //   1. esikatselukuva (images/thumbs/, yleensä jo välimuistissa)
+  // =========================
+  // KUVAN LATAUS LIGHTBOXIIN
+  //   1. esikatselukuva (images/thumbs/)
   //   2. näyttöversio  (images/large/, pisin sivu 3200 px)
-  // Alkuperäistä (voi olla 45 Mpix) EI ladata puhelimella koskaan, koska
-  // se kaataa mobiiliselaimen muistin loppuessa. Tietokoneella alkuperäinen
-  // ladataan vain jos näyttöversiota ei ole. Lataa-nappi antaa aina alkuperäisen.
+  // Alkuperäistä (voi olla 45 Mpix) ei ladata puhelimella koskaan, koska
+  // se kaataa mobiiliselaimen. Lataa-nappi antaa aina alkuperäisen.
+  // =========================
   const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
   let lightboxToken = 0;
 
@@ -368,7 +369,6 @@ if (starfield) {
     let shownStage = "thumb";
 
     lightboxImg.onerror = () => {
-      // esikatselukuvaa ei ole -> kokeillaan näyttöversiota, sitten alkuperäistä
       if (token !== lightboxToken) return;
       if (shownStage === "thumb") { shownStage = "large"; lightboxImg.src = largePath(file); }
       else if (shownStage === "large") { shownStage = "original"; lightboxImg.onerror = null; lightboxImg.src = file; }
@@ -377,7 +377,7 @@ if (starfield) {
 
     const large = new Image();
     large.onload = () => {
-      if (token !== lightboxToken) return; // käyttäjä vaihtoi jo kuvaa
+      if (token !== lightboxToken) return;
       shownStage = "large";
       lightboxImg.onerror = null;
       lightboxImg.src = large.src;
@@ -395,51 +395,6 @@ if (starfield) {
     large.src = largePath(file);
   }
 
-  function showImageAt(index) {
-    if (!currentImages.length) return;
-    currentIndex = (index + currentImages.length) % currentImages.length;
-
-    const img = currentImages[currentIndex];
-    loadLightboxImage(img.file);
-
-    if (lightboxText) {
-      lightboxText.innerHTML = buildCaptionHTML(img);
-    }
-
-    resetTransform();
-    registerView(img.file);
-    updateSkyButton(img);
-    updateDownloadLink(img.file);
-  }
-
-  function nextImage() {
-    showImageAt(currentIndex + 1);
-  }
-
-  function prevImage() {
-    showImageAt(currentIndex - 1);
-  }
-
-  function closeSkyPanel() {
-    const panel = document.getElementById("skyPanel");
-    if (panel) panel.classList.remove("open");
-    document.body.classList.remove("sky-open");
-  }
-
-  function openLightbox(imgData) {
-    lightbox.style.display = "flex";
-    document.body.classList.add("lightbox-open");
-    loadLightboxImage(imgData.file);
-
-    if (lightboxText) {
-      lightboxText.innerHTML = buildCaptionHTML(imgData);
-    }
-
-    resetTransform();
-    updateSkyButton(imgData);
-    updateDownloadLink(imgData.file);
-  }
-
   function updateDownloadLink(src) {
     const dl = document.getElementById("lightboxDownload");
     if (dl) {
@@ -448,77 +403,443 @@ if (starfield) {
     }
   }
 
+  function showData(d) {
+    currentData = d;
+    loadLightboxImage(d.file);
+    if (lightboxText) lightboxText.innerHTML = buildCaptionHTML(d);
+    resetZoom();
+    updateDownloadLink(d.file);
+    updateGridButton();
+  }
+
+  function openLightbox(d) {
+    lightbox.style.display = "flex";
+    document.body.classList.add("lightbox-open");
+    showData(d);
+  }
+
+  function showImageAt(index) {
+    if (!currentImages.length) return;
+    currentIndex = (index + currentImages.length) % currentImages.length;
+    const d = currentImages[currentIndex];
+    registerView(d.file);
+    showData(d);
+  }
+
+  function nextImage() { showImageAt(currentIndex + 1); }
+  function prevImage() { showImageAt(currentIndex - 1); }
+
   function closeLightbox() {
     lightbox.style.display = "none";
     document.body.classList.remove("lightbox-open");
-    closeSkyPanel();
     lightboxToken++;
     lightboxImg.onerror = null;
     lightboxImg.removeAttribute("src");
-    resetTransform();
-    const panel = document.getElementById("skyPanel");
-    if (panel) panel.classList.remove("open");
+    setGrid(false);
+    resetZoom();
   }
 
-  function resetTransform() {
-    scale = 1;
-    posX = 0;
-    posY = 0;
-    updateTransform();
+  window.closeLightbox = closeLightbox;
+
+  // =========================
+  // ZOOM JA PANOROINTI
+  // Muunnos kohdistuu .lb-stage-elementtiin (kuva + koordinaattiruudukko),
+  // joten ruudukko liikkuu ja zoomautuu kuvan mukana. .lb-frame rajaa
+  // näkymän: kuva ei voi koskaan karata kehyksen ulkopuolelle.
+  // Kaikki koordinaatit ovat suhteessa kehyksen keskipisteeseen.
+  // =========================
+  const MAX_SCALE = 6;
+  let gridOn = false;
+  let scale = 1;
+  let tx = 0;
+  let ty = 0;
+
+  function frameInfo() {
+    const r = lbFrame.getBoundingClientRect();
+    return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w: r.width, h: r.height };
   }
 
-  function updateTransform() {
-    lightboxImg.style.transform =
-      `translate(${posX}px, ${posY}px) scale(${scale})`;
+  function clampPan() {
+    const f = frameInfo();
+    const maxX = Math.max(0, (scale - 1) * f.w / 2);
+    const maxY = Math.max(0, (scale - 1) * f.h / 2);
+    tx = Math.min(maxX, Math.max(-maxX, tx));
+    ty = Math.min(maxY, Math.max(-maxY, ty));
   }
 
-  let currentSky = { ra: undefined, dec: undefined, fov: undefined };
+  let gridRedrawQueued = false;
 
-  // Kiinteä paikka taivaalla on vain näillä kategorioilla. Revontulilla,
-  // Kuulla, Auringolla ja planeetoilla koordinaatit eivät ole järkeviä.
-  const SKY_CATEGORIES = ["deepsky", "widefield"];
+  function applyTransform(animate) {
+    lbStage.style.transition = animate ? "transform 0.22s ease" : "none";
+    lbStage.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    lbFrame.classList.toggle("zoomed", scale > 1.01);
 
-  function updateSkyButton(img) {
-    const category = (img && img.category) || "deepsky";
-    currentSky = {
-      ra: img && img.ra !== undefined ? parseFloat(img.ra) : undefined,
-      dec: img && img.dec !== undefined ? parseFloat(img.dec) : undefined,
-      fov: img && img.fov !== undefined ? parseFloat(img.fov) : undefined
-    };
-
-    const btn = document.getElementById("skyLocationBtn");
-    const panel = document.getElementById("skyPanel");
-    const hasCoords = SKY_CATEGORIES.includes(category) &&
-      !isNaN(currentSky.ra) && !isNaN(currentSky.dec);
-
-    if (btn) btn.classList.toggle("visible", hasCoords);
-    if (!hasCoords) closeSkyPanel();
-
-    if (hasCoords && panel && panel.classList.contains("open")) {
-      goToSkyPosition();
+    // ruudukon tekstien koko päivitetään zoomin mukana (kerran ruudunpäivitystä kohden)
+    if (gridOn && !gridRedrawQueued) {
+      gridRedrawQueued = true;
+      requestAnimationFrame(() => { gridRedrawQueued = false; drawSkyGrid(); });
     }
   }
 
+  function resetZoom(animate) {
+    scale = 1; tx = 0; ty = 0;
+    applyTransform(animate);
+  }
+
+  // Zoomaa niin, että kuvan kohta pisteen (px, py) alla pysyy paikallaan
+  function zoomAt(newScale, px, py, base) {
+    const f = frameInfo();
+    const s0 = base ? base.scale : scale;
+    const t0x = base ? base.tx : tx;
+    const t0y = base ? base.ty : ty;
+    const ax = (base ? base.px : px) - f.cx;
+    const ay = (base ? base.py : py) - f.cy;
+    newScale = Math.min(MAX_SCALE, Math.max(1, newScale));
+    const qx = (ax - t0x) / s0;
+    const qy = (ay - t0y) / s0;
+    tx = (px - f.cx) - newScale * qx;
+    ty = (py - f.cy) - newScale * qy;
+    scale = newScale;
+    clampPan();
+  }
+
+  // Hiiren rulla (tietokone): zoomaus kursorin kohdalta
+  lbFrame.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    zoomAt(scale * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
+    applyTransform(false);
+  }, { passive: false });
+
+  // Tuplaklikkaus (tietokone): zoomaa 2,5x / palauta
+  lbFrame.addEventListener("dblclick", (e) => {
+    e.stopPropagation();
+    if (scale > 1.01) resetZoom(true);
+    else { zoomAt(2.5, e.clientX, e.clientY); applyTransform(true); }
+  });
+
+  lbFrame.addEventListener("click", (e) => e.stopPropagation());
+
+  // Kosketus (mobiili)
+  let gesture = null;
+  let lastTap = { t: 0, x: 0, y: 0 };
+
+  function touchMid(t) {
+    return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 };
+  }
+  function touchDist(t) {
+    return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  }
+
+  lbFrame.addEventListener("touchstart", (e) => {
+    e.stopPropagation();
+    if (e.touches.length === 2) {
+      const m = touchMid(e.touches);
+      gesture = { type: "pinch", dist: touchDist(e.touches),
+                  base: { scale, tx, ty, px: m.x, py: m.y } };
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      gesture = { type: "pan", x: t.clientX, y: t.clientY, tx, ty, moved: false };
+    }
+  }, { passive: true });
+
+  lbFrame.addEventListener("touchmove", (e) => {
+    if (!gesture) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (gesture.type === "pinch" && e.touches.length === 2) {
+      const m = touchMid(e.touches);
+      const factor = touchDist(e.touches) / gesture.dist;
+      zoomAt(gesture.base.scale * factor, m.x, m.y, gesture.base);
+      applyTransform(false);
+    } else if (gesture.type === "pan" && e.touches.length === 1) {
+      const t = e.touches[0];
+      const dx = t.clientX - gesture.x;
+      const dy = t.clientY - gesture.y;
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) gesture.moved = true;
+      if (scale > 1.01) {
+        tx = gesture.tx + dx;
+        ty = gesture.ty + dy;
+        clampPan();
+        applyTransform(false);
+      }
+    }
+  }, { passive: false });
+
+  lbFrame.addEventListener("touchend", (e) => {
+    e.stopPropagation();
+    if (!gesture) return;
+    const g = gesture;
+
+    if (g.type === "pinch") {
+      // toinen sormi jäi ruudulle -> jatketaan panorointina siitä
+      if (e.touches.length === 1) {
+        const t = e.touches[0];
+        gesture = { type: "pan", x: t.clientX, y: t.clientY, tx, ty, moved: true };
+      } else {
+        gesture = null;
+      }
+      if (scale < 1.03) resetZoom(true);
+      return;
+    }
+
+    gesture = null;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - g.x;
+    const dy = t.clientY - g.y;
+
+    // pyyhkäisy vaihtaa kuvaa vain kun ei olla zoomattu
+    if (scale <= 1.01 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) nextImage(); else prevImage();
+      return;
+    }
+
+    // tuplanapautus: zoomaa 2,5x napautuskohtaan / palauta
+    if (!g.moved) {
+      const now = Date.now();
+      if (now - lastTap.t < 320 && Math.hypot(t.clientX - lastTap.x, t.clientY - lastTap.y) < 30) {
+        if (scale > 1.01) resetZoom(true);
+        else { zoomAt(2.5, t.clientX, t.clientY); applyTransform(true); }
+        lastTap.t = 0;
+      } else {
+        lastTap = { t: now, x: t.clientX, y: t.clientY };
+      }
+    }
+  }, { passive: true });
+
+  window.addEventListener("resize", () => {
+    if (lightbox.style.display !== "flex") return;
+    clampPan();
+    applyTransform(false);
+    if (gridOn) drawSkyGrid();
+  });
+
   // =========================
-  // GALLERY
+  // KOORDINAATTIRUUDUKKO KUVAN PÄÄLLÄ (AstroBin-tyyliin)
+  // Tarvitsee plate solve -tiedot images.json:iin:
+  //   "ra"       kuvan keskipisteen RA asteina
+  //   "dec"      kuvan keskipisteen Dec asteina
+  //   "fov"      kuvakentän leveys asteina (kuvan vaakasuunnassa)
+  //   "rotation" kuvan suunta: astrometry.net:n "Up is X degrees E of N" (oletus 0)
+  //   "flipped"  true jos kuva on peilattu (astrometry.net: parity flipped)
+  // Projektio: gnomoninen (TAN), sama jota plate solverit käyttävät.
+  // =========================
+  const SKY_CATEGORIES = ["deepsky", "widefield"];
+  const DEG = Math.PI / 180;
+
+  function hasSolve(d) {
+    return d && SKY_CATEGORIES.includes(d.category || "deepsky") &&
+      d.ra !== undefined && d.dec !== undefined && d.fov > 0;
+  }
+
+  function updateGridButton() {
+    const ok = hasSolve(currentData);
+    if (skyBtn) skyBtn.classList.toggle("visible", ok);
+    if (!ok) setGrid(false);
+    else if (gridOn) drawSkyGrid();
+  }
+
+  function setGrid(on) {
+    gridOn = on;
+    if (skyGrid) skyGrid.classList.toggle("on", on);
+    if (skyBtn) skyBtn.classList.toggle("active", on);
+    if (on) drawSkyGrid();
+  }
+
+  function makeProjector(d, W, H) {
+    const a0 = d.ra * DEG, d0 = d.dec * DEG;
+    const th = (d.rotation || 0) * DEG;
+    const ppd = W / d.fov;
+    const sd0 = Math.sin(d0), cd0 = Math.cos(d0);
+    const ct = Math.cos(th), st = Math.sin(th);
+    return (raDeg, decDeg) => {
+      const a = raDeg * DEG, dd = decDeg * DEG, da = a - a0;
+      const cosc = sd0 * Math.sin(dd) + cd0 * Math.cos(dd) * Math.cos(da);
+      if (cosc <= 0.05) return null;
+      const xi = Math.cos(dd) * Math.sin(da) / cosc / DEG;                  // itään
+      const eta = (cd0 * Math.sin(dd) - sd0 * Math.cos(dd) * Math.cos(da)) / cosc / DEG; // pohjoiseen
+      let x = -(xi * ct - eta * st);   // itä vasemmalle kun kuva ei ole peilattu
+      const y = -(eta * ct + xi * st); // pohjoinen ylös, ruudun y kasvaa alaspäin
+      if (d.flipped) x = -x;
+      return [W / 2 + x * ppd, H / 2 + y * ppd];
+    };
+  }
+
+  function pickStep(span, steps, maxLines) {
+    for (const s of steps) if (span / s <= maxLines) return s;
+    return steps[steps.length - 1];
+  }
+
+  function raLabel(deg, stepSec) {
+    deg = ((deg % 360) + 360) % 360;
+    const total = Math.round(deg / 15 * 3600);
+    const h = Math.floor(total / 3600) % 24;
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (stepSec >= 3600) return `${h}h`;
+    if (stepSec >= 60) return `${h}h${String(m).padStart(2, "0")}m`;
+    return `${h}h${String(m).padStart(2, "0")}m${String(s).padStart(2, "0")}s`;
+  }
+
+  function decLabel(deg, stepDeg) {
+    const sign = deg < 0 ? "−" : "+";
+    const total = Math.round(Math.abs(deg) * 3600);
+    const d = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    if (stepDeg >= 1) return `${sign}${d}°`;
+    if (stepDeg >= 1 / 60) return `${sign}${d}°${String(m).padStart(2, "0")}′`;
+    return `${sign}${d}°${String(m).padStart(2, "0")}′${String(s).padStart(2, "0")}″`;
+  }
+
+  function drawSkyGrid() {
+    const d = currentData;
+    if (!skyGrid || !hasSolve(d)) return;
+    const nw = lightboxImg.naturalWidth, nh = lightboxImg.naturalHeight;
+    if (!nw || !nh) return; // piirretään kun kuva on latautunut
+
+    const W = 1000;
+    const H = W * nh / nw;
+    // 1 näytön pikseli viewBox-yksiköissä; zoom huomioidaan, jotta tekstit
+    // ja kompassi pysyvät saman kokoisina zoomauksesta riippumatta
+    const u = W / Math.max(1, lbFrame.clientWidth * scale);
+    const proj = makeProjector(d, W, H);
+
+    const fovW = d.fov;
+    const fovH = d.fov * H / W;
+    const R = Math.hypot(fovW, fovH) / 2 * 1.3;
+    const cosDec0 = Math.max(Math.cos(d.dec * DEG), 0.02);
+
+    // Dec-viivojen väli
+    const decSteps = [1/3600, 2/3600, 5/3600, 10/3600, 15/3600, 30/3600,
+      1/60, 2/60, 5/60, 10/60, 15/60, 20/60, 30/60, 1, 2, 5, 10, 15, 30];
+    const decStep = pickStep(fovH, decSteps, 6);
+
+    // RA-viivojen väli (aikasekunteina)
+    const raStepsSec = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1200, 1800, 3600, 7200, 10800];
+    const raStepSec = raStepsSec.find(s => fovW / (s / 240 * cosDec0) <= 6) || 10800;
+    const raStep = raStepSec / 240;
+
+    const decMin = Math.max(-89.999, d.dec - R);
+    const decMax = Math.min(89.999, d.dec + R);
+    const maxAbsDec = Math.max(Math.abs(decMin), Math.abs(decMax));
+    let raHalf = R / Math.max(Math.cos(maxAbsDec * DEG), 0.01);
+    const fullRa = raHalf >= 180 || decMax > 89 || decMin < -89;
+    const raMin = fullRa ? d.ra - 180 : d.ra - raHalf;
+    const raMax = fullRa ? d.ra + 180 : d.ra + raHalf;
+
+    const inside = (p) => p && p[0] >= 0 && p[0] <= W && p[1] >= 0 && p[1] <= H;
+    const fmt = (v) => v.toFixed(1);
+    const paths = [];
+    const labels = [];
+    const N = 160;
+
+    function polyline(pointFn) {
+      let dStr = "", pen = false;
+      const pts = [];
+      for (let i = 0; i <= N; i++) {
+        const p = pointFn(i / N);
+        if (!p || Math.abs(p[0]) > 20 * W || Math.abs(p[1]) > 20 * H) { pen = false; continue; }
+        dStr += (pen ? "L" : "M") + fmt(p[0]) + " " + fmt(p[1]);
+        pen = true;
+        if (inside(p)) pts.push(p);
+      }
+      return { dStr, pts };
+    }
+
+    // Deklinaatioviivat (vakio Dec)
+    for (let dec = Math.ceil(decMin / decStep) * decStep; dec <= decMax + 1e-9; dec += decStep) {
+      const { dStr, pts } = polyline(f => proj(raMin + (raMax - raMin) * f, dec));
+      if (!dStr) continue;
+      paths.push(dStr);
+      if (pts.length) {
+        const p = pts.reduce((a, b) => (b[0] < a[0] ? b : a));
+        labels.push({ x: p[0] + 5 * u, y: p[1] - 5 * u, text: decLabel(dec, decStep) });
+      }
+    }
+
+    // Rektaskensioviivat (vakio RA)
+    for (let ra = Math.ceil(raMin / raStep) * raStep; ra <= raMax + 1e-9; ra += raStep) {
+      const { dStr, pts } = polyline(f => proj(ra, decMin + (decMax - decMin) * f));
+      if (!dStr) continue;
+      paths.push(dStr);
+      if (pts.length) {
+        const p = pts.reduce((a, b) => (b[1] > a[1] ? b : a));
+        labels.push({ x: p[0] + 5 * u, y: p[1] - 6 * u, text: raLabel(ra, raStepSec) });
+      }
+    }
+
+    // Kompassi (N ja E) oikeaan yläkulmaan
+    const c0 = proj(d.ra, d.dec);
+    const cN = proj(d.ra, Math.min(89.99, d.dec + 0.01));
+    const cE = proj(d.ra + 0.01 / cosDec0, d.dec);
+    let compass = "";
+    if (c0 && cN && cE) {
+      const L = 34 * u;
+      const ox = W - 58 * u, oy = 58 * u;
+      const dir = (p) => {
+        const vx = p[0] - c0[0], vy = p[1] - c0[1];
+        const len = Math.hypot(vx, vy) || 1;
+        return [vx / len, vy / len];
+      };
+      const n = dir(cN), e = dir(cE);
+      compass = `
+        <g class="grid-compass">
+          <line x1="${fmt(ox)}" y1="${fmt(oy)}" x2="${fmt(ox + n[0] * L)}" y2="${fmt(oy + n[1] * L)}"/>
+          <line x1="${fmt(ox)}" y1="${fmt(oy)}" x2="${fmt(ox + e[0] * L)}" y2="${fmt(oy + e[1] * L)}"/>
+          <text x="${fmt(ox + n[0] * (L + 10 * u))}" y="${fmt(oy + n[1] * (L + 10 * u))}" font-size="${fmt(12 * u)}">N</text>
+          <text x="${fmt(ox + e[0] * (L + 10 * u))}" y="${fmt(oy + e[1] * (L + 10 * u))}" font-size="${fmt(12 * u)}">E</text>
+        </g>`;
+    }
+
+    skyGrid.setAttribute("viewBox", `0 0 ${W} ${fmt(H)}`);
+    skyGrid.setAttribute("preserveAspectRatio", "none");
+    skyGrid.innerHTML = `
+      <g class="grid-lines">${paths.map(p => `<path d="${p}"/>`).join("")}</g>
+      <g class="grid-labels" font-size="${fmt(11 * u)}">${labels.map(l =>
+        `<text x="${fmt(l.x)}" y="${fmt(l.y)}">${l.text}</text>`).join("")}</g>
+      ${compass}`;
+  }
+
+  // ruudukko piirretään uudelleen kun parempi kuvaversio vaihtuu tilalle
+  lightboxImg.addEventListener("load", () => { if (gridOn) drawSkyGrid(); });
+
+  if (skyBtn) {
+    skyBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setGrid(!gridOn);
+    });
+  }
+
+  // =========================
+  // GALLERIA
   // =========================
   fetch("images.json")
     .then(res => res.json())
     .then(images => {
       images.forEach(img => {
+        const data = {
+          file: img.file,
+          category: img.category || "deepsky",
+          title: img.title || "",
+          desc: img.desc || "",
+          ra: num(img.ra),
+          dec: num(img.dec),
+          fov: num(img.fov),
+          rotation: num(img.rotation) || 0,
+          flipped: !!img.flipped,
+          integration: img.integration,
+          telescope: img.telescope,
+          filters: img.filters,
+          date: img.date
+        };
+
         const card = document.createElement("div");
         card.className = "card";
-        card.dataset.category = img.category || "deepsky";
-        card.dataset.file = img.file;
-        card.dataset.title = img.title || "";
-        card.dataset.desc = img.desc || "";
-        if (img.ra !== undefined) card.dataset.ra = img.ra;
-        if (img.dec !== undefined) card.dataset.dec = img.dec;
-        if (img.fov !== undefined) card.dataset.fov = img.fov;
-        if (img.integration) card.dataset.integration = img.integration;
-        if (img.telescope) card.dataset.telescope = img.telescope;
-        if (img.filters) card.dataset.filters = img.filters;
-        if (img.date) card.dataset.date = img.date;
+        card._data = data;
+        card.dataset.category = data.category;
+        card.dataset.file = data.file;
         if (img.reveal) card.classList.add("revealed");
 
         const imageEl = document.createElement("img");
@@ -549,7 +870,6 @@ if (starfield) {
           </dl>
         `;
 
-        // Uusien korttien otsikot kielivalinnan mukaan
         const en = document.documentElement.lang === "en";
         info.querySelectorAll("[data-fi]").forEach(el => {
           el.textContent = en ? el.dataset.en : el.dataset.fi;
@@ -559,8 +879,7 @@ if (starfield) {
         card.appendChild(info);
         gallery.appendChild(card);
 
-        // EXIF-tiedot (toimii JPG:lle, ei PNG:lle koska PNG ei kanna EXIF-dataa)
-        // Luetaan vasta kun kuva on ladattu (esikatselukuva säilyttää EXIFin)
+        // EXIF-tiedot (vain JPG:ssä). Luetaan kun esikatselukuva on ladattu.
         if (window.EXIF) {
           imageEl.addEventListener("load", () => EXIF.getData(imageEl, function () {
             const pill = card.querySelector(".exif-pill");
@@ -592,15 +911,14 @@ if (starfield) {
         card.addEventListener("click", () => {
           rebuildVisibleImages();
           currentIndex = currentImages.findIndex(i => i.file === img.file);
-
           registerView(img.file);
-          openLightbox(img);
+          openLightbox(data);
         });
       });
     });
 
   // =========================
-  // GALLERIA-TABIT (Deepsky / Aurinko / Wide field)
+  // GALLERIAN KATEGORIAT
   // =========================
   const tabButtons = document.querySelectorAll(".gallery-tabs .tab-btn");
 
@@ -636,196 +954,30 @@ if (starfield) {
   });
 
   // =========================
-  // LIGHTBOX EVENTS
+  // LIGHTBOXIN NAPIT JA NÄPPÄIMET
   // =========================
-  window.closeLightbox = closeLightbox;
-
   const lightboxPrev = document.getElementById("lightboxPrev");
   const lightboxNext = document.getElementById("lightboxNext");
   const lightboxDownload = document.getElementById("lightboxDownload");
 
-  // Klikkaus itse kuvaan ei saa sulkea lightboxia (vain tausta sulkee).
-  // Muuten jokainen normaali klikkaus kuvaan (esim. raahauksen jälkeinen
-  // nosto) sulki koko lightboxin heti.
-  lightboxImg.addEventListener("click", (e) => e.stopPropagation());
-
   if (lightboxDownload) {
     lightboxDownload.addEventListener("click", (e) => e.stopPropagation());
-    lightboxDownload.addEventListener("mousedown", (e) => e.stopPropagation());
   }
-
   if (lightboxPrev) {
-    lightboxPrev.addEventListener("click", (e) => {
-      e.stopPropagation();
-      prevImage();
-    });
-    lightboxPrev.addEventListener("mousedown", (e) => e.stopPropagation());
+    lightboxPrev.addEventListener("click", (e) => { e.stopPropagation(); prevImage(); });
   }
-
   if (lightboxNext) {
-    lightboxNext.addEventListener("click", (e) => {
-      e.stopPropagation();
-      nextImage();
-    });
-    lightboxNext.addEventListener("mousedown", (e) => e.stopPropagation());
+    lightboxNext.addEventListener("click", (e) => { e.stopPropagation(); nextImage(); });
   }
-
-  // =========================
-  // KOSKETUSTUKI (mobiili): nipistys-zoomaus, raahaus zoomattuna,
-  // swipe vaihtaa kuvaa kun ei olla zoomattu
-  // =========================
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let touchStartPosX = 0;
-  let touchStartPosY = 0;
-  let lastTouchDistance = null;
-  let isPinching = false;
-
-  function getTouchDistance(touches) {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  lightboxImg.addEventListener("touchstart", (e) => {
-    if (lightbox.style.display !== "flex") return;
-
-    if (e.touches.length === 2) {
-      isPinching = true;
-      lastTouchDistance = getTouchDistance(e.touches);
-    } else if (e.touches.length === 1) {
-      isPinching = false;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      touchStartPosX = posX;
-      touchStartPosY = posY;
-    }
-  }, { passive: true });
-
-  lightboxImg.addEventListener("touchmove", (e) => {
-    if (lightbox.style.display !== "flex") return;
-
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const dist = getTouchDistance(e.touches);
-      if (lastTouchDistance) {
-        scale += (dist - lastTouchDistance) * 0.01;
-        scale = Math.min(Math.max(1, scale), 4);
-        updateTransform();
-      }
-      lastTouchDistance = dist;
-    } else if (e.touches.length === 1 && scale > 1.02) {
-      // panoroidaan vain kun kuva on zoomattu sisään
-      e.preventDefault();
-      posX = touchStartPosX + (e.touches[0].clientX - touchStartX);
-      posY = touchStartPosY + (e.touches[0].clientY - touchStartY);
-      updateTransform();
-    }
-  }, { passive: false });
-
-  lightboxImg.addEventListener("touchend", (e) => {
-    if (isPinching) {
-      isPinching = false;
-      lastTouchDistance = null;
-      return;
-    }
-
-    if (scale > 1.02) return; // zoomattuna ei swipetä kuvien välillä
-
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) nextImage(); else prevImage();
-    }
-  }, { passive: true });
-
-  // =========================
-  // SIJAINTI TAIVAALLA (Aladin Lite, ladataan vain pyydettäessä)
-  // =========================
-  let aladinScriptLoaded = false;
-  let aladinInstance = null;
-
-  function loadAladinScript(callback) {
-    if (aladinScriptLoaded) { callback(); return; }
-    const script = document.createElement("script");
-    script.src = "https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js";
-    script.charset = "utf-8";
-    script.onload = () => {
-      aladinScriptLoaded = true;
-      callback();
-    };
-    document.head.appendChild(script);
-  }
-
-  function goToSkyPosition() {
-    if (isNaN(currentSky.ra) || isNaN(currentSky.dec)) return;
-
-    loadAladinScript(() => {
-      A.init.then(() => {
-        if (!aladinInstance) {
-          aladinInstance = A.aladin("#aladin-div", {
-            survey: "P/DSS2/color",
-            fov: currentSky.fov || 1,
-            showCooGrid: true,
-            showSimbadPointerControl: true
-          });
-        }
-        aladinInstance.gotoRaDec(currentSky.ra, currentSky.dec);
-        aladinInstance.setFov(currentSky.fov || 1);
-      });
-    });
-  }
-
-  const skyLocationBtn = document.getElementById("skyLocationBtn");
-  const skyPanel = document.getElementById("skyPanel");
-
-  if (skyLocationBtn && skyPanel) {
-    skyLocationBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = skyPanel.classList.toggle("open");
-      document.body.classList.toggle("sky-open", isOpen);
-      if (isOpen) goToSkyPosition();
-    });
-    skyLocationBtn.addEventListener("mousedown", (e) => e.stopPropagation());
-
-    skyPanel.addEventListener("click", (e) => e.stopPropagation());
-    skyPanel.addEventListener("mousedown", (e) => e.stopPropagation());
-    skyPanel.addEventListener("wheel", (e) => e.stopPropagation());
-    ["touchstart", "touchmove", "touchend"].forEach(type =>
-      skyPanel.addEventListener(type, (e) => e.stopPropagation(), { passive: true }));
-
-    const skyClose = document.getElementById("skyClose");
-    if (skyClose) {
-      skyClose.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeSkyPanel();
-      });
-    }
+  if (lightboxText) {
+    lightboxText.addEventListener("click", (e) => e.stopPropagation());
   }
 
   document.addEventListener("keydown", (e) => {
     if (lightbox.style.display !== "flex") return;
-
     if (e.key === "ArrowRight") nextImage();
     if (e.key === "ArrowLeft") prevImage();
-    if (e.key === "Escape") {
-      const panel = document.getElementById("skyPanel");
-      if (panel && panel.classList.contains("open")) closeSkyPanel();
-      else closeLightbox();
-    }
+    if (e.key === "Escape") closeLightbox();
   });
-
-  document.addEventListener("wheel", (e) => {
-    if (lightbox.style.display !== "flex") return;
-
-    e.preventDefault();
-
-    scale += e.deltaY * -0.001;
-    scale = Math.min(Math.max(1, scale), 4);
-
-    updateTransform();
-  }, { passive: false });
 
 });

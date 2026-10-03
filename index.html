@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=22">
-<script src="script.js?v=18"></script>
+<link rel="stylesheet" href="style.css?v=23">
+<script src="script.js?v=19"></script>
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 <body>
@@ -92,8 +92,15 @@
 <!-- lightbox -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
   <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Edellinen">‹</button>
-  <img id="lightbox-img" alt="">
   <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Seuraava">›</button>
+
+  <!-- kehys rajaa näkymän; kuva ja koordinaattiruudukko zoomautuvat yhdessä -->
+  <div id="lbFrame" class="lb-frame">
+    <div id="lbStage" class="lb-stage">
+      <img id="lightbox-img" alt="">
+      <svg id="skyGrid" class="sky-grid" aria-hidden="true"></svg>
+    </div>
+  </div>
 
   <a id="lightboxDownload" class="lightbox-download" download title="Lataa kuva" aria-label="Lataa kuva">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -102,23 +109,13 @@
     </svg>
   </a>
 
-  <button id="skyLocationBtn" class="sky-location-btn" title="Sijainti taivaalla" aria-label="Sijainti taivaalla">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="10" cy="10" r="3"/>
-      <line x1="10" y1="1" x2="10" y2="4"/>
-      <line x1="10" y1="16" x2="10" y2="19"/>
-      <line x1="1" y1="10" x2="4" y2="10"/>
-      <line x1="16" y1="10" x2="19" y2="10"/>
+  <button id="skyLocationBtn" class="sky-location-btn" title="Koordinaattiruudukko" aria-label="Koordinaattiruudukko">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M2 7c5-2 11-2 16 0M2 13c5 2 11 2 16 0"/>
+      <path d="M7 2c-2 5-2 11 0 16M13 2c2 5 2 11 0 16"/>
+      <rect x="1.5" y="1.5" width="17" height="17" rx="3"/>
     </svg>
   </button>
-
-  <div id="skyPanel" class="sky-panel">
-    <div class="sky-panel-bar">
-      <span data-fi="Sijainti taivaalla" data-en="Location in the sky">Sijainti taivaalla</span>
-      <button id="skyClose" class="sky-close" aria-label="Sulje">×</button>
-    </div>
-    <div id="aladin-div"></div>
-  </div>
 
   <div id="text" class="caption"></div>
 </div>

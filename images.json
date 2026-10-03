@@ -20,6 +20,8 @@
     "category": "deepsky",
     "ra": 10.6847,
     "dec": 41.2692,
-    "fov": 3
+    "fov": 3.1,
+    "rotation": 112.4,
+    "flipped": false
   }
 ]
