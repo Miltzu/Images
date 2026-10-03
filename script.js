@@ -113,6 +113,14 @@ if (starfield) {
           const card = document.createElement("div");
           card.className = "project-card";
 
+          const updatesHTML = (p.updates || []).slice().reverse().map(u => `
+            <div class="project-update">
+              ${u.date ? `<span class="update-date">${u.date}</span>` : ""}
+              ${u.text ? `<p>${u.text}</p>` : ""}
+              ${u.image ? `<img class="update-image" src="${u.image}" alt="" loading="lazy">` : ""}
+            </div>
+          `).join("");
+
           card.innerHTML = `
             <div class="project-header">
               <h3>${p.name || ""}</h3>
@@ -123,6 +131,7 @@ if (starfield) {
               ${p.integration ? `<span class="meta-pill">${p.integration}</span>` : ""}
               ${p.category ? `<span class="meta-pill">${p.category}</span>` : ""}
             </div>
+            ${updatesHTML ? `<div class="project-updates">${updatesHTML}</div>` : ""}
           `;
 
           projectsList.appendChild(card);

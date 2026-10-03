@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "name": "PN G75.5+1.7",
+    "status": "kesken",
+    "category": "deepsky",
+    "desc": "Erittäin himmeä planetaarinen sumu.",
+    "updates": [
+      {
+        "date": "10-1-2026",
+        "text": "Ensimmäiset valotukset tästä erittäin himmeästä planetaarisesta sumusta otettu. Vain 3 valotusta ennen kuin pilvet tuli häiritsemään.",
+        "image": "projects/projektikuva1.jpg"
+      }
+    ]
+  }
+]
