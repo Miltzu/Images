@@ -67,11 +67,10 @@ if (starfield) {
   // KIELIVALINTA (FI / EN)
   // =========================
   const langButtons = document.querySelectorAll(".lang-btn");
-  const translatable = document.querySelectorAll("[data-fi]");
   const navLinks = document.querySelectorAll(".site-nav a");
 
   function applyLanguage(lang) {
-    translatable.forEach(el => {
+    document.querySelectorAll("[data-fi]").forEach(el => {
       const text = el.dataset[lang];
       if (text !== undefined) el.textContent = text;
     });
@@ -93,6 +92,52 @@ if (starfield) {
   langButtons.forEach(btn => {
     btn.addEventListener("click", () => applyLanguage(btn.dataset.lang));
   });
+
+  // =========================
+  // ESIKATSELUKUVAT
+  // images/kuva1.jpg -> images/thumbs/kuva1.jpg (tehdään make_thumbs.py:llä).
+  // Jos esikatselukuvaa ei ole, käytetään automaattisesti alkuperäistä.
+  // =========================
+  function thumbPath(file) {
+    const slash = file.lastIndexOf("/");
+    const dir = slash >= 0 ? file.slice(0, slash + 1) : "";
+    const name = file.slice(slash + 1);
+    const dot = name.lastIndexOf(".");
+    const stem = dot > 0 ? name.slice(0, dot) : name;
+    return dir + "thumbs/" + stem + ".jpg";
+  }
+
+  // Asettaa kuvaan esikatselukuvan ja vaihtaa alkuperäiseen, jos sitä ei löydy.
+  // onFinalError kutsutaan vain, jos alkuperäinenkään ei lataudu.
+  function setThumbSrc(imgEl, file, onFinalError) {
+    imgEl.addEventListener("error", function handler() {
+      if (imgEl.dataset.fallback !== "1") {
+        imgEl.dataset.fallback = "1";
+        imgEl.src = file;
+      } else {
+        imgEl.removeEventListener("error", handler);
+        if (onFinalError) onFinalError();
+      }
+    });
+    imgEl.src = thumbPath(file);
+  }
+
+  // Minuutit luettavaan muotoon: 22.5 -> "22 min 30 s", 135 -> "2 h 15 min"
+  function formatMinutes(min) {
+    const totalSec = Math.round(min * 60);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const sec = totalSec % 60;
+    if (h > 0) return m ? `${h} h ${m} min` : `${h} h`;
+    if (m > 0) return sec ? `${m} min ${sec} s` : `${m} min`;
+    return `${sec} s`;
+  }
+
+  function pctText(done, goal) {
+    const pct = goal > 0 ? Math.min(100, (done / goal) * 100) : 0;
+    if (pct > 0 && pct < 1) return "<1";
+    return Math.round(pct);
+  }
 
   // =========================
   // PROJEKTIT (projektit.html)
@@ -118,7 +163,7 @@ if (starfield) {
             <li class="entry${u.image ? " has-image" : ""}">
               ${u.image ? `
                 <a class="entry-media" href="${u.image}" target="_blank" rel="noopener">
-                  <img src="${u.image}" alt="${p.name || ""}" loading="lazy">
+                  <img data-file="${u.image}" alt="${p.name || ""}" loading="lazy">
                 </a>` : ""}
               <div class="entry-body">
                 ${u.date ? `<time>${u.date}</time>` : ""}
@@ -131,27 +176,70 @@ if (starfield) {
           if (p.category) pills.push(`<span class="meta-pill">${p.category}</span>`);
           if (p.integration) pills.push(`<span class="meta-pill">${p.integration}</span>`);
 
+          // Edistyminen suodattimittain. Joko yksi palkki:
+          //   "progress": { "done_min": 15, "goal_min": 1200 }
+          // tai suodatinkohtaiset palkit:
+          //   "progress": [ { "filter": "Ha", "done_min": 22.5, "goal_min": 900 }, ... ]
+          let progressHTML = "";
+          const prList = Array.isArray(p.progress) ? p.progress : (p.progress ? [p.progress] : []);
+          const channels = prList.filter(c => c && c.goal_min > 0);
+          if (channels.length) {
+            const totalDone = channels.reduce((a, c) => a + Math.max(0, c.done_min || 0), 0);
+            const totalGoal = channels.reduce((a, c) => a + c.goal_min, 0);
+
+            const rowsHTML = channels.map(c => {
+              const done = Math.max(0, c.done_min || 0);
+              const pct = Math.min(100, (done / c.goal_min) * 100);
+              const key = (c.filter || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+              return `
+                <div class="progress-row" data-filter="${key}">
+                  <span class="progress-filter">${c.filter || ""}</span>
+                  <div class="progress-track" role="progressbar" aria-label="${c.filter || ""}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}">
+                    <div class="progress-fill${done > 0 ? "" : " empty"}" style="width: ${pct}%"></div>
+                  </div>
+                  <span class="progress-value">${formatMinutes(done)} / ${formatMinutes(c.goal_min)}</span>
+                </div>`;
+            }).join("");
+
+            progressHTML = `
+              <div class="progress">
+                <div class="progress-labels">
+                  <span data-fi="Integraatio" data-en="Integration">Integraatio</span>
+                  <span class="progress-total">${formatMinutes(totalDone)} / ${formatMinutes(totalGoal)} · ${pctText(totalDone, totalGoal)} %</span>
+                </div>
+                ${rowsHTML}
+              </div>`;
+          }
+
           article.innerHTML = `
             <header class="project-head">
-              <div>
+              <div class="project-head-main">
                 <h2>${p.name || ""}</h2>
                 ${p.desc ? `<p class="project-desc">${p.desc}</p>` : ""}
                 ${pills.length ? `<div class="meta-bar">${pills.join("")}</div>` : ""}
+                ${progressHTML}
               </div>
               <span class="status-pill">${p.status || "suunnitteilla"}</span>
             </header>
             ${entriesHTML ? `<ol class="timeline">${entriesHTML}</ol>` : ""}
           `;
 
-          // Jos kuvaa ei löydy, näytetään polku eikä rikkinäistä kuvaketta
+          // Esikatselukuva -> alkuperäinen -> "Kuvaa ei löytynyt" -teksti
           article.querySelectorAll(".entry-media img").forEach(imgEl => {
-            imgEl.addEventListener("error", () => {
+            const file = imgEl.dataset.file;
+            setThumbSrc(imgEl, file, () => {
               const link = imgEl.closest(".entry-media");
               const missing = document.createElement("div");
               missing.className = "entry-missing";
-              missing.textContent = "Kuvaa ei löytynyt: " + imgEl.getAttribute("src");
+              missing.textContent = "Kuvaa ei löytynyt: " + file;
               link.replaceWith(missing);
             });
+          });
+
+          // Uusien elementtien tekstit valitulle kielelle
+          const enLang = document.documentElement.lang === "en";
+          article.querySelectorAll("[data-fi]").forEach(el => {
+            el.textContent = enLang ? el.dataset.en : el.dataset.fi;
           });
 
           projectsList.appendChild(article);
@@ -175,6 +263,18 @@ if (starfield) {
   let currentImages = [];
   let currentIndex = -1;
 
+  // Katselutilastojen nollaus: kun tätä numeroa nostetaan, jokaisen
+  // kävijän selaimen vanhat katselumäärät tyhjennetään kerran.
+  const VIEW_RESET_VERSION = "2";
+  try {
+    if (localStorage.getItem("viewCountVersion") !== VIEW_RESET_VERSION) {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith("viewCount:"))
+        .forEach(k => localStorage.removeItem(k));
+      localStorage.setItem("viewCountVersion", VIEW_RESET_VERSION);
+    }
+  } catch (e) { /* localStorage ei käytettävissä */ }
+
   function registerView(file) {
     const key = "viewCount:" + file;
     const views = parseInt(localStorage.getItem(key) || "0", 10) + 1;
@@ -182,10 +282,14 @@ if (starfield) {
 
     gallery.querySelectorAll(".card").forEach(card => {
       if (card.dataset.file === file) {
-        const pill = card.querySelector(".view-pill");
-        if (pill) pill.textContent = views + " katselua";
+        const value = card.querySelector(".view-pill");
+        if (value) value.textContent = views;
       }
     });
+  }
+
+  function isEnglish() {
+    return document.documentElement.lang === "en";
   }
 
   function rebuildVisibleImages() {
@@ -193,6 +297,7 @@ if (starfield) {
       .filter(card => card.style.display !== "none")
       .map(card => ({
         file: card.dataset.file,
+        category: card.dataset.category,
         title: card.dataset.title,
         desc: card.dataset.desc,
         ra: card.dataset.ra !== undefined ? parseFloat(card.dataset.ra) : undefined,
@@ -205,15 +310,71 @@ if (starfield) {
       }));
   }
 
-  function buildCaptionHTML(imgData) {
-    const pills = [];
-    if (imgData.integration) pills.push(`<span class="meta-pill">${imgData.integration}</span>`);
-    if (imgData.telescope) pills.push(`<span class="meta-pill">${imgData.telescope}</span>`);
-    if (imgData.filters) pills.push(`<span class="meta-pill">${imgData.filters}</span>`);
-    if (imgData.date) pills.push(`<span class="meta-pill">${imgData.date}</span>`);
+  function formatRa(deg) {
+    const h = deg / 15;
+    const hh = Math.floor(h);
+    const mm = Math.floor((h - hh) * 60);
+    const ss = Math.round(((h - hh) * 60 - mm) * 60);
+    return `${hh}h ${String(mm).padStart(2, "0")}m ${String(ss).padStart(2, "0")}s`;
+  }
 
-    const metaHTML = pills.length ? `<div class="meta-bar">${pills.join("")}</div>` : "";
-    return `<h2>${imgData.title || ""}</h2><p>${imgData.desc || ""}</p>${metaHTML}`;
+  function formatDec(deg) {
+    const sign = deg < 0 ? "−" : "+";
+    const a = Math.abs(deg);
+    const dd = Math.floor(a);
+    const mm = Math.floor((a - dd) * 60);
+    const ss = Math.round(((a - dd) * 60 - mm) * 60);
+    return `${sign}${dd}° ${String(mm).padStart(2, "0")}′ ${String(ss).padStart(2, "0")}″`;
+  }
+
+  // Kuvan tekniset tiedot omana laatikkonaan lightboxin alla
+  function buildCaptionHTML(imgData) {
+    const en = isEnglish();
+    const rows = [];
+    if (imgData.integration) rows.push([en ? "Integration" : "Integraatio", imgData.integration]);
+    if (imgData.telescope) rows.push([en ? "Telescope" : "Kaukoputki", imgData.telescope]);
+    if (imgData.filters) rows.push([en ? "Filters" : "Suodattimet", imgData.filters]);
+    if (imgData.date) rows.push([en ? "Date" : "Päivämäärä", imgData.date]);
+    if (!isNaN(imgData.ra) && imgData.ra !== undefined && imgData.ra !== null) {
+      rows.push(["RA", formatRa(parseFloat(imgData.ra))]);
+    }
+    if (!isNaN(imgData.dec) && imgData.dec !== undefined && imgData.dec !== null) {
+      rows.push(["Dec", formatDec(parseFloat(imgData.dec))]);
+    }
+
+    const dataHTML = rows.length
+      ? `<dl class="data-box">${rows.map(([k, v]) =>
+          `<div class="data-cell"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`
+      : "";
+
+    return `<h2>${imgData.title || ""}</h2>${imgData.desc ? `<p>${imgData.desc}</p>` : ""}${dataHTML}`;
+  }
+
+  // Lightbox näyttää ensin kevyen esikatselukuvan (yleensä jo selaimen
+  // välimuistissa) ja vaihtaa täysikokoiseen heti kun se on ladattu.
+  let lightboxToken = 0;
+
+  function loadLightboxImage(file) {
+    const token = ++lightboxToken;
+    let usingThumb = true;
+
+    lightboxImg.onerror = () => {
+      // esikatselukuvaa ei ole -> suoraan alkuperäinen
+      if (token === lightboxToken && usingThumb) {
+        usingThumb = false;
+        lightboxImg.src = file;
+      }
+    };
+    lightboxImg.src = thumbPath(file);
+
+    const full = new Image();
+    full.onload = () => {
+      if (token !== lightboxToken) return; // käyttäjä vaihtoi jo kuvaa
+      usingThumb = false;
+      lightboxImg.onerror = null;
+      lightboxImg.src = file;
+    };
+    full.src = file;
   }
 
   function showImageAt(index) {
@@ -221,7 +382,7 @@ if (starfield) {
     currentIndex = (index + currentImages.length) % currentImages.length;
 
     const img = currentImages[currentIndex];
-    lightboxImg.src = img.file;
+    loadLightboxImage(img.file);
 
     if (lightboxText) {
       lightboxText.innerHTML = buildCaptionHTML(img);
@@ -241,9 +402,16 @@ if (starfield) {
     showImageAt(currentIndex - 1);
   }
 
+  function closeSkyPanel() {
+    const panel = document.getElementById("skyPanel");
+    if (panel) panel.classList.remove("open");
+    document.body.classList.remove("sky-open");
+  }
+
   function openLightbox(imgData) {
     lightbox.style.display = "flex";
-    lightboxImg.src = imgData.file;
+    document.body.classList.add("lightbox-open");
+    loadLightboxImage(imgData.file);
 
     if (lightboxText) {
       lightboxText.innerHTML = buildCaptionHTML(imgData);
@@ -264,7 +432,11 @@ if (starfield) {
 
   function closeLightbox() {
     lightbox.style.display = "none";
-    lightboxImg.src = "";
+    document.body.classList.remove("lightbox-open");
+    closeSkyPanel();
+    lightboxToken++;
+    lightboxImg.onerror = null;
+    lightboxImg.removeAttribute("src");
     resetTransform();
     const panel = document.getElementById("skyPanel");
     if (panel) panel.classList.remove("open");
@@ -284,7 +456,12 @@ if (starfield) {
 
   let currentSky = { ra: undefined, dec: undefined, fov: undefined };
 
+  // Kiinteä paikka taivaalla on vain näillä kategorioilla. Revontulilla,
+  // Kuulla, Auringolla ja planeetoilla koordinaatit eivät ole järkeviä.
+  const SKY_CATEGORIES = ["deepsky", "widefield"];
+
   function updateSkyButton(img) {
+    const category = (img && img.category) || "deepsky";
     currentSky = {
       ra: img && img.ra !== undefined ? parseFloat(img.ra) : undefined,
       dec: img && img.dec !== undefined ? parseFloat(img.dec) : undefined,
@@ -293,10 +470,11 @@ if (starfield) {
 
     const btn = document.getElementById("skyLocationBtn");
     const panel = document.getElementById("skyPanel");
-    const hasCoords = !isNaN(currentSky.ra) && !isNaN(currentSky.dec);
+    const hasCoords = SKY_CATEGORIES.includes(category) &&
+      !isNaN(currentSky.ra) && !isNaN(currentSky.dec);
 
     if (btn) btn.classList.toggle("visible", hasCoords);
-    if (!hasCoords && panel) panel.classList.remove("open");
+    if (!hasCoords) closeSkyPanel();
 
     if (hasCoords && panel && panel.classList.contains("open")) {
       goToSkyPosition();
@@ -326,8 +504,9 @@ if (starfield) {
         if (img.reveal) card.classList.add("revealed");
 
         const imageEl = document.createElement("img");
-        imageEl.src = img.file;
         imageEl.loading = "lazy";
+        imageEl.alt = img.desc || img.title || "";
+        setThumbSrc(imageEl, img.file);
 
         const info = document.createElement("div");
         info.className = "info";
@@ -336,21 +515,36 @@ if (starfield) {
         const initialViews = parseInt(localStorage.getItem(viewKey) || "0", 10);
 
         info.innerHTML = `
-          <h3>${img.title || ""}</h3>
-          <p>${img.desc || ""}</p>
-          <div class="meta-bar">
-            <span class="meta-pill exif-pill">EXIF...</span>
-            <span class="meta-pill view-pill">${initialViews} katselua</span>
+          <div class="info-text">
+            <h3>${img.title || ""}</h3>
+            ${img.desc ? `<p>${img.desc}</p>` : ""}
           </div>
+          <dl class="card-stats">
+            <div class="stat stat-wide">
+              <dt data-fi="Kamera" data-en="Camera">Kamera</dt>
+              <dd class="exif-pill">…</dd>
+            </div>
+            <div class="stat">
+              <dt data-fi="Katselut" data-en="Views">Katselut</dt>
+              <dd class="view-pill">${initialViews}</dd>
+            </div>
+          </dl>
         `;
+
+        // Uusien korttien otsikot kielivalinnan mukaan
+        const en = document.documentElement.lang === "en";
+        info.querySelectorAll("[data-fi]").forEach(el => {
+          el.textContent = en ? el.dataset.en : el.dataset.fi;
+        });
 
         card.appendChild(imageEl);
         card.appendChild(info);
         gallery.appendChild(card);
 
         // EXIF-tiedot (toimii JPG:lle, ei PNG:lle koska PNG ei kanna EXIF-dataa)
+        // Luetaan vasta kun kuva on ladattu (esikatselukuva säilyttää EXIFin)
         if (window.EXIF) {
-          EXIF.getData(imageEl, function () {
+          imageEl.addEventListener("load", () => EXIF.getData(imageEl, function () {
             const pill = card.querySelector(".exif-pill");
             if (!pill) return;
 
@@ -370,11 +564,11 @@ if (starfield) {
             }
             if (fNumber) parts.push("f/" + fNumber);
 
-            pill.textContent = parts.length ? parts.join(" · ") : "Ei EXIF-tietoa";
-          });
+            pill.textContent = parts.length ? parts.join(" · ") : "–";
+          }), { once: true });
         } else {
           const pill = card.querySelector(".exif-pill");
-          if (pill) pill.textContent = "Ei EXIF-tietoa";
+          if (pill) pill.textContent = "–";
         }
 
         card.addEventListener("click", () => {
@@ -573,6 +767,7 @@ if (starfield) {
     skyLocationBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       const isOpen = skyPanel.classList.toggle("open");
+      document.body.classList.toggle("sky-open", isOpen);
       if (isOpen) goToSkyPosition();
     });
     skyLocationBtn.addEventListener("mousedown", (e) => e.stopPropagation());
@@ -580,6 +775,16 @@ if (starfield) {
     skyPanel.addEventListener("click", (e) => e.stopPropagation());
     skyPanel.addEventListener("mousedown", (e) => e.stopPropagation());
     skyPanel.addEventListener("wheel", (e) => e.stopPropagation());
+    ["touchstart", "touchmove", "touchend"].forEach(type =>
+      skyPanel.addEventListener(type, (e) => e.stopPropagation(), { passive: true }));
+
+    const skyClose = document.getElementById("skyClose");
+    if (skyClose) {
+      skyClose.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeSkyPanel();
+      });
+    }
   }
 
   document.addEventListener("keydown", (e) => {
@@ -587,7 +792,11 @@ if (starfield) {
 
     if (e.key === "ArrowRight") nextImage();
     if (e.key === "ArrowLeft") prevImage();
-    if (e.key === "Escape") closeLightbox();
+    if (e.key === "Escape") {
+      const panel = document.getElementById("skyPanel");
+      if (panel && panel.classList.contains("open")) closeSkyPanel();
+      else closeLightbox();
+    }
   });
 
   document.addEventListener("wheel", (e) => {

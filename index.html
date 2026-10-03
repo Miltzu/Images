@@ -3,15 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Miltzu — Astrokuvat</title>
+<title>Miltzu Images — Astrokuvat</title>
 <meta name="description" content="Miltzun astrokuvia: deep sky, planeetat, Kuu, Aurinko ja revontulet.">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=18">
-<script src="script.js?v=14"></script>
+<link rel="stylesheet" href="style.css?v=21">
+<script src="script.js?v=17"></script>
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 <body>
@@ -20,7 +24,7 @@
 
 <header class="site-header">
   <div class="site-header-inner">
-    <a class="brand" href="index.html">Miltzu<span>.</span></a>
+    <a class="brand" href="index.html">Miltzu <span>Images</span></a>
     <nav class="site-nav">
       <a href="index.html" class="active" data-fi="Galleria" data-en="Gallery">Galleria</a>
       <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
@@ -108,6 +112,10 @@
   </button>
 
   <div id="skyPanel" class="sky-panel">
+    <div class="sky-panel-bar">
+      <span data-fi="Sijainti taivaalla" data-en="Location in the sky">Sijainti taivaalla</span>
+      <button id="skyClose" class="sky-close" aria-label="Sulje">×</button>
+    </div>
     <div id="aladin-div"></div>
   </div>
 

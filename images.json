@@ -4,25 +4,22 @@
     "title": "-",
     "desc": "Northern lights",
     "category": "revontuli",
-    "reveal": true,
-    "ra": 0,
-    "dec": 60
+    "reveal": true
   },
   {
     "file": "images/kuva2.png",
     "title": "-",
     "desc": "Saturnus",
     "category": "planeetta",
-    "reveal": true,
-    "integration": "5h 20min",
-    "telescope": "C11 XLT",
-    "filters": "HOO",
-    "date": "12.9.2026"
+    "reveal": true
   },
   {
     "file": "images/kuva3.jpg",
     "title": "-",
     "desc": "Kolmas hetki",
-    "category": "deepsky"
+    "category": "deepsky",
+    "ra": 10.6847,
+    "dec": 41.2692,
+    "fov": 3
   }
 ]

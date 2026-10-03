@@ -10,6 +10,23 @@
         "text": "Ensimmäiset valotukset tästä erittäin himmeästä planetaarisesta sumusta otettu. Vain 3 valotusta ennen kuin pilvet tuli häiritsemään.",
         "image": "images/projektikuva1.jpg"
       }
+    ],
+    "progress": [
+      {
+        "filter": "Ha",
+        "done_min": 22.5,
+        "goal_min": 900
+      },
+      {
+        "filter": "OIII",
+        "done_min": 0,
+        "goal_min": 900
+      },
+      {
+        "filter": "RGB",
+        "done_min": 0,
+        "goal_min": 90
+      }
     ]
   }
 ]
