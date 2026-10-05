@@ -134,6 +134,10 @@ if (starfield) {
     return `${sec} s`;
   }
 
+  function esc(text) {
+    return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
   function pctText(done, goal) {
     const pct = goal > 0 ? Math.min(100, (done / goal) * 100) : 0;
     if (pct > 0 && pct < 1) return "<1";
@@ -252,6 +256,172 @@ if (starfield) {
       });
   }
 
+  // =========================
+  // PROSESSOINTI (prosessointi.html): ennen/jälkeen-liukuri
+  //
+  // processing.json:
+  // [
+  //   {
+  //     "title": "M31 - Andromeda Galaxy",
+  //     "desc": "Lyhyt kuvaus (vapaaehtoinen)",
+  //     "steps": [
+  //       { "label": "Pinottu, lineaarinen", "image": "images/m31-p1.jpg", "text": "..." },
+  //       { "label": "Venytetty",            "image": "images/m31-p2.jpg", "text": "..." },
+  //       { "label": "Valmis",               "image": "images/kuva3.jpg" }
+  //     ]
+  //   }
+  // ]
+  // Vähintään kaksi vaihetta. Kuvien pitää olla samaa rajausta ja kokoa.
+  // =========================
+  const processList = document.getElementById("process-list");
+
+  function largeVersion(file) {
+    return thumbPath(file).replace(/(^|\/)thumbs\//, "$1large/");
+  }
+
+  // näyttöversio images/large/ -> alkuperäinen, jos sitä ei (vielä) ole
+  function setLargeSrc(imgEl, file) {
+    imgEl.onerror = () => { imgEl.onerror = null; imgEl.src = file; };
+    imgEl.src = largeVersion(file);
+  }
+
+  function translateNew(root) {
+    const lang = document.documentElement.lang === "en" ? "en" : "fi";
+    root.querySelectorAll("[data-fi]").forEach(el => {
+      const t = el.dataset[lang];
+      if (t !== undefined) el.textContent = t;
+    });
+  }
+
+  function processEmpty() {
+    processList.innerHTML = `
+      <div class="hero-card">
+        <h2 data-fi="Prosessikuvia tulossa pian" data-en="Processing images coming soon">Prosessikuvia tulossa pian</h2>
+        <p data-fi="Täällä näkyy pian, miltä kuvat näyttävät eri prosessoinnin vaiheissa." data-en="Soon you'll see here what the images look like at different stages of processing.">Täällä näkyy pian, miltä kuvat näyttävät eri prosessoinnin vaiheissa.</p>
+      </div>`;
+    translateNew(processList);
+  }
+
+  function buildCompare(item) {
+    const steps = (item.steps || []).filter(s => s && s.image);
+    const article = document.createElement("article");
+    article.className = "process";
+
+    const transitions = steps.length > 2
+      ? [{ from: 0, to: steps.length - 1, start: true }]
+          .concat(steps.slice(1).map((s, i) => ({ from: i, to: i + 1 })))
+      : [];
+
+    article.innerHTML = `
+      <header class="process-head">
+        <h2>${esc(item.title || "")}</h2>
+        ${item.desc ? `<p>${esc(item.desc)}</p>` : ""}
+      </header>
+      <div class="compare">
+        <img class="compare-after" alt="" draggable="false">
+        <div class="compare-before"><img alt="" draggable="false"></div>
+        <span class="compare-tag compare-tag-before"></span>
+        <span class="compare-tag compare-tag-after"></span>
+        <div class="compare-handle" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="Ennen / jälkeen">
+          <span class="compare-knob">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l-4 5 4 5M13 5l4 5-4 5"/></svg>
+          </span>
+        </div>
+      </div>
+      ${transitions.length ? `<div class="process-steps">${transitions.map((t, i) => `
+        <button class="step-chip${i === 0 ? " active" : ""}" type="button" data-i="${i}">
+          ${t.start
+            ? `<span data-fi="Alku → valmis" data-en="Start → finished">Alku → valmis</span>`
+            : `<b>${t.to + 1}</b> ${esc(steps[t.to].label || "")}`}
+        </button>`).join("")}</div>` : ""}
+      <p class="process-step-text"></p>`;
+
+    const compare = article.querySelector(".compare");
+    const afterImg = article.querySelector(".compare-after");
+    const beforeImg = article.querySelector(".compare-before img");
+    const tagBefore = article.querySelector(".compare-tag-before");
+    const tagAfter = article.querySelector(".compare-tag-after");
+    const handle = article.querySelector(".compare-handle");
+    const stepText = article.querySelector(".process-step-text");
+
+    let pos = 50;
+    function setPos(p) {
+      pos = Math.max(0, Math.min(100, p));
+      compare.style.setProperty("--pos", pos + "%");
+      handle.setAttribute("aria-valuenow", Math.round(pos));
+    }
+    setPos(50);
+
+    afterImg.addEventListener("load", () => {
+      if (afterImg.naturalWidth && afterImg.naturalHeight) {
+        compare.style.setProperty("--ratio", afterImg.naturalWidth / afterImg.naturalHeight);
+      }
+    });
+
+    function show(from, to) {
+      const a = steps[from], b = steps[to];
+      setLargeSrc(beforeImg, a.image);
+      setLargeSrc(afterImg, b.image);
+      tagBefore.textContent = a.label || "";
+      tagAfter.textContent = b.label || "";
+      tagBefore.hidden = !a.label;
+      tagAfter.hidden = !b.label;
+      stepText.textContent = b.text || "";
+      stepText.hidden = !b.text;
+    }
+    show(0, steps.length - 1);
+
+    article.querySelectorAll(".step-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        article.querySelectorAll(".step-chip").forEach(c => c.classList.toggle("active", c === chip));
+        const t = transitions[+chip.dataset.i];
+        show(t.from, t.to);
+      });
+    });
+
+    // Vetäminen hiirellä, kosketuksella tai kynällä. touch-action: pan-y
+    // (CSS) pitää sivun pystyvierityksen toimivana puhelimella.
+    let dragging = false;
+    const fromEvent = (e) => {
+      const r = compare.getBoundingClientRect();
+      setPos(((e.clientX - r.left) / r.width) * 100);
+    };
+    compare.addEventListener("pointerdown", (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      dragging = true;
+      compare.classList.add("dragging");
+      try { compare.setPointerCapture(e.pointerId); } catch (err) { /* ei tuettu */ }
+      fromEvent(e);
+    });
+    compare.addEventListener("pointermove", (e) => { if (dragging) fromEvent(e); });
+    const stop = () => { dragging = false; compare.classList.remove("dragging"); };
+    compare.addEventListener("pointerup", stop);
+    compare.addEventListener("pointercancel", stop);
+
+    handle.addEventListener("keydown", (e) => {
+      const stepSize = e.shiftKey ? 10 : 2;
+      if (e.key === "ArrowLeft") { setPos(pos - stepSize); e.preventDefault(); }
+      if (e.key === "ArrowRight") { setPos(pos + stepSize); e.preventDefault(); }
+      if (e.key === "Home") { setPos(0); e.preventDefault(); }
+      if (e.key === "End") { setPos(100); e.preventDefault(); }
+    });
+
+    translateNew(article);
+    return article;
+  }
+
+  if (processList) {
+    fetch("processing.json")
+      .then(res => res.ok ? res.json() : [])
+      .then(items => {
+        const valid = (Array.isArray(items) ? items : [])
+          .filter(it => it && Array.isArray(it.steps) && it.steps.filter(s => s && s.image).length >= 2);
+        if (!valid.length) { processEmpty(); return; }
+        valid.forEach(it => processList.appendChild(buildCompare(it)));
+      })
+      .catch(processEmpty);
+  }
+
   if (!gallery || !lightbox || !lightboxImg) return;
 
   const lbFrame = document.getElementById("lbFrame");
@@ -336,10 +506,6 @@ if (starfield) {
     if (h > 0) return m ? `${h} h ${m} min` : `${h} h`;
     if (m > 0) return s ? `${m} min ${s} s` : `${m} min`;
     return `${s} s`;
-  }
-
-  function esc(text) {
-    return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   }
 
   // Suodatinkohtaiset valotukset:
@@ -483,6 +649,11 @@ if (starfield) {
   function openLightbox(d) {
     lightbox.style.display = "flex";
     document.body.classList.add("lightbox-open");
+    // Selainhistoriaan merkintä: puhelimen paluu-ele/-painike sulkee kuvan
+    // eikä poistu koko sivulta
+    if (!(history.state && history.state.lightbox)) {
+      history.pushState({ lightbox: true }, "");
+    }
     showData(d);
   }
 
@@ -497,7 +668,13 @@ if (starfield) {
   function nextImage() { showImageAt(currentIndex + 1); }
   function prevImage() { showImageAt(currentIndex - 1); }
 
-  function closeLightbox() {
+  function closeLightbox(fromHistory) {
+    if (lightbox.style.display !== "flex") return;
+    // suljettiin painikkeella: poistetaan avauksen historiamerkintä
+    if (fromHistory !== true && history.state && history.state.lightbox) {
+      history.back();
+      return; // popstate kutsuu tämän uudelleen
+    }
     lightbox.style.display = "none";
     document.body.classList.remove("lightbox-open");
     lightboxToken++;
@@ -507,7 +684,19 @@ if (starfield) {
     resetZoom();
   }
 
-  window.closeLightbox = closeLightbox;
+  window.closeLightbox = () => closeLightbox();
+
+  window.addEventListener("popstate", () => {
+    if (lightbox.style.display === "flex") closeLightbox(true);
+  });
+
+  const lightboxClose = document.getElementById("lightboxClose");
+  if (lightboxClose) {
+    lightboxClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeLightbox();
+    });
+  }
 
   // =========================
   // ZOOM JA PANOROINTI
@@ -948,6 +1137,7 @@ if (starfield) {
   fetch("images.json")
     .then(res => res.json())
     .then(images => {
+      const allData = [];
       images.forEach(img => {
         const data = {
           file: img.file,
@@ -967,8 +1157,11 @@ if (starfield) {
           acquisition: Array.isArray(img.acquisition) ? img.acquisition : [],
           annotations: Array.isArray(img.annotations) ? img.annotations : [],
           about: img.about,
-          date: img.date
+          date: img.date,
+          featured: !!img.featured,
+          focus: img.focus
         };
+        allData.push(data);
 
         const card = document.createElement("div");
         card.className = "card";
@@ -1050,7 +1243,294 @@ if (starfield) {
           openLightbox(data);
         });
       });
+
+      initFeatured(allData);
+      initSkyMap(allData);
+    })
+    .catch(() => initFeatured([]));
+
+  // Avaa kuvan koko kokoelmasta (etusivun iso kuva, taivaskartta).
+  // Nuolilla selataan kaikkia kuvia riippumatta valitusta kategoriasta.
+  function openFromList(list, index) {
+    currentImages = list.slice();
+    currentIndex = index;
+    registerView(list[index].file);
+    openLightbox(list[index]);
+  }
+
+  function displayTitle(d) {
+    const t = (d.title || "").trim();
+    return t && t !== "-" ? t : (d.desc || "");
+  }
+
+  const CATEGORY_NAMES = {
+    deepsky: ["Deep sky", "Deep sky"],
+    planeetta: ["Planeetta", "Planet"],
+    kuu: ["Kuu", "Moon"],
+    aurinko: ["Aurinko", "Sun"],
+    revontuli: ["Revontulet", "Aurora"],
+    widefield: ["Laajakulma", "Wide field"]
+  };
+
+  // =========================
+  // ETUSIVUN ISO KUVA
+  // Näytetään kuva, jolla on "featured": true, muuten images.json:n
+  // viimeinen (uusin) kuva. "focus": "50% 30%" siirtää rajausta.
+  // =========================
+  function initFeatured(list) {
+    const section = document.getElementById("featured");
+    if (!section) return;
+    const featuredImg = document.getElementById("featuredImg");
+    const titleEl = document.getElementById("featuredTitle");
+    const metaEl = document.getElementById("featuredMeta");
+    const descEl = document.getElementById("featuredDesc");
+    const openBtn = document.getElementById("featuredOpen");
+
+    let idx = list.findIndex(d => d.featured);
+    if (idx < 0) idx = list.length - 1;
+    if (idx < 0) {
+      // ei kuvia: pelkkä tekstiotsikko
+      section.classList.remove("is-loading");
+      section.classList.add("no-image");
+      return;
+    }
+    const d = list[idx];
+
+    titleEl.removeAttribute("data-fi");
+    titleEl.removeAttribute("data-en");
+    titleEl.textContent = displayTitle(d);
+    const title = (d.title || "").trim();
+    descEl.textContent = title && title !== "-" ? (d.desc || "") : "";
+    descEl.hidden = !descEl.textContent;
+
+    function renderMeta() {
+      const en = isEnglish();
+      const parts = [];
+      const cat = CATEGORY_NAMES[d.category];
+      if (cat) parts.push(cat[en ? 1 : 0]);
+      const totalSec = acquisitionRows(d).reduce((sum, a) => sum + a.count * a.exposure, 0);
+      if (totalSec > 0) parts.push(formatSeconds(totalSec));
+      if (d.ra !== undefined && d.dec !== undefined) {
+        parts.push(`RA ${formatRa(d.ra).replace(/ \d+s$/, "")} · Dec ${formatDec(d.dec).replace(/ \d+″$/, "")}`);
+      }
+      metaEl.textContent = parts.join(" · ");
+      metaEl.hidden = !parts.length;
+    }
+    renderMeta();
+    document.addEventListener("langchange", renderMeta);
+
+    if (d.focus) featuredImg.style.objectPosition = d.focus;
+    featuredImg.alt = displayTitle(d);
+    // puhelimelle esikatselukuva (1600 px), isolle näytölle näyttöversio (3200 px)
+    const small = thumbPath(d.file);
+    const big = largePath(d.file);
+    featuredImg.onload = () => section.classList.remove("is-loading");
+    featuredImg.onerror = () => {
+      if (featuredImg.dataset.fallback === "1") { section.classList.remove("is-loading"); return; }
+      featuredImg.dataset.fallback = "1";
+      featuredImg.removeAttribute("srcset");
+      featuredImg.src = d.file;
+    };
+    featuredImg.sizes = "100vw";
+    featuredImg.srcset = `${small} 1600w, ${big} 3200w`;
+    featuredImg.src = small;
+
+    const open = () => openFromList(list, idx);
+    openBtn.addEventListener("click", open);
+    section.querySelector(".featured-media").addEventListener("click", open);
+  }
+
+  // =========================
+  // TAIVASKARTTA
+  // Koko taivas Hammer-projektiolla. RA kasvaa vasemmalle (itä vasemmalla,
+  // kuten taivasta katsottaessa), keskellä RA 0h.
+  // =========================
+  function initSkyMap(list) {
+    const section = document.getElementById("skymap-section");
+    const svg = document.getElementById("skyMap");
+    if (!section || !svg) return;
+
+    const items = list
+      .map((d, i) => ({ d, i }))
+      .filter(o => o.d.ra !== undefined && o.d.dec !== undefined);
+    if (!items.length) return;
+    section.hidden = false;
+
+    const wrap = document.getElementById("skyMapWrap");
+    const tip = document.getElementById("skyMapTip");
+    const listEl = document.getElementById("skyMapList");
+
+    const D = Math.PI / 180;
+    const CENTER_RA = 0;
+    const CX = 500, CY = 260, S = 480 / (2 * Math.SQRT2);
+
+    // lam = pituus radiaaneina (-pi..pi, positiivinen = oikealle), phi = leveys
+    function hammerLP(lam, phi) {
+      const z = Math.sqrt(1 + Math.cos(phi) * Math.cos(lam / 2));
+      return [CX + S * 2 * Math.SQRT2 * Math.cos(phi) * Math.sin(lam / 2) / z,
+              CY - S * Math.SQRT2 * Math.sin(phi) / z];
+    }
+    function project(ra, dec) {
+      let l = ((ra - CENTER_RA) % 360 + 540) % 360 - 180; // -180..180
+      return hammerLP(-l * D, dec * D);
+    }
+    // polku pisteistä; katkaistaan kohdissa, joissa viiva hyppää reunalta toiselle
+    function pathFrom(points) {
+      let dStr = "", prev = null;
+      points.forEach(p => {
+        const jump = !prev || Math.abs(p[0] - prev[0]) > 300;
+        dStr += (jump ? "M" : "L") + p[0].toFixed(1) + " " + p[1].toFixed(1);
+        prev = p;
+      });
+      return dStr;
+    }
+    const range = (a, b, step) => {
+      const r = [];
+      if (step > 0) for (let v = a; v <= b + 1e-9; v += step) r.push(v);
+      else for (let v = a; v >= b - 1e-9; v += step) r.push(v);
+      return r;
+    };
+
+    // Galaktinen taso (b = 0) ekvatoriaalisiksi koordinaateiksi (J2000)
+    const aG = 192.85948 * D, dG = 27.12825 * D, lNCP = 122.93192 * D;
+    function galToEq(l, b) {
+      l *= D; b *= D;
+      const sd = Math.sin(dG) * Math.sin(b) + Math.cos(dG) * Math.cos(b) * Math.cos(lNCP - l);
+      const y = Math.cos(b) * Math.sin(lNCP - l);
+      const x = Math.cos(dG) * Math.sin(b) - Math.sin(dG) * Math.cos(b) * Math.cos(lNCP - l);
+      return [((aG + Math.atan2(y, x)) / D + 360) % 360, Math.asin(sd) / D];
+    }
+    // Ekliptika
+    const EPS = 23.4393 * D;
+    function eclToEq(lam) {
+      lam *= D;
+      return [((Math.atan2(Math.sin(lam) * Math.cos(EPS), Math.cos(lam)) / D) + 360) % 360,
+              Math.asin(Math.sin(EPS) * Math.sin(lam)) / D];
+    }
+
+    const outline = pathFrom(range(-90, 90, 2).map(p => hammerLP(Math.PI - 1e-6, p * D)))
+                  + pathFrom(range(-90, 90, 2).map(p => hammerLP(-Math.PI + 1e-6, p * D)));
+
+    const meridians = range(0, 22, 2).filter(h => h !== 12)
+      .map(h => pathFrom(range(-90, 90, 3).map(dec => project(h * 15, dec)))).join("");
+    const parallels = [-60, -30, 0, 30, 60]
+      .map(dec => pathFrom(range(-179.9, 179.9, 3).map(l => hammerLP(l * D, dec * D)))).join("");
+
+    // Alue, joka ei koskaan nouse 60° pohjoisella leveydellä: dec < -30°
+    const south = pathFrom(range(-179.99, 179.99, 3).map(l => hammerLP(l * D, -30 * D)))
+      + range(-30, -90, -3).map(p => { const q = hammerLP(Math.PI - 1e-6, p * D); return "L" + q[0].toFixed(1) + " " + q[1].toFixed(1); }).join("")
+      + range(-90, -30, 3).map(p => { const q = hammerLP(-Math.PI + 1e-6, p * D); return "L" + q[0].toFixed(1) + " " + q[1].toFixed(1); }).join("")
+      + "Z";
+
+    const milkyWay = pathFrom(range(0, 360, 2).map(l => galToEq(l, 0)).map(([r, d]) => project(r, d)));
+    const ecliptic = pathFrom(range(0, 360, 2).map(eclToEq).map(([r, d]) => project(r, d)));
+
+    const raLabels = range(0, 22, 2).filter(h => h !== 12).map(h => {
+      const [x, y] = project(h * 15, 0);
+      return `<text class="sm-label" x="${x.toFixed(1)}" y="${(y + 18).toFixed(1)}" text-anchor="middle">${h}h</text>`;
+    }).join("");
+    const decLabels = [-60, -30, 30, 60].map(dec => {
+      const [x, y] = hammerLP(-Math.PI + 1e-6, dec * D);
+      return `<text class="sm-label" x="${(x - 8).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="end">${dec > 0 ? "+" : "−"}${Math.abs(dec)}°</text>`;
+    }).join("");
+
+    const shortName = (d) => {
+      const t = displayTitle(d);
+      return t.split(/\s+[-–—]\s+/)[0];
+    };
+
+    const points = items.map(({ d, i }) => {
+      const [x, y] = project(d.ra, d.dec);
+      const right = x > 820;
+      return `
+        <g class="sm-point" data-i="${i}" tabindex="0" role="button" aria-label="${esc(displayTitle(d))}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+          <circle class="sm-hit" r="30"></circle>
+          <circle class="sm-glow" r="14"></circle>
+          <circle class="sm-ring" r="7"></circle>
+          <circle class="sm-dot" r="3"></circle>
+          <text class="sm-name" x="${right ? -14 : 14}" y="5" text-anchor="${right ? "end" : "start"}">${esc(shortName(d))}</text>
+        </g>`;
+    }).join("");
+
+    svg.innerHTML = `
+      <defs>
+        <clipPath id="smClip"><path d="${outline}"/></clipPath>
+        <filter id="smBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="10"/></filter>
+      </defs>
+      <path class="sm-sky" d="M${CX - 480} ${CY} A480 240 0 1 0 ${CX + 480} ${CY} A480 240 0 1 0 ${CX - 480} ${CY}Z"/>
+      <g clip-path="url(#smClip)">
+        <path class="sm-south" d="${south}"/>
+        <path class="sm-mw-band" d="${milkyWay}" filter="url(#smBlur)"/>
+        <path class="sm-mw" d="${milkyWay}"/>
+        <path class="sm-grid" d="${meridians}${parallels}"/>
+        <path class="sm-equator" d="${pathFrom(range(-179.9, 179.9, 3).map(l => hammerLP(l * D, 0)))}"/>
+        <path class="sm-ecl" d="${ecliptic}"/>
+      </g>
+      <path class="sm-edge" d="M${CX - 480} ${CY} A480 240 0 1 0 ${CX + 480} ${CY} A480 240 0 1 0 ${CX - 480} ${CY}Z"/>
+      ${raLabels}${decLabels}
+      <text class="sm-label sm-pole" x="${CX}" y="${CY - 248}" text-anchor="middle">+90°</text>
+      <text class="sm-label sm-pole" x="${CX}" y="${CY + 262}" text-anchor="middle">−90°</text>
+      ${points}`;
+
+    listEl.innerHTML = items.map(({ d, i }) => {
+      const full = displayTitle(d);
+      const sn = shortName(d);
+      const rest = full.length > sn.length ? full.slice(sn.length).replace(/^\s*[-–—]\s*/, "") : "";
+      return `<li><button class="sm-chip" type="button" data-i="${i}"><span class="sm-chip-dot"></span><b>${esc(sn)}</b>${rest ? `<span>${esc(rest)}</span>` : ""}</button></li>`;
+    }).join("");
+
+    const pointEl = (i) => svg.querySelector(`.sm-point[data-i="${i}"]`);
+    const highlight = (i, on) => { const g = pointEl(i); if (g) g.classList.toggle("hot", on); };
+
+    function showTip(i) {
+      const d = list[i];
+      const g = pointEl(i);
+      if (!g || !tip) return;
+      const en = isEnglish();
+      tip.innerHTML = `
+        <img src="${esc(thumbPath(d.file))}" alt="">
+        <div>
+          <strong>${esc(displayTitle(d))}</strong>
+          <span>RA ${formatRa(d.ra)}<br>Dec ${formatDec(d.dec)}</span>
+          <em>${en ? "Click to open" : "Avaa klikkaamalla"}</em>
+        </div>`;
+      tip.hidden = false;
+      const wr = wrap.getBoundingClientRect();
+      const pr = g.querySelector(".sm-dot").getBoundingClientRect();
+      const px = pr.left + pr.width / 2 - wr.left;
+      const py = pr.top + pr.height / 2 - wr.top;
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      let left = px + 16, top = py - th - 12;
+      if (left + tw > wr.width - 8) left = px - tw - 16;
+      if (left < 8) left = 8;
+      if (top < 8) top = py + 16;
+      tip.style.left = left + "px";
+      tip.style.top = top + "px";
+    }
+    function hideTip() { if (tip) tip.hidden = true; }
+
+    svg.querySelectorAll(".sm-point").forEach(g => {
+      const i = +g.dataset.i;
+      g.addEventListener("click", () => { hideTip(); openFromList(list, i); });
+      g.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFromList(list, i); }
+      });
+      if (!isTouchDevice) {
+        g.addEventListener("mouseenter", () => { highlight(i, true); showTip(i); });
+        g.addEventListener("mouseleave", () => { highlight(i, false); hideTip(); });
+      }
+      g.addEventListener("focus", () => highlight(i, true));
+      g.addEventListener("blur", () => highlight(i, false));
     });
+    listEl.querySelectorAll(".sm-chip").forEach(btn => {
+      const i = +btn.dataset.i;
+      btn.addEventListener("click", () => openFromList(list, i));
+      btn.addEventListener("mouseenter", () => highlight(i, true));
+      btn.addEventListener("mouseleave", () => highlight(i, false));
+      btn.addEventListener("focus", () => highlight(i, true));
+      btn.addEventListener("blur", () => highlight(i, false));
+    });
+  }
 
   // =========================
   // GALLERIAN KATEGORIAT
