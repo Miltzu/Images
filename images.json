@@ -4,25 +4,36 @@
     "title": "-",
     "desc": "Northern lights",
     "category": "revontuli",
-    "reveal": false
+    "reveal": true,
+    "telescope/lens": "Nikkor 14-24mm F2.8", "camera": "Nikon D850", "mount": "…"
   },
   {
     "file": "images/kuva2.png",
     "title": "-",
     "desc": "Saturnus",
     "category": "planeetta",
-    "reveal": false
+    "reveal": true,
+    "telescope": "C11 XLT", "camera": "QHY268M", "mount": "…",
+    "acquisition": [
+    { "filter": "Ha",   "count": 20, "exposure": 300 },
+    { "filter": "OIII", "count": 15, "exposure": 300 }
+  ]
   },
   {
     "file": "images/kuva3.jpg",
     "title": "M31 - Andromeda Galaxy",
-    "desc": "Kolmas hetki",
+    "desc": "Ensimmäisiä deepsky kuvia.",
     "category": "deepsky",
     "ra": 10.6847,
     "dec": 41.2692,
     "fov": 3.1,
     "rotation": 112.4,
-    "flipped": false
+    "flipped": true,
+    "telescope": "ES 127mm", "camera": "QHY268M", "mount": "…",
+    "acquisition": [
+    { "filter": "Ha",   "count": 20, "exposure": 300 },
+    { "filter": "OIII", "count": 15, "exposure": 300 }
+    ]
   },
   {
     "file": "images/kuva4.jpg",
@@ -31,6 +42,11 @@
     "category": "deepsky",
     "ra": 109.7,
     "dec": -13.2,
-    "reveal": false
+    "reveal": true,
+    "telescope": "SW 250p quattro", "camera": "QHY268M", "mount": "…",
+    "acquisition": [
+    { "filter": "Ha",   "count": 20, "exposure": 300 },
+    { "filter": "OIII", "count": 15, "exposure": 300 }
+  ]
   }
 ]
