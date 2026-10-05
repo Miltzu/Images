@@ -596,15 +596,16 @@ a { color: inherit; }
   z-index: 100;
   align-items: center;
   justify-content: center;
+  justify-content: safe center;  /* pitkä kuvateksti ei leikkaa kuvan yläreunaa */
   flex-direction: column;
   gap: 18px;
   padding: 32px 90px;
   overflow-y: auto;
   touch-action: pan-y;          /* ei selaimen omaa sivuzoomia lightboxissa */
   overscroll-behavior: contain;
-  background: rgba(0, 0, 0, 0.94);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* Ei backdrop-filteriä: se tekisi lightboxista kiinnityskehyksen, jolloin
+     alareunaan kiinnitetyt painikkeet vierisivät tekstin mukana */
+  background: #000;
   cursor: zoom-out;
 }
 
@@ -713,6 +714,124 @@ a { color: inherit; }
   margin-top: 12px;
 }
 
+/* Suodatinkohtaiset valotukset */
+
+.acq-table {
+  width: 100%;
+  max-width: 640px;
+  margin: 12px auto 0;
+  border-collapse: collapse;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(9, 14, 21, 0.85);
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.acq-table th {
+  padding: 8px 14px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--dim);
+  border-bottom: 1px solid var(--line);
+}
+
+.acq-table td {
+  padding: 8px 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--line);
+}
+
+.acq-table tr:last-child td { border-bottom: 0; }
+
+.acq-table td:last-child,
+.acq-table th:last-child { text-align: right; }
+
+.filter-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  vertical-align: 1px;
+}
+
+.filter-dot[data-filter="ha"]   { background: #ff5c6c; }
+.filter-dot[data-filter="oiii"],
+.filter-dot[data-filter="o3"]   { background: #3dd6ff; }
+.filter-dot[data-filter="sii"],
+.filter-dot[data-filter="s2"]   { background: #ffb347; }
+.filter-dot[data-filter="r"]    { background: #ff6b6b; }
+.filter-dot[data-filter="g"]    { background: #6bff9a; }
+.filter-dot[data-filter="b"]    { background: #6b9dff; }
+.filter-dot[data-filter="l"],
+.filter-dot[data-filter="rgb"]  { background: #dfe7ef; }
+
+/* "Mikä tämä on?" -kortti */
+
+.about-card {
+  max-width: 640px;
+  margin: 12px auto 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: rgba(9, 14, 21, 0.85);
+  text-align: left;
+}
+
+.about-card summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.about-card summary::-webkit-details-marker { display: none; }
+
+.about-card summary::after {
+  content: "+";
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--accent);
+  transition: transform 0.2s ease;
+}
+
+.about-card[open] summary::after { transform: rotate(45deg); }
+
+.about-card summary:hover { color: var(--accent); }
+
+.lightbox .about-card p,
+.lightbox #text .about-card p {
+  margin: 0;
+  padding: 0 16px 16px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* Kohdemerkinnät ruudukossa */
+
+.sky-grid .grid-ann circle {
+  fill: none;
+  stroke: #ffd36b;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.sky-grid .grid-ann text {
+  fill: #ffd36b;
+  font-weight: 600;
+}
+
 @keyframes lightbox-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -721,8 +840,7 @@ a { color: inherit; }
 /* Lightboxin pyöreät napit */
 
 .lightbox-nav,
-.lightbox-download,
-.sky-location-btn {
+.lightbox-download {
   position: fixed;
   display: flex;
   align-items: center;
@@ -738,8 +856,7 @@ a { color: inherit; }
 }
 
 .lightbox-nav:hover,
-.lightbox-download:hover,
-.sky-location-btn:hover {
+.lightbox-download:hover {
   border-color: var(--accent-soft);
   box-shadow: 0 0 18px var(--accent-faint);
 }
@@ -763,26 +880,57 @@ a { color: inherit; }
   height: 44px;
 }
 
-.lightbox-download svg,
-.sky-location-btn svg {
+.lightbox-download svg {
   width: 19px;
   height: 19px;
 }
 
-.sky-location-btn {
-  display: none;
-  bottom: 24px;
+/* Tiedot- ja Koordinaatit-painikkeet oikeassa alakulmassa */
+.lb-tools {
+  position: fixed;
   right: 24px;
-  width: 44px;
-  height: 44px;
+  bottom: 24px;
+  z-index: 101;
+  display: flex;
+  gap: 8px;
 }
 
-.sky-location-btn.visible { display: flex; }
+.lb-tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px 0 13px;
+  border-radius: 999px;
+  background: rgba(9, 14, 21, 0.85);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
 
-.sky-location-btn.active {
-  color: var(--accent);
+.lb-tool:hover {
   border-color: var(--accent-soft);
-  background: rgba(61, 255, 160, 0.12);
+  box-shadow: 0 0 18px var(--accent-faint);
+}
+
+.lb-tool svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Koordinaatit näkyy vain kuvilla, joilla on plate solve -tiedot */
+.lb-tool.sky-location-btn { display: none; }
+.lb-tool.sky-location-btn.visible { display: flex; }
+
+.lb-tool.sky-location-btn.active {
+  color: #04150e;
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Sivu ei vieritä taustalla kun lightbox on auki */
@@ -1180,11 +1328,36 @@ body.lightbox-open {
     font-size: 1.4rem;
   }
 
-  .lightbox-prev { left: 8px; }
-  .lightbox-next { right: 8px; }
+  /* Mobiilissa nuolet yläreunaan omalle rivilleen, ettei ne peitä tekstiä */
+  .lightbox { padding-top: 64px; padding-bottom: 96px; }
+  .lightbox-nav { top: 12px; transform: none; }
+  .lightbox-prev { left: 12px; }
+  .lightbox-next { right: 12px; }
+
+  /* Tumma kaistale ylä- ja alareunan painikkeiden taakse; teksti vierii sen alle */
+  .lightbox::before,
+  .lightbox::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .lightbox::before {
+    top: 0;
+    height: 60px;
+    background: linear-gradient(#000 70%, transparent);
+  }
+  .lightbox::after {
+    bottom: 0;
+    height: 84px;
+    background: linear-gradient(transparent, #000 35%);
+  }
 
   .lightbox-download { left: 12px; bottom: 20px; }
-  .sky-location-btn { right: 12px; bottom: 20px; }
+  .lb-tools { right: 12px; bottom: 20px; gap: 6px; }
+  .lb-tool { height: 42px; padding: 0 14px 0 11px; font-size: 0.82rem; }
 
   .footer { margin: 0 16px; padding: 24px 0 32px; }
 }

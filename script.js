@@ -84,6 +84,7 @@ if (starfield) {
     });
     document.documentElement.lang = lang;
     localStorage.setItem("siteLang", lang);
+    document.dispatchEvent(new CustomEvent("langchange", { detail: lang }));
   }
 
   const urlLang = new URLSearchParams(location.search).get("lang");
@@ -326,13 +327,42 @@ if (starfield) {
     return `${sign}${dd}° ${String(mm).padStart(2, "0")}′ ${String(ss).padStart(2, "0")}″`;
   }
 
-  // Kuvan tekniset tiedot omana laatikkonaan lightboxin alla
+  // Sekunnit luettavaan muotoon: 1350 -> "22 min 30 s", 18000 -> "5 h"
+  function formatSeconds(sec) {
+    sec = Math.round(sec);
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    if (h > 0) return m ? `${h} h ${m} min` : `${h} h`;
+    if (m > 0) return s ? `${m} min ${s} s` : `${m} min`;
+    return `${s} s`;
+  }
+
+  function esc(text) {
+    return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  // Suodatinkohtaiset valotukset:
+  //   "acquisition": [ { "filter": "Ha", "count": 20, "exposure": 300 }, ... ]
+  // exposure on yhden valotuksen pituus sekunteina.
+  function acquisitionRows(d) {
+    return (d.acquisition || []).filter(a => a && a.count > 0 && a.exposure > 0);
+  }
+
+  // Kuvan tiedot lightboxin alla: tietolaatikko, suodatintaulukko ja
+  // avattava "Mikä tämä on?" -kortti
   function buildCaptionHTML(d) {
     const en = isEnglish();
+    const acq = acquisitionRows(d);
+    const totalSec = acq.reduce((sum, a) => sum + a.count * a.exposure, 0);
+
     const rows = [];
-    if (d.integration) rows.push([en ? "Integration" : "Integraatio", d.integration]);
     if (d.telescope) rows.push([en ? "Telescope" : "Kaukoputki", d.telescope]);
-    if (d.filters) rows.push([en ? "Filters" : "Suodattimet", d.filters]);
+    if (d.camera) rows.push([en ? "Camera" : "Kamera", d.camera]);
+    if (d.mount) rows.push([en ? "Mount" : "Jalusta", d.mount]);
+    if (totalSec > 0) rows.push([en ? "Total integration" : "Kokonaisintegraatio", formatSeconds(totalSec)]);
+    else if (d.integration) rows.push([en ? "Integration" : "Integraatio", d.integration]);
+    if (d.filters && !acq.length) rows.push([en ? "Filters" : "Suodattimet", d.filters]);
     if (d.date) rows.push([en ? "Date" : "Päivämäärä", d.date]);
     if (d.ra !== undefined) rows.push(["RA", formatRa(d.ra)]);
     if (d.dec !== undefined) rows.push(["Dec", formatDec(d.dec)]);
@@ -344,11 +374,49 @@ if (starfield) {
 
     const dataHTML = rows.length
       ? `<dl class="data-box">${rows.map(([k, v]) =>
-          `<div class="data-cell"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`
+          `<div class="data-cell"><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`
       : "";
 
-    return `<h2>${d.title || ""}</h2>${d.desc ? `<p>${d.desc}</p>` : ""}${dataHTML}`;
+    const acqHTML = acq.length ? `
+      <table class="acq-table">
+        <thead><tr>
+          <th>${en ? "Filter" : "Suodatin"}</th>
+          <th>${en ? "Exposures" : "Valotukset"}</th>
+          <th>${en ? "Total" : "Yhteensä"}</th>
+        </tr></thead>
+        <tbody>${acq.map(a => `
+          <tr>
+            <td><span class="filter-dot" data-filter="${esc(String(a.filter || "").toLowerCase().replace(/[^a-z0-9]/g, ""))}"></span>${esc(a.filter || "")}</td>
+            <td>${a.count} × ${formatSeconds(a.exposure)}</td>
+            <td>${formatSeconds(a.count * a.exposure)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>` : "";
+
+    const about = d.about && (d.about[en ? "en" : "fi"] || d.about.fi || d.about.en);
+    const aboutHTML = about ? `
+      <details class="about-card"${aboutOpen ? " open" : ""}>
+        <summary>${en ? "What is this?" : "Mikä tämä on?"}</summary>
+        <p>${esc(about)}</p>
+      </details>` : "";
+
+    return `<h2>${esc(d.title || "")}</h2>${d.desc ? `<p>${esc(d.desc)}</p>` : ""}${dataHTML}${acqHTML}${aboutHTML}`;
   }
+
+  // "Mikä tämä on?" -kortin auki/kiinni-tila säilyy kuvasta toiseen siirryttäessä
+  let aboutOpen = false;
+  if (lightboxText) {
+    lightboxText.addEventListener("toggle", (e) => {
+      if (e.target.classList && e.target.classList.contains("about-card")) aboutOpen = e.target.open;
+    }, true);
+  }
+
+  // Kielen vaihto päivittää avoinna olevan kuvan tekstit
+  document.addEventListener("langchange", () => {
+    if (lightbox.style.display === "flex" && currentData && lightboxText) {
+      lightboxText.innerHTML = buildCaptionHTML(currentData);
+    }
+  });
 
   // =========================
   // KUVAN LATAUS LIGHTBOXIIN
@@ -714,11 +782,14 @@ if (starfield) {
     // Dec-viivojen väli
     const decSteps = [1/3600, 2/3600, 5/3600, 10/3600, 15/3600, 30/3600,
       1/60, 2/60, 5/60, 10/60, 15/60, 20/60, 30/60, 1, 2, 5, 10, 15, 30];
-    const decStep = pickStep(fovH, decSteps, 6);
+    // Viivoja enintään ~1 per 140 näytön pikseliä (zoomatessa tiheämpi ruudukko)
+    const shownW = lbFrame.clientWidth * scale;
+    const maxLines = Math.max(3, Math.min(8, Math.round(shownW / 140)));
+    const decStep = pickStep(fovW, decSteps, maxLines);
 
     // RA-viivojen väli (aikasekunteina)
     const raStepsSec = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1200, 1800, 3600, 7200, 10800];
-    const raStepSec = raStepsSec.find(s => fovW / (s / 240 * cosDec0) <= 6) || 10800;
+    const raStepSec = raStepsSec.find(s => fovW / (s / 240 * cosDec0) <= maxLines) || 10800;
     const raStep = raStepSec / 240;
 
     const decMin = Math.max(-89.999, d.dec - R);
@@ -730,6 +801,39 @@ if (starfield) {
     const raMax = fullRa ? d.ra + 180 : d.ra + raHalf;
 
     const inside = (p) => p && p[0] >= 0 && p[0] <= W && p[1] >= 0 && p[1] <= H;
+
+    // Kumpikin viivaperhe saa oman reunansa arvoilleen kuvan kierrosta riippuen,
+    // jotta RA- ja Dec-arvot eivät mene päällekkäin. Dec-viiva kulkee itä-länsi-suunnassa.
+    const pc = proj(d.ra, d.dec);
+    const pe = proj(d.ra + 0.01 / cosDec0, d.dec);
+    const decHorizontal = !(pc && pe) || Math.abs(pe[0] - pc[0]) >= Math.abs(pe[1] - pc[1]);
+    // Etsitään kohta, jossa viiva leikkaa vasemman reunan (x = 0) tai alareunan (y = H).
+    // Jos viiva ei ylety kyseiseen reunaan, arvoa ei piirretä.
+    const crossing = (all, edge) => {
+      for (let i = 1; i < all.length; i++) {
+        const a = all[i - 1], b = all[i];
+        if (!a || !b) continue;
+        if (edge === "left" && (a[0] - 0) * (b[0] - 0) <= 0 && a[0] !== b[0]) {
+          const t = (0 - a[0]) / (b[0] - a[0]);
+          const y = a[1] + t * (b[1] - a[1]);
+          if (y >= 0 && y <= H) return [0, y];
+        }
+        if (edge === "bottom" && (a[1] - H) * (b[1] - H) <= 0 && a[1] !== b[1]) {
+          const t = (H - a[1]) / (b[1] - a[1]);
+          const x = a[0] + t * (b[0] - a[0]);
+          if (x >= 0 && x <= W) return [x, H];
+        }
+      }
+      return null;
+    };
+    const leftLabel = (all) => {
+      const p = crossing(all, "left");
+      return p && p[1] > 16 * u && p[1] < H - 22 * u ? { x: 5 * u, y: p[1] - 5 * u } : null;
+    };
+    const bottomLabel = (all) => {
+      const p = crossing(all, "bottom");
+      return p && p[0] > 8 * u && p[0] < W - 60 * u ? { x: p[0] + 5 * u, y: H - 6 * u } : null;
+    };
     const fmt = (v) => v.toFixed(1);
     const paths = [];
     const labels = [];
@@ -737,38 +841,51 @@ if (starfield) {
 
     function polyline(pointFn) {
       let dStr = "", pen = false;
-      const pts = [];
+      const all = [];
       for (let i = 0; i <= N; i++) {
         const p = pointFn(i / N);
-        if (!p || Math.abs(p[0]) > 20 * W || Math.abs(p[1]) > 20 * H) { pen = false; continue; }
+        if (!p || Math.abs(p[0]) > 20 * W || Math.abs(p[1]) > 20 * H) { pen = false; all.push(null); continue; }
         dStr += (pen ? "L" : "M") + fmt(p[0]) + " " + fmt(p[1]);
         pen = true;
-        if (inside(p)) pts.push(p);
+        all.push(p);
       }
-      return { dStr, pts };
+      return { dStr, all };
     }
 
     // Deklinaatioviivat (vakio Dec)
     for (let dec = Math.ceil(decMin / decStep) * decStep; dec <= decMax + 1e-9; dec += decStep) {
-      const { dStr, pts } = polyline(f => proj(raMin + (raMax - raMin) * f, dec));
+      const { dStr, all } = polyline(f => proj(raMin + (raMax - raMin) * f, dec));
       if (!dStr) continue;
       paths.push(dStr);
-      if (pts.length) {
-        const p = pts.reduce((a, b) => (b[0] < a[0] ? b : a));
-        labels.push({ x: p[0] + 5 * u, y: p[1] - 5 * u, text: decLabel(dec, decStep) });
-      }
+      const pos = decHorizontal ? leftLabel(all) : bottomLabel(all);
+      if (pos) labels.push({ ...pos, text: decLabel(dec, decStep) });
     }
 
     // Rektaskensioviivat (vakio RA)
     for (let ra = Math.ceil(raMin / raStep) * raStep; ra <= raMax + 1e-9; ra += raStep) {
-      const { dStr, pts } = polyline(f => proj(ra, decMin + (decMax - decMin) * f));
+      const { dStr, all } = polyline(f => proj(ra, decMin + (decMax - decMin) * f));
       if (!dStr) continue;
       paths.push(dStr);
-      if (pts.length) {
-        const p = pts.reduce((a, b) => (b[1] > a[1] ? b : a));
-        labels.push({ x: p[0] + 5 * u, y: p[1] - 6 * u, text: raLabel(ra, raStepSec) });
-      }
+      const pos = decHorizontal ? bottomLabel(all) : leftLabel(all);
+      if (pos) labels.push({ ...pos, text: raLabel(ra, raStepSec) });
     }
+
+    // Kohdemerkinnät: "annotations": [ { "name": "M32", "ra": 10.674, "dec": 40.865, "size": 8 } ]
+    // size (valinnainen) on kohteen halkaisija kaariminuutteina; ilman sitä piirretään pieni rengas
+    const ppdVB = W / d.fov;
+    const annHTML = (d.annotations || []).map(a => {
+      const ra = num(a.ra), dec = num(a.dec);
+      if (ra === undefined || dec === undefined) return "";
+      const p = proj(ra, dec);
+      if (!p || p[0] < -20 * u || p[0] > W + 20 * u || p[1] < -20 * u || p[1] > H + 20 * u) return "";
+      const r = num(a.size) ? Math.max(6 * u, num(a.size) / 60 / 2 * ppdVB) : 9 * u;
+      const name = String(a.name || "").replace(/[&<>"]/g, "");
+      return `
+        <g class="grid-ann">
+          <circle cx="${fmt(p[0])}" cy="${fmt(p[1])}" r="${fmt(r)}"/>
+          <text x="${fmt(p[0] + r + 5 * u)}" y="${fmt(p[1] + 4 * u)}" font-size="${fmt(13 * u)}">${name}</text>
+        </g>`;
+    }).join("");
 
     // Kompassi (N ja E) oikeaan yläkulmaan
     const c0 = proj(d.ra, d.dec);
@@ -799,6 +916,7 @@ if (starfield) {
       <g class="grid-lines">${paths.map(p => `<path d="${p}"/>`).join("")}</g>
       <g class="grid-labels" font-size="${fmt(11 * u)}">${labels.map(l =>
         `<text x="${fmt(l.x)}" y="${fmt(l.y)}">${l.text}</text>`).join("")}</g>
+      ${annHTML}
       ${compass}`;
   }
 
@@ -809,6 +927,18 @@ if (starfield) {
     skyBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       setGrid(!gridOn);
+    });
+  }
+
+  // Tiedot-painike: vierittää kuvatiedot näkyviin ja avaa "Mikä tämä on?" -kortin
+  const infoBtn = document.getElementById("infoBtn");
+  if (infoBtn) {
+    infoBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!lightboxText) return;
+      const card = lightboxText.querySelector(".about-card");
+      if (card) { card.open = true; aboutOpen = true; }
+      lightboxText.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
@@ -831,7 +961,12 @@ if (starfield) {
           flipped: !!img.flipped,
           integration: img.integration,
           telescope: img.telescope,
+          camera: img.camera,
+          mount: img.mount,
           filters: img.filters,
+          acquisition: Array.isArray(img.acquisition) ? img.acquisition : [],
+          annotations: Array.isArray(img.annotations) ? img.annotations : [],
+          about: img.about,
           date: img.date
         };
 

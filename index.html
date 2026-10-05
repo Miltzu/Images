@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=23">
-<script src="script.js?v=19"></script>
+<link rel="stylesheet" href="style.css?v=25">
+<script src="script.js?v=21"></script>
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 <body>
@@ -85,7 +85,7 @@
     </div>
   </div>
 
-  <section id="gallery" class="gallery coming-soon"></section>
+  <section id="gallery" class="gallery"></section>
 
 </main>
 
@@ -109,13 +109,23 @@
     </svg>
   </a>
 
-  <button id="skyLocationBtn" class="sky-location-btn" title="Koordinaattiruudukko" aria-label="Koordinaattiruudukko">
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4">
-      <path d="M2 7c5-2 11-2 16 0M2 13c5 2 11 2 16 0"/>
-      <path d="M7 2c-2 5-2 11 0 16M13 2c2 5 2 11 0 16"/>
-      <rect x="1.5" y="1.5" width="17" height="17" rx="3"/>
-    </svg>
-  </button>
+  <div class="lb-tools">
+    <button id="infoBtn" class="lb-tool" type="button">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="10" cy="10" r="8"/>
+        <path d="M10 9v5M10 6.2v.1"/>
+      </svg>
+      <span data-fi="Tiedot" data-en="Info">Tiedot</span>
+    </button>
+    <button id="skyLocationBtn" class="lb-tool sky-location-btn" type="button">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M2 7c5-2 11-2 16 0M2 13c5 2 11 2 16 0"/>
+        <path d="M7 2c-2 5-2 11 0 16M13 2c2 5 2 11 0 16"/>
+        <rect x="1.5" y="1.5" width="17" height="17" rx="3"/>
+      </svg>
+      <span data-fi="Koordinaatit" data-en="Coordinates">Koordinaatit</span>
+    </button>
+  </div>
 
   <div id="text" class="caption"></div>
 </div>

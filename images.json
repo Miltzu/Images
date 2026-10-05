@@ -3,50 +3,56 @@
     "file": "images/kuva1.jpg",
     "title": "-",
     "desc": "Northern lights",
-    "category": "revontuli",
-    "reveal": true,
-    "telescope/lens": "Nikkor 14-24mm F2.8", "camera": "Nikon D850", "mount": "…"
+    "category": "revontuli"
   },
   {
     "file": "images/kuva2.png",
     "title": "-",
     "desc": "Saturnus",
-    "category": "planeetta",
-    "reveal": true,
-    "telescope": "C11 XLT", "camera": "QHY268M", "mount": "…",
-    "acquisition": [
-    { "filter": "Ha",   "count": 20, "exposure": 300 },
-    { "filter": "OIII", "count": 15, "exposure": 300 }
-  ]
+    "category": "planeetta"
   },
   {
     "file": "images/kuva3.jpg",
     "title": "M31 - Andromeda Galaxy",
     "desc": "Ensimmäisiä deepsky kuvia.",
     "category": "deepsky",
-    "ra": 10.6847,
-    "dec": 41.2692,
-    "fov": 3.1,
-    "rotation": 112.4,
-    "flipped": true,
-    "telescope": "ES 127mm", "camera": "QHY268M", "mount": "…",
-    "acquisition": [
-    { "filter": "Ha",   "count": 20, "exposure": 300 },
-    { "filter": "OIII", "count": 15, "exposure": 300 }
-    ]
+    "ra": 10.7233,
+    "dec": 41.2705,
+    "fov": 1.978,
+    "rotation": 104.9,
+    "flipped": false,
+    "annotations": [
+      {
+        "name": "M31",
+        "ra": 10.6846,
+        "dec": 41.2692
+      },
+      {
+        "name": "M32",
+        "ra": 10.6742,
+        "dec": 40.8653
+      },
+      {
+        "name": "M110",
+        "ra": 10.0919,
+        "dec": 41.6854
+      }
+    ],
+    "about": {
+      "fi": "Andromedan galaksi on Linnunradan lähin suuri naapurigalaksi, noin 2,5 miljoonan valovuoden päässä. Sen kiekon halkaisija on noin 152 000 valovuotta, ja siinä on arviolta biljoona tähteä. Kuuttomana yönä sen näkee paljain silmin jopa valosaasteisilta alueilta. Kuvassa näkyvät myös sen kaksi kirkasta seuralaisgalaksia, M32 ja M110. Andromeda lähestyy Linnunrataa noin 110 kilometrin sekuntinopeudella, mutta uusimpien laskelmien mukaan galaksien törmäyksen todennäköisyys seuraavan 10 miljardin vuoden aikana on vain noin 50 prosenttia.",
+      "en": "The Andromeda Galaxy is the Milky Way's nearest large neighbouring galaxy, about 2.5 million light-years away. Its disc is roughly 152,000 light-years across and holds an estimated trillion stars. On a moonless night it is visible to the naked eye, even from moderately light-polluted areas. Its two bright satellite galaxies, M32 and M110, are also visible in the image. Andromeda is approaching the Milky Way at about 110 kilometres per second, but recent calculations put the chance of the two galaxies colliding within the next 10 billion years at only about 50 percent."
+    }
   },
   {
     "file": "images/kuva4.jpg",
     "title": "NGC 2359 - Thor's Helmet Nebula",
     "desc": "Thor's Helmet. Kuvattu Bortle 7-8 alueella. Valitettavasti kalibrointiruudut tästä puuttuu.",
     "category": "deepsky",
-    "ra": 109.7,
-    "dec": -13.2,
-    "reveal": true,
-    "telescope": "SW 250p quattro", "camera": "QHY268M", "mount": "…",
-    "acquisition": [
-    { "filter": "Ha",   "count": 20, "exposure": 300 },
-    { "filter": "OIII", "count": 15, "exposure": 300 }
-  ]
+    "ra": 109.625,
+    "dec": -13.23,
+    "about": {
+      "fi": "Thorin kypärä (NGC 2359) on emissiosumu Ison koiran tähdistössä, noin 12 000 valovuoden päässä. Sen halkaisija on noin 30 valovuotta. Sumun keskellä on erittäin kuuma Wolf-Rayet-tähti WR 7, jonka voimakas tähtituuli on puhaltanut ympäröivään kaasuun kuplan. Tähden arvellaan olevan lyhyessä vaiheessa juuri ennen supernovaräjähdystä.",
+      "en": "Thor's Helmet (NGC 2359) is an emission nebula in the constellation Canis Major, about 12,000 light-years away. It is roughly 30 light-years across. At its centre is the extremely hot Wolf-Rayet star WR 7, whose powerful stellar wind has blown a bubble into the surrounding gas. The star is thought to be in a brief stage just before exploding as a supernova."
+    }
   }
 ]
