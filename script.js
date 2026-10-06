@@ -134,6 +134,20 @@ if (starfield) {
     return `${sec} s`;
   }
 
+  // Kapeakaistakuva: "narrowband": true tai kaikki suodattimet ovat
+  // kapeakaistaisia (Ha, OIII, SII, Hβ, NII)
+  const NB_FILTERS = ["ha", "oiii", "o3", "sii", "s2", "hb", "hbeta", "nii", "n2"];
+  function isNarrowband(img) {
+    if (img.narrowband === true) return true;
+    if (img.narrowband === false) return false;
+    const tags = (img.tags || []).map(t => String(t).toLowerCase());
+    if (tags.includes("narrowband") || tags.includes("kapeakaista")) return true;
+    let names = (Array.isArray(img.acquisition) ? img.acquisition : []).map(a => a && a.filter);
+    if (!names.length && img.filters) names = String(img.filters).split(/[,/+&·]|\s+ja\s+|\s+and\s+/);
+    names = names.map(n => String(n || "").toLowerCase().replace(/[^a-z0-9]/g, "")).filter(Boolean);
+    return names.length > 0 && names.every(n => NB_FILTERS.includes(n));
+  }
+
   function esc(text) {
     return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   }
@@ -162,6 +176,7 @@ if (starfield) {
         projects.forEach(p => {
           const article = document.createElement("article");
           article.className = "project";
+          article.id = projectSlug(p);
 
           // Uusin merkintä ylimpänä; projects.json:iin lisätään aina loppuun
           const entriesHTML = (p.updates || []).slice().reverse().map(u => `
@@ -249,6 +264,14 @@ if (starfield) {
 
           projectsList.appendChild(article);
         });
+        // taivaskartalta tultaessa (#projektin-nimi) vieritetään projektiin
+        if (location.hash) {
+          const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+          if (target) {
+            target.classList.add("is-target");
+            setTimeout(() => target.scrollIntoView({ block: "start" }), 50);
+          }
+        }
       })
       .catch(() => {
         projectsList.innerHTML =
@@ -1169,6 +1192,7 @@ if (starfield) {
         card.className = "card";
         card._data = data;
         card.dataset.category = data.category;
+        if (isNarrowband(img)) card.dataset.narrowband = "1";
         card.dataset.file = data.file;
         if (img.reveal) card.classList.add("revealed");
 
@@ -1347,10 +1371,40 @@ if (starfield) {
   // Koko taivas Hammer-projektiolla. RA kasvaa vasemmalle (itä vasemmalla,
   // kuten taivasta katsottaessa), keskellä RA 0h.
   // =========================
+  // Projektin tunniste osoitteeseen: "PN G75.5+1.7" -> "pn-g75-5-1-7"
+  function projectSlug(p) {
+    return String(p.id || p.name || "projekti").toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  // Projektin integraation yhteenveto: "22 min 30 s / 30 h · <1 %"
+  function projectProgressText(p) {
+    const prList = Array.isArray(p.progress) ? p.progress : (p.progress ? [p.progress] : []);
+    const ch = prList.filter(c => c && c.goal_min > 0);
+    if (!ch.length) return "";
+    const done = ch.reduce((a, c) => a + Math.max(0, c.done_min || 0), 0);
+    const goal = ch.reduce((a, c) => a + c.goal_min, 0);
+    return `${formatMinutes(done)} / ${formatMinutes(goal)} · ${pctText(done, goal)}\u00a0%`;
+  }
+
   function initSkyMap(list) {
     const section = document.getElementById("skymap-section");
     const svg = document.getElementById("skyMap");
     if (!section || !svg) return;
+    // Projektikohteet (projects.json, "ra"/"dec") näytetään omalla värillään
+    fetch("projects.json")
+      .then(r => r.ok ? r.json() : [])
+      .catch(() => [])
+      .then(projects => buildSkyMap(list, Array.isArray(projects) ? projects : []));
+  }
+
+  function buildSkyMap(list, projects) {
+    const section = document.getElementById("skymap-section");
+    const svg = document.getElementById("skyMap");
+    const projItems = projects
+      .map((p, k) => ({ p, k, ra: num(p.ra), dec: num(p.dec), slug: projectSlug(p) }))
+      .filter(o => o.ra !== undefined && o.dec !== undefined);
 
     const items = list
       .map((d, i) => ({ d, i }))
@@ -1453,6 +1507,19 @@ if (starfield) {
         </g>`;
     }).join("");
 
+    const projPoints = projItems.map(({ p, k, ra, dec }) => {
+      const [x, y] = project(ra, dec);
+      const right = x > 820;
+      return `
+        <g class="sm-point sm-project" data-p="${k}" tabindex="0" role="link" aria-label="${esc(p.name || "")}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+          <circle class="sm-hit" r="30"></circle>
+          <circle class="sm-glow" r="14"></circle>
+          <circle class="sm-ring" r="7"></circle>
+          <circle class="sm-dot" r="3"></circle>
+          <text class="sm-name" x="${right ? -14 : 14}" y="5" text-anchor="${right ? "end" : "start"}">${esc(p.name || "")}</text>
+        </g>`;
+    }).join("");
+
     svg.innerHTML = `
       <defs>
         <clipPath id="smClip"><path d="${outline}"/></clipPath>
@@ -1461,8 +1528,7 @@ if (starfield) {
       <path class="sm-sky" d="M${CX - 480} ${CY} A480 240 0 1 0 ${CX + 480} ${CY} A480 240 0 1 0 ${CX - 480} ${CY}Z"/>
       <g clip-path="url(#smClip)">
         <path class="sm-south" d="${south}"/>
-        <path class="sm-mw-band" d="${milkyWay}" filter="url(#smBlur)"/>
-        <path class="sm-mw" d="${milkyWay}"/>
+        <image class="sm-mw-img" x="0" y="0" width="1000" height="520" href="" preserveAspectRatio="none"/>
         <path class="sm-grid" d="${meridians}${parallels}"/>
         <path class="sm-equator" d="${pathFrom(range(-179.9, 179.9, 3).map(l => hammerLP(l * D, 0)))}"/>
         <path class="sm-ecl" d="${ecliptic}"/>
@@ -1471,14 +1537,51 @@ if (starfield) {
       ${raLabels}${decLabels}
       <text class="sm-label sm-pole" x="${CX}" y="${CY - 248}" text-anchor="middle">+90°</text>
       <text class="sm-label sm-pole" x="${CX}" y="${CY + 262}" text-anchor="middle">−90°</text>
-      ${points}`;
+      ${projPoints}${points}`;
+
+    // Linnunrata-tekstuuri karttaan: jokaiselle kartan pikselille haetaan
+    // taivaan suunta (Hammerin käänteisprojektio) ja sen väri
+    (function paintMilkyWay() {
+      const imgEl = svg.querySelector(".sm-mw-img");
+      if (!imgEl) return;
+      const tex = new Image();
+      tex.onload = () => {
+        const tc = document.createElement("canvas");
+        tc.width = tex.naturalWidth; tc.height = tex.naturalHeight;
+        const tx = tc.getContext("2d");
+        tx.drawImage(tex, 0, 0);
+        const td = tx.getImageData(0, 0, tc.width, tc.height).data;
+        const MW = 1000, MH = 520, c = document.createElement("canvas");
+        c.width = MW; c.height = MH;
+        const cx = c.getContext("2d"), out = cx.createImageData(MW, MH), px = out.data;
+        for (let y = 0; y < MH; y++) {
+          for (let x = 0; x < MW; x++) {
+            const X = (x + 0.5 - CX) / S, Y = -(y + 0.5 - CY) / S;
+            if ((X * X) / 8 + (Y * Y) / 2 > 1) continue;
+            const z = Math.sqrt(1 - (X / 4) ** 2 - (Y / 2) ** 2);
+            const lam = 2 * Math.atan2(z * X, 2 * (2 * z * z - 1));
+            const phi = Math.asin(Math.max(-1, Math.min(1, z * Y)));
+            const ra = ((CENTER_RA - lam / D) % 360 + 360) % 360;
+            const dec = phi / D;
+            const tx2 = Math.min(tc.width - 1, (ra / 360 * tc.width) | 0);
+            const ty2 = Math.min(tc.height - 1, ((90 - dec) / 180 * tc.height) | 0);
+            const t = (ty2 * tc.width + tx2) * 4, o = (y * MW + x) * 4;
+            px[o] = td[t]; px[o + 1] = td[t + 1]; px[o + 2] = td[t + 2]; px[o + 3] = 255;
+          }
+        }
+        cx.putImageData(out, 0, 0);
+        imgEl.setAttribute("href", c.toDataURL("image/png"));
+      };
+      tex.src = "sky/milkyway.jpg";
+    })();
 
     listEl.innerHTML = items.map(({ d, i }) => {
       const full = displayTitle(d);
       const sn = shortName(d);
       const rest = full.length > sn.length ? full.slice(sn.length).replace(/^\s*[-–—]\s*/, "") : "";
       return `<li><button class="sm-chip" type="button" data-i="${i}"><span class="sm-chip-dot"></span><b>${esc(sn)}</b>${rest ? `<span>${esc(rest)}</span>` : ""}</button></li>`;
-    }).join("");
+    }).join("") + projItems.map(({ p, k }) => `
+      <li><button class="sm-chip sm-chip-project" type="button" data-p="${k}"><span class="sm-chip-dot"></span><b>${esc(p.name || "")}</b><span data-fi="Projekti, kesken" data-en="Project, in progress">${isEnglish() ? "Project, in progress" : "Projekti, kesken"}</span></button></li>`).join("");
 
     const pointEl = (i) => svg.querySelector(`.sm-point[data-i="${i}"]`);
     const highlight = (i, on) => { const g = pointEl(i); if (g) g.classList.toggle("hot", on); };
@@ -1510,7 +1613,39 @@ if (starfield) {
     }
     function hideTip() { if (tip) tip.hidden = true; }
 
-    svg.querySelectorAll(".sm-point").forEach(g => {
+    const projUrl = (o) => "projektit.html#" + o.slug;
+    function showProjectTip(o, g) {
+      if (!tip) return;
+      const en = isEnglish();
+      const prog = projectProgressText(o.p);
+      tip.innerHTML = `
+        <div class="tip-project-icon"></div>
+        <div>
+          <strong>${esc(o.p.name || "")}</strong>
+          <span>${en ? "Project in progress" : "Projekti kesken"}${prog ? `<br>${prog}` : ""}</span>
+          <em>${en ? "Click to see the project" : "Katso projekti klikkaamalla"}</em>
+        </div>`;
+      tip.hidden = false;
+      const wr = wrap.getBoundingClientRect();
+      const pr = g.querySelector(".sm-dot").getBoundingClientRect();
+      const px = pr.left + pr.width / 2 - wr.left, py = pr.top + pr.height / 2 - wr.top;
+      let left = px + 16, top = py - tip.offsetHeight - 12;
+      if (left + tip.offsetWidth > wr.width - 8) left = px - tip.offsetWidth - 16;
+      if (top < 8) top = py + 16;
+      tip.style.left = Math.max(8, left) + "px";
+      tip.style.top = top + "px";
+    }
+    svg.querySelectorAll(".sm-project").forEach(g => {
+      const o = projItems.find(x => x.k === +g.dataset.p);
+      g.addEventListener("click", () => { location.href = projUrl(o); });
+      g.addEventListener("keydown", (e) => { if (e.key === "Enter") location.href = projUrl(o); });
+      if (!isTouchDevice) {
+        g.addEventListener("mouseenter", () => { g.classList.add("hot"); showProjectTip(o, g); });
+        g.addEventListener("mouseleave", () => { g.classList.remove("hot"); hideTip(); });
+      }
+    });
+
+    svg.querySelectorAll(".sm-point:not(.sm-project)").forEach(g => {
       const i = +g.dataset.i;
       g.addEventListener("click", () => { hideTip(); openFromList(list, i); });
       g.addEventListener("keydown", (e) => {
@@ -1524,7 +1659,7 @@ if (starfield) {
       g.addEventListener("blur", () => highlight(i, false));
     });
     // "Taivas nyt" -näkymä ja välilehdet
-    const live = initSkyLive(list, items);
+    const live = initSkyLive(list, items, projItems);
     const liveEl = document.getElementById("skyLive");
     const mapPanel = document.getElementById("skyMapPanel");
     let skyMode = "live";
@@ -1541,7 +1676,15 @@ if (starfield) {
       b.addEventListener("click", () => setSkyMode(b.dataset.skyview)));
     setSkyMode("live");
 
-    listEl.querySelectorAll(".sm-chip").forEach(btn => {
+    listEl.querySelectorAll(".sm-chip-project").forEach(btn => {
+      const o = projItems.find(x => x.k === +btn.dataset.p);
+      btn.addEventListener("click", () => {
+        if (skyMode === "live" && live) live.locateProject(o.k);
+        else location.href = projUrl(o);
+      });
+    });
+
+    listEl.querySelectorAll(".sm-chip:not(.sm-chip-project)").forEach(btn => {
       const i = +btn.dataset.i;
       btn.addEventListener("click", () => {
         if (skyMode === "live" && live) live.locate(i);
@@ -1562,7 +1705,8 @@ if (starfield) {
   // oletuksena suoraan ylös, pohjoinen ylhäällä ja itä vasemmalla.
   // Tähtiaineisto: sky.json (d3-celestial / Hipparcos, kirkkaus ≤ 6).
   // =========================
-  function initSkyLive(list, items) {
+  function initSkyLive(list, items, projItems) {
+    projItems = projItems || [];
     const root = document.getElementById("skyLive");
     const canvas = document.getElementById("skyCanvas");
     if (!root || !canvas || !canvas.getContext) return null;
@@ -1574,13 +1718,13 @@ if (starfield) {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const view = { az: 180, alt: 90, fov: 180 };
-    const layers = { cons: true, mw: true, grid: false };
+    const layers = { cons: true, mw: true, grid: false, planets: true };
     let timeOffsetH = 0;
     let sky = null, loading = false, active = false;
     let W = 0, H = 0, dpr = 1;
     let hits = [];
     let dirty = true;
-    let cardIndex = -1;
+    let cardRef = null;   // { kind: "image", i } tai { kind: "project", k }
 
     const timeEl = document.getElementById("skyTime");
     const sunNote = document.getElementById("skySunNote");
@@ -1609,6 +1753,51 @@ if (starfield) {
       const elong = Math.acos(Math.cos(bet) * Math.cos(lam - sunLam));
       return { ra, dec, illum: (1 - Math.cos(elong)) / 2 };
     }
+    // Planeetat: JPL:n likimääräiset rataelementit (Standish, 1800–2050).
+    // [a, e, I, L, pitkä perihelin, nouseva solmu] ja muutokset / vuosisata
+    const PLANETS = [
+      { fi: "Merkurius", en: "Mercury", c: "#cfc6b8", r: 2.6, el: [0.38709927, 0.20563593, 7.00497902, 252.25032350, 77.45779628, 48.33076593], d: [0.00000037, 0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081] },
+      { fi: "Venus", en: "Venus", c: "#fff6dc", r: 4.2, el: [0.72333566, 0.00677672, 3.39467605, 181.97909950, 131.60246718, 76.67984255], d: [0.00000390, -0.00004107, -0.00078890, 58517.81538729, 0.00268329, -0.27769418] },
+      { fi: "Mars", en: "Mars", c: "#ff8a5c", r: 3.0, el: [1.52371034, 0.09339410, 1.84969142, -4.55343205, -23.94362959, 49.55953891], d: [0.00001847, 0.00007882, -0.00813131, 19140.30268499, 0.44441088, -0.29257343] },
+      { fi: "Jupiter", en: "Jupiter", c: "#f3dfc0", r: 3.8, el: [5.20288700, 0.04838624, 1.30439695, 34.39644051, 14.72847983, 100.47390909], d: [-0.00011607, -0.00013253, -0.00183714, 3034.74612775, 0.21252668, 0.20469106] },
+      { fi: "Saturnus", en: "Saturn", c: "#ecd9a0", r: 3.2, el: [9.53667594, 0.05386179, 2.48599187, 49.95424423, 92.59887831, 113.66242448], d: [-0.00125060, -0.00050991, 0.00193609, 1222.49362201, -0.41897216, -0.28867794] },
+      { fi: "Uranus", en: "Uranus", c: "#a8e6ef", r: 2.0, el: [19.18916464, 0.04725744, 0.77263783, 313.23810451, 170.95427630, 74.01692503], d: [-0.00196176, -0.00004397, -0.00242939, 428.48202785, 0.40805281, 0.04240589] },
+      { fi: "Neptunus", en: "Neptune", c: "#8fb2ff", r: 1.8, el: [30.06992276, 0.00859048, 1.77004347, -55.12002969, 44.96476227, 131.78422574], d: [0.00026291, 0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664] }
+    ];
+    const EARTH = { el: [1.00000261, 0.01671123, -0.00001531, 100.46457166, 102.93768193, 0.0], d: [0.00000562, -0.00004392, -0.01294668, 35999.37244981, 0.32327364, 0.0] };
+
+    function helio(pl, T) {
+      const v = pl.el.map((x, j) => x + pl.d[j] * T);
+      const [a, e, I, L, peri, node] = v;
+      const w = (peri - node) * D, O = node * D, inc = I * D;
+      let M = ((L - peri) % 360 + 540) % 360 - 180;
+      M *= D;
+      let E = M + e * Math.sin(M);
+      for (let n = 0; n < 8; n++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+      const xp = a * (Math.cos(E) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E);
+      const cw = Math.cos(w), sw = Math.sin(w), cO = Math.cos(O), sO = Math.sin(O), cI = Math.cos(inc), sI = Math.sin(inc);
+      return [
+        (cw * cO - sw * sO * cI) * xp + (-sw * cO - cw * sO * cI) * yp,
+        (cw * sO + sw * cO * cI) * xp + (-sw * sO + cw * cO * cI) * yp,
+        (sw * sI) * xp + (cw * sI) * yp
+      ];
+    }
+    function planetPositions(d) {
+      const T = d / 36525;
+      const eps = 23.43928 * D;
+      const earth = helio(EARTH, T);
+      return PLANETS.map(pl => {
+        const h = helio(pl, T);
+        const x = h[0] - earth[0], y = h[1] - earth[1], z = h[2] - earth[2];
+        const ye = y * Math.cos(eps) - z * Math.sin(eps);
+        const ze = y * Math.sin(eps) + z * Math.cos(eps);
+        const dist = Math.hypot(x, ye, ze);
+        return { pl, ra: ((Math.atan2(ye, x) / D) + 360) % 360, dec: Math.asin(ze / dist) / D };
+      });
+    }
+    // testausta varten: planeettojen paikat annettuna hetkenä
+    window.__skyPlanets = (date) => planetPositions(daysJ2000(date || new Date()));
+
     function altAz(ra, dec, lst) {
       const h = (lst - ra) * D, dd = dec * D;
       const up = sinLat * Math.sin(dd) + cosLat * Math.cos(dd) * Math.cos(h);
@@ -1678,7 +1867,8 @@ if (starfield) {
     }
 
     // ---------- aineisto ----------
-    let starVec = null, mwVec = null, lineVec = null, consVec = null, nameVec = null;
+    let starVec = null, lineVec = null, consVec = null, nameVec = null;
+    let mwTex = null;
     function toVecs(arr) {
       const v = new Float32Array(arr.length * 3);
       arr.forEach((p, i) => {
@@ -1704,7 +1894,6 @@ if (starfield) {
           sky = data;
           starVec = toVecs(sky.stars);
           sky.starColor = sky.stars.map(s => bvColor(s[3]));
-          mwVec = toVecs(sky.mw);
           lineVec = sky.lines.map(toVecs);
           consVec = toVecs(sky.cons);
           nameVec = toVecs(sky.names);
@@ -1712,20 +1901,84 @@ if (starfield) {
           requestDraw();
         })
         .catch(() => { root.classList.add("failed"); });
+      // Linnunrata: koko taivaan tekstuuri (RA 0..360 vasemmalta, Dec +90 ylhäällä)
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const cx = c.getContext("2d");
+        cx.drawImage(img, 0, 0);
+        mwTex = { w: c.width, h: c.height, data: cx.getImageData(0, 0, c.width, c.height).data };
+        requestDraw();
+      };
+      img.src = "sky/milkyway.jpg";
     }
 
     // ---------- piirto ----------
     const mwCanvas = document.createElement("canvas");
     const mwCtx = mwCanvas.getContext("2d");
+    let mwImg = null;
+
+    // Linnunradan tekstuuri piirretään taivaalle pikseli kerrallaan:
+    // jokaiselle näytön pisteelle haetaan suunta taivaalla ja sen väri.
+    // Lasketaan puolella resoluutiolla ja venytetään (pehmeä hehku).
+    function drawMilkyWay(A, alpha) {
+      if (!mwTex) return;
+      const q = W * H > 900000 ? 3 : 2;
+      const w = Math.ceil(W / q), h = Math.ceil(H / q);
+      if (mwCanvas.width !== w || mwCanvas.height !== h || !mwImg) {
+        mwCanvas.width = w; mwCanvas.height = h;
+        mwImg = mwCtx.createImageData(w, h);
+      }
+      const px = mwImg.data, tex = mwTex.data, TW = mwTex.w, TH = mwTex.h;
+      const r = cam.r, u = cam.u, f = cam.f;
+      const A0 = A[0], A1 = A[1], A2 = A[2];
+      const TWO_PI = Math.PI * 2;
+      let o = 0;
+      for (let y = 0; y < h; y++) {
+        const Y = -((y + 0.5) * q - H / 2) / S;
+        for (let x = 0; x < w; x++, o += 4) {
+          const X = ((x + 0.5) * q - W / 2) / S;
+          const rho2 = X * X + Y * Y;
+          const cz = (4 - rho2) / (4 + rho2);
+          const k = (1 + cz) / 2;
+          const cx = X * k, cy = Y * k;
+          const hE = cx * r[0] + cy * u[0] + cz * f[0];
+          const hN = cx * r[1] + cy * u[1] + cz * f[1];
+          const hU = cy * u[2] + cz * f[2];
+          if (hU < -0.01) { px[o + 3] = 0; continue; }
+          const ex = hE * A0[0] + hN * A1[0] + hU * A2[0];
+          const ey = hE * A0[1] + hN * A1[1] + hU * A2[1];
+          const ez = hE * A0[2] + hN * A1[2] + hU * A2[2];
+          let ra = Math.atan2(ey, ex); if (ra < 0) ra += TWO_PI;
+          const dec = Math.asin(ez > 1 ? 1 : ez < -1 ? -1 : ez);
+          const tx = Math.min(TW - 1, (ra / TWO_PI * TW) | 0);
+          const ty = Math.min(TH - 1, ((0.5 - dec / Math.PI) * TH) | 0);
+          const t = (ty * TW + tx) * 4;
+          // ilmakehän himmennys lähellä horisonttia
+          const ext = hU > 0.4 ? 1 : 0.2 + hU * 2;
+          px[o] = tex[t] * ext; px[o + 1] = tex[t + 1] * ext; px[o + 2] = tex[t + 2] * ext; px[o + 3] = 255;
+        }
+      }
+      mwCtx.putImageData(mwImg, 0, 0);
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = alpha;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(mwCanvas, 0, 0, w * q, h * q);
+      ctx.restore();
+    }
 
     function resize() {
       const r = canvas.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = r.width; H = r.height;
+      // puhelimessa tietokortti sijoitetaan painikerivin yläpuolelle
+      const bar = root.querySelector(".skylive-bar");
+      if (bar) root.style.setProperty("--bar-h", (getComputedStyle(bar).position === "static" ? bar.offsetHeight : 0) + "px");
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
-      mwCanvas.width = Math.max(1, Math.round(W / 4));
-      mwCanvas.height = Math.max(1, Math.round(H / 4));
+      mwImg = null;
       requestDraw();
     }
 
@@ -1802,29 +2055,8 @@ if (starfield) {
         return;
       }
 
-      // Linnunrata: piirretään pieneen puskuriin ja venytetään -> pehmeä
-      if (layers.mw) {
-        const q = 4;
-        mwCtx.setTransform(1, 0, 0, 1, 0, 0);
-        mwCtx.clearRect(0, 0, mwCanvas.width, mwCanvas.height);
-        const n = sky.mw.length;
-        const stepRad = sky.mwStep * D;
-        for (let i = 0; i < n; i++) {
-          if (!projVec(mwVec[i * 3], mwVec[i * 3 + 1], mwVec[i * 3 + 2])) continue;
-          const size = Math.max(1, S * out[2] * stepRad * 1.25 / q);
-          const x = out[0] / q, y = out[1] / q;
-          if (x < -size || y < -size || x > mwCanvas.width + size || y > mwCanvas.height + size) continue;
-          mwCtx.fillStyle = `rgba(190,205,255,${0.07 * sky.mw[i][2]})`;
-          mwCtx.fillRect(x - size / 2, y - size / 2, size, size);
-        }
-        ctx.save();
-        ctx.globalAlpha = 0.85 * starDim;
-        ctx.imageSmoothingEnabled = true;
-        ctx.filter = `blur(${Math.max(5, Math.min(48, S * stepRad * 1.1)).toFixed(1)}px)`;
-        ctx.drawImage(mwCanvas, 0, 0, W, H);
-        ctx.filter = "none";
-        ctx.restore();
-      }
+      // Linnunrata
+      if (layers.mw) drawMilkyWay(cam.A, 0.8 * starDim);
 
       // koordinaattiruudukko (RA/Dec)
       if (layers.grid) {
@@ -1863,14 +2095,17 @@ if (starfield) {
 
       // tähdet (kirkkaimmat viimeisenä, aineisto on järjestetty kirkkauden mukaan)
       const zoomBoost = Math.min(2.4, Math.pow(180 / view.fov, 0.3));
+      const A2 = cam.A[2];
       const magLimit = 6.2;
       for (let i = sky.stars.length - 1; i >= 0; i--) {
         if (!projVec(starVec[i * 3], starVec[i * 3 + 1], starVec[i * 3 + 2])) continue;
         const x = out[0], y = out[1];
         if (x < -10 || y < -10 || x > W + 10 || y > H + 10) continue;
         const mag = sky.stars[i][2];
-        const r = Math.max(0.45, (magLimit - mag) * 0.42) * zoomBoost;
-        const alpha = Math.min(1, 0.25 + (magLimit - mag) * 0.2) * starDim;
+        const up = A2[0] * starVec[i * 3] + A2[1] * starVec[i * 3 + 1] + A2[2] * starVec[i * 3 + 2];
+        const ext = up > 0.35 ? 1 : Math.max(0.15, 0.3 + up * 2);
+        const r = Math.max(0.45, (magLimit - mag) * 0.42) * zoomBoost * (0.6 + 0.4 * ext);
+        const alpha = Math.min(1, 0.25 + (magLimit - mag) * 0.2) * starDim * ext;
         ctx.globalAlpha = alpha;
         ctx.fillStyle = sky.starColor[i];
         if (r < 1.1) {
@@ -1913,6 +2148,31 @@ if (starfield) {
         ctx.fillText(s[2], out[0] + 6, out[1] - 6);
       });
 
+      // planeetat
+      if (layers.planets) {
+        planetPositions(d).forEach(({ pl, ra, dec }) => {
+          // Uranus ja Neptunus (ei näy paljain silmin) vasta lähempää katsottaessa
+          if (pl.r < 2.2 && ppd < 3.5) return;
+          if (!projRaDec(ra, dec) || out[3] < 0) return;
+          const x = out[0], y = out[1];
+          const r = pl.r * Math.min(1.8, Math.pow(180 / view.fov, 0.2));
+          const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3.5);
+          g.addColorStop(0, pl.c);
+          g.addColorStop(0.3, pl.c + "66");
+          g.addColorStop(1, pl.c + "00");
+          ctx.globalAlpha = Math.max(0.55, starDim);
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(x, y, r * 3.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = pl.c;
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.font = "500 11px Inter, system-ui, sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillStyle = pl.c;
+          ctx.fillText(en ? pl.en : pl.fi, x + r + 5, y + r + 7);
+        });
+      }
+
       // Aurinko ja Kuu
       const moon = moonPos(d, sun.lam);
       drawBody(sun.ra, sun.dec, "#ffd36b", 0, en ? "Sun" : "Aurinko", 1);
@@ -1921,10 +2181,30 @@ if (starfield) {
       // kuvatut kohteet
       hits = [];
       ctx.font = "600 13px Inter, system-ui, sans-serif";
+      // projektikohteet: oranssi katkoviivarengas
+      projItems.forEach(o => {
+        if (!projRaDec(o.ra, o.dec) || out[3] < 0) return;
+        const x = out[0], y = out[1];
+        const hot = cardRef && cardRef.kind === "project" && cardRef.k === o.k;
+        ctx.beginPath(); ctx.arc(x, y, hot ? 16 : 12, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,179,71,0.14)"; ctx.fill();
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1.6; ctx.strokeStyle = "#ffb347";
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+        const right = x + 14 + ctx.measureText(o.p.name || "").width > W - 6;
+        ctx.textAlign = right ? "right" : "left";
+        ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(0,0,0,0.85)";
+        const lx = x + (right ? -14 : 14);
+        ctx.strokeText(o.p.name || "", lx, y + 1);
+        ctx.fillStyle = "#ffb347";
+        ctx.fillText(o.p.name || "", lx, y + 1);
+        hits.push({ x, y, kind: "project", k: o.k });
+      });
       items.forEach(({ d: item, i }) => {
         if (!projRaDec(item.ra, item.dec) || out[3] < 0) return;
         const x = out[0], y = out[1];
-        const hot = i === cardIndex;
+        const hot = cardRef && cardRef.kind === "image" && cardRef.i === i;
         ctx.beginPath();
         ctx.arc(x, y, hot ? 16 : 12, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(61,255,160,0.16)";
@@ -1932,16 +2212,17 @@ if (starfield) {
         ctx.lineWidth = 1.6;
         ctx.strokeStyle = "#3dffa0";
         ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
-        ctx.textAlign = x > W - 120 ? "right" : "left";
+        const label = displayTitle(item).split(/\s+[-–—]\s+/)[0];
+        const flip = x + 14 + ctx.measureText(label).width > W - 6;
+        ctx.textAlign = flip ? "right" : "left";
         ctx.lineWidth = 4;
         ctx.lineJoin = "round";
         ctx.strokeStyle = "rgba(0,0,0,0.85)";
-        const label = displayTitle(item).split(/\s+[-–—]\s+/)[0];
-        const lx = x + (x > W - 120 ? -14 : 14);
+        const lx = x + (flip ? -14 : 14);
         ctx.strokeText(label, lx, y + 1);
         ctx.fillStyle = hot ? "#3dffa0" : "#e8eef4";
         ctx.fillText(label, lx, y + 1);
-        hits.push({ x, y, i });
+        hits.push({ x, y, kind: "image", i });
       });
 
       ctx.restore();
@@ -1961,7 +2242,7 @@ if (starfield) {
         sunNote.textContent = note;
         sunNote.hidden = !note;
       }
-      if (cardIndex >= 0) renderCard();
+      if (cardRef) renderCard();
     }
 
     function drawBody(ra, dec, color, kind, label, illum, sun) {
@@ -2033,33 +2314,51 @@ if (starfield) {
       return null;
     }
     function renderCard() {
-      const o = items.find(x => x.i === cardIndex);
-      if (!o || !card) { if (card) card.hidden = true; return; }
+      if (!card || !cardRef) { if (card) card.hidden = true; return; }
       const en = isEnglish();
-      const pos = altAz(o.d.ra, o.d.dec, lstDeg(daysJ2000(nowDate())));
+      const isProj = cardRef.kind === "project";
+      const o = isProj ? projItems.find(x => x.k === cardRef.k) : items.find(x => x.i === cardRef.i);
+      if (!o) { card.hidden = true; return; }
+      const ra = isProj ? o.ra : o.d.ra, dec = isProj ? o.dec : o.d.dec;
+      const pos = altAz(ra, dec, lstDeg(daysJ2000(nowDate())));
       let status;
       if (pos.alt > 0) {
         status = en ? `${Math.round(pos.alt)}° above the horizon` : `${Math.round(pos.alt)}° horisontin yläpuolella`;
       } else {
-        const rt = riseTime(o.d);
+        const rt = riseTime({ ra, dec });
         const hhmm = rt ? rt.toLocaleTimeString(en ? "en-GB" : "fi-FI", { timeZone: "Europe/Helsinki", hour: "2-digit", minute: "2-digit" }) : "";
         status = rt ? (en ? `Below the horizon – rises at ${hhmm}` : `Horisontin alla – nousee klo ${hhmm}`)
                     : (en ? "Does not rise in Finland" : "Ei nouse Suomessa");
       }
-      const key = cardIndex + "|" + status + "|" + en;
+      const key = JSON.stringify(cardRef) + "|" + status + "|" + en;
       if (card.dataset.key === key && !card.hidden) return;
       card.dataset.key = key;
-      card.innerHTML = `
-        <button class="skylive-card-close" type="button" aria-label="${en ? "Close" : "Sulje"}">×</button>
-        <img src="${esc(thumbPath(o.d.file))}" alt="">
-        <div>
-          <strong>${esc(displayTitle(o.d))}</strong>
-          <span class="${pos.alt > 0 ? "up" : "down"}">${status}</span>
-          <button class="btn btn-primary skylive-open" type="button">${en ? "Open image" : "Avaa kuva"}</button>
-        </div>`;
+      if (isProj) {
+        const prog = projectProgressText(o.p);
+        card.innerHTML = `
+          <button class="skylive-card-close" type="button" aria-label="${en ? "Close" : "Sulje"}">×</button>
+          <div class="skylive-card-proj"></div>
+          <div>
+            <strong>${esc(o.p.name || "")}</strong>
+            <span class="proj">${en ? "Project in progress" : "Projekti kesken"}${prog ? ` · ${prog}` : ""}</span>
+            <span class="${pos.alt > 0 ? "up" : "down"}">${status}</span>
+            <a class="btn btn-project" href="projektit.html#${o.slug}">${en ? "See project" : "Katso projekti"}</a>
+          </div>`;
+        card.classList.add("is-project");
+      } else {
+        card.innerHTML = `
+          <button class="skylive-card-close" type="button" aria-label="${en ? "Close" : "Sulje"}">×</button>
+          <img src="${esc(thumbPath(o.d.file))}" alt="">
+          <div>
+            <strong>${esc(displayTitle(o.d))}</strong>
+            <span class="${pos.alt > 0 ? "up" : "down"}">${status}</span>
+            <button class="btn btn-primary skylive-open" type="button">${en ? "Open image" : "Avaa kuva"}</button>
+          </div>`;
+        card.classList.remove("is-project");
+        card.querySelector(".skylive-open").addEventListener("click", () => openFromList(list, o.i));
+      }
       card.hidden = false;
-      card.querySelector(".skylive-open").addEventListener("click", () => openFromList(list, o.i));
-      card.querySelector(".skylive-card-close").addEventListener("click", () => { cardIndex = -1; card.hidden = true; requestDraw(); });
+      card.querySelector(".skylive-card-close").addEventListener("click", () => { cardRef = null; card.hidden = true; requestDraw(); });
     }
 
     // kääntää katseen kohteeseen
@@ -2083,15 +2382,23 @@ if (starfield) {
       anim = requestAnimationFrame(step);
     }
 
-    function locate(i) {
-      const o = items.find(x => x.i === i);
-      if (!o) return;
-      cardIndex = i;
-      const pos = altAz(o.d.ra, o.d.dec, lstDeg(daysJ2000(nowDate())));
+    function locateAt(ref, ra, dec) {
+      cardRef = ref;
+      const pos = altAz(ra, dec, lstDeg(daysJ2000(nowDate())));
       if (pos.alt > 0) lookAt(pos.az, pos.alt, 70);
+      if (card) card.dataset.key = "";
       renderCard();
       requestDraw();
       root.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    }
+
+    function locate(i) {
+      const o = items.find(x => x.i === i);
+      if (o) locateAt({ kind: "image", i }, o.d.ra, o.d.dec);
+    }
+    function locateProject(k) {
+      const o = projItems.find(x => x.k === k);
+      if (o) locateAt({ kind: "project", k }, o.ra, o.dec);
     }
 
     // ---------- ohjaus ----------
@@ -2163,7 +2470,8 @@ if (starfield) {
       canvas.style.cursor = "grab";
       if (wasTap && e.type === "pointerup") {
         const h = hitAt(xy[0], xy[1]);
-        if (h) openFromList(list, h.i);
+        if (h && h.kind === "project") locateProject(h.k);
+        else if (h) openFromList(list, h.i);
       }
     }
     canvas.addEventListener("pointerup", endPointer);
@@ -2180,9 +2488,23 @@ if (starfield) {
     });
 
     function showTip(h) {
+      const en = isEnglish();
+      if (h.kind === "project") {
+        const o = projItems.find(x => x.k === h.k);
+        if (!tip || !o) return;
+        const prog = projectProgressText(o.p);
+        tip.innerHTML = `
+          <div class="tip-project-icon"></div>
+          <div>
+            <strong>${esc(o.p.name || "")}</strong>
+            <span>${en ? "Project in progress" : "Projekti kesken"}${prog ? `<br>${prog}` : ""}</span>
+            <em>${en ? "Click for details" : "Lisätietoja klikkaamalla"}</em>
+          </div>`;
+        placeTip(h);
+        return;
+      }
       const d = list[h.i];
       if (!tip || !d) return;
-      const en = isEnglish();
       tip.innerHTML = `
         <img src="${esc(thumbPath(d.file))}" alt="">
         <div>
@@ -2190,6 +2512,9 @@ if (starfield) {
           <span>RA ${formatRa(d.ra)}<br>Dec ${formatDec(d.dec)}</span>
           <em>${en ? "Click to open" : "Avaa klikkaamalla"}</em>
         </div>`;
+      placeTip(h);
+    }
+    function placeTip(h) {
       tip.hidden = false;
       const cr = canvas.getBoundingClientRect(), rr = root.getBoundingClientRect();
       const px = h.x + cr.left - rr.left, py = h.y + cr.top - rr.top;
@@ -2272,10 +2597,11 @@ if (starfield) {
 
     return {
       locate,
+      locateProject,
       setActive(on) {
         active = on;
         if (on) { load(); resize(); }
-        else { hideTip(); if (card) card.hidden = true; cardIndex = -1; }
+        else { hideTip(); if (card) card.hidden = true; cardRef = null; }
       }
     };
   }
@@ -2292,10 +2618,28 @@ if (starfield) {
 
       const category = btn.dataset.category;
 
+      let shown = 0;
       if (gallery) gallery.querySelectorAll(".card").forEach(card => {
-        const show = category === "all" || card.dataset.category === category;
+        const show = category === "all" || card.dataset.category === category ||
+          (category === "narrowband" && card.dataset.narrowband === "1");
         card.style.display = show ? "" : "none";
+        if (show) shown++;
       });
+      // tyhjä kategoria: lyhyt ilmoitus
+      if (gallery) {
+        let empty = gallery.querySelector(".gallery-empty");
+        if (!shown) {
+          if (!empty) {
+            empty = document.createElement("p");
+            empty.className = "empty-state gallery-empty";
+            empty.dataset.fi = "Tähän osioon ei ole vielä kuvia.";
+            empty.dataset.en = "No images in this section yet.";
+            gallery.appendChild(empty);
+          }
+          empty.textContent = isEnglish() ? empty.dataset.en : empty.dataset.fi;
+          empty.hidden = false;
+        } else if (empty) empty.hidden = true;
+      }
     });
   });
 

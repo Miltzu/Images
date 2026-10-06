@@ -1449,6 +1449,7 @@ body.lightbox-open {
 .skymap .sm-mw-band { fill: none; stroke: rgba(170, 190, 255, 0.16); stroke-width: 46; stroke-linecap: round; }
 .skymap .sm-mw { fill: none; stroke: rgba(190, 205, 255, 0.28); stroke-width: 1; }
 .skymap .sm-south { fill: rgba(255, 255, 255, 0.035); }
+.skymap .sm-mw-img { mix-blend-mode: screen; opacity: 0.85; }
 
 .skymap .sm-label {
   fill: var(--dim);
@@ -1542,7 +1543,7 @@ body.lightbox-open {
   width: 10px; height: 10px; border-radius: 50%;
   background: #fff; box-shadow: 0 0 0 2px #000, 0 0 0 3.5px var(--accent);
 }
-.lg-mw { width: 22px; height: 8px; border-radius: 4px; background: rgba(170, 190, 255, 0.3); }
+.lg-mw { width: 22px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, rgba(190, 205, 255, 0.45), rgba(255, 220, 170, 0.55)); }
 .lg-ecl { width: 22px; border-top: 1.5px dashed rgba(255, 211, 107, 0.7); }
 .lg-south { width: 16px; height: 12px; border-radius: 3px; background: rgba(255, 255, 255, 0.09); border: 1px solid var(--line-strong); }
 
@@ -1743,6 +1744,50 @@ body.lightbox-open {
 }
 
 .skylive .skymap-tip { z-index: 7; }
+
+/* projektikohteet (oranssi) */
+.skymap .sm-project .sm-ring { stroke: #ffb347; stroke-dasharray: 3 3; }
+.skymap .sm-project .sm-glow { fill: rgba(255, 179, 71, 0.14); }
+.skymap .sm-project .sm-name { fill: #ffb347; }
+.skymap .sm-project.hot .sm-glow,
+.skymap .sm-project:hover .sm-glow { fill: rgba(255, 179, 71, 0.3); }
+.skymap .sm-project.hot .sm-name,
+.skymap .sm-project:hover .sm-name { fill: #ffd08a; }
+.lg-proj {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 1.5px dashed #ffb347;
+}
+.sm-chip-project .sm-chip-dot { background: #ffb347; box-shadow: 0 0 8px #ffb347; }
+.sm-chip-project:hover { border-color: #ffb347; background: rgba(255, 179, 71, 0.08); }
+
+.tip-project-icon,
+.skylive-card-proj {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px dashed #ffb347;
+  background: radial-gradient(circle, rgba(255, 179, 71, 0.25), transparent 70%);
+  align-self: center;
+}
+.skylive-card-proj { width: 64px; height: 64px; margin: 6px; }
+.skylive-card.is-project { border-color: rgba(255, 179, 71, 0.35); }
+.skylive-card span.proj { color: #ffb347; margin-bottom: 0; }
+.btn-project {
+  border: 1px solid #ffb347;
+  background: transparent;
+  color: #ffb347;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 0.8rem;
+}
+.btn-project:hover { background: rgba(255, 179, 71, 0.12); }
+
+/* projektisivulle tultaessa taivaskartalta */
+.project { scroll-margin-top: 96px; }
+.project.is-target { border-color: rgba(255, 179, 71, 0.45); box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.25); }
+
+.gallery-empty[hidden] { display: none; }
 
 /* koko näyttö */
 body.sky-full { overflow: hidden; }
@@ -2102,7 +2147,11 @@ body.sky-full .page { z-index: 60; }
   .skylive-group { padding: 3px; gap: 2px; }
   .sky-btn { height: 30px; padding: 0 9px; font-size: 0.72rem; }
   .sky-btn.sky-icon { width: 30px; }
-  .skylive-card { left: 10px; right: 10px; top: 56px; width: auto; }
+  .skylive-card { left: 10px; right: 10px; top: auto; bottom: calc(var(--bar-h, 150px) + 10px); width: auto; padding: 10px; gap: 10px; }
+  .skylive-card img { width: 56px; height: 56px; }
+  .skylive-card-proj { width: 48px; height: 48px; margin: 4px; }
+  .skylive-card strong { font-size: 0.85rem; }
+  .skylive-card span { margin: 2px 0 8px; font-size: 0.72rem; }
 
   .compare { max-width: none; border-radius: var(--radius); }
   .compare-tag { top: 10px; font-size: 0.68rem; padding: 4px 9px; }
