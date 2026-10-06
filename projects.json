@@ -3,6 +3,8 @@
     "name": "PN G75.5+1.7",
     "status": "kesken",
     "category": "deepsky",
+    "ra": 303.8425,
+    "dec": 38.0494,
     "desc": "Erittäin himmeä planetaarinen sumu.",
     "updates": [
       {
