@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="style.css?v=27">
-<script src="script.js?v=23"></script>
+<link rel="stylesheet" href="style.css?v=29">
+<script src="script.js?v=25"></script>
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 </head>
 <body>
@@ -27,6 +27,7 @@
     <a class="brand" href="index.html">Miltzu <span>Images</span></a>
     <nav class="site-nav">
       <a href="index.html" class="active" data-fi="Galleria" data-en="Gallery">Galleria</a>
+      <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
       <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
       <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
       <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
@@ -103,28 +104,8 @@
 
   <section id="gallery" class="gallery"></section>
 
-  <!-- Taivaskartta: kohteet, joilla on ra/dec images.json:ssa -->
-  <section id="skymap-section" class="skymap-section" hidden>
-    <div class="section-head">
-      <div>
-        <h2 data-fi="Taivaskartta" data-en="Sky map">Taivaskartta</h2>
-        <p data-fi="Missä kuvien kohteet ovat taivaalla. Avaa kuva klikkaamalla kohdetta." data-en="Where the imaged objects are on the sky. Click an object to open its image.">Missä kuvien kohteet ovat taivaalla. Avaa kuva klikkaamalla kohdetta.</p>
-      </div>
-    </div>
-    <div id="skyMapWrap" class="skymap-wrap">
-      <svg id="skyMap" class="skymap" viewBox="0 0 1000 520" role="img" aria-label="Taivaskartta"></svg>
-      <div id="skyMapTip" class="skymap-tip" hidden></div>
-    </div>
-    <div class="skymap-legend">
-      <span><i class="lg-dot"></i><span data-fi="Kuvattu kohde" data-en="Imaged object">Kuvattu kohde</span></span>
-      <span><i class="lg-mw"></i><span data-fi="Linnunrata" data-en="Milky Way">Linnunrata</span></span>
-      <span><i class="lg-ecl"></i><span data-fi="Ekliptika" data-en="Ecliptic">Ekliptika</span></span>
-      <span><i class="lg-south"></i><span data-fi="Ei nouse Suomessa (60° P)" data-en="Never rises in Finland (60° N)">Ei nouse Suomessa (60° P)</span></span>
-    </div>
-    <ul id="skyMapList" class="skymap-list"></ul>
-  </section>
-
 </main>
+
 
 <!-- lightbox -->
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
@@ -177,6 +158,7 @@
     <span>Miltzu</span>
     <span>•</span>
     <span>© 2026</span>
+    <a class="footer-link" href="loki.html" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</a>
     <a class="social-link" href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">@M1ltzu</a>
   </div>
 </footer>

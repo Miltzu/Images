@@ -422,7 +422,7 @@ if (starfield) {
       .catch(processEmpty);
   }
 
-  if (!gallery || !lightbox || !lightboxImg) return;
+  if (!lightbox || !lightboxImg) return;
 
   const lbFrame = document.getElementById("lbFrame");
   const lbStage = document.getElementById("lbStage");
@@ -453,7 +453,7 @@ if (starfield) {
     const views = parseInt(localStorage.getItem(key) || "0", 10) + 1;
     localStorage.setItem(key, views);
 
-    gallery.querySelectorAll(".card").forEach(card => {
+    if (gallery) gallery.querySelectorAll(".card").forEach(card => {
       if (card.dataset.file === file) {
         const value = card.querySelector(".view-pill");
         if (value) value.textContent = views;
@@ -1162,6 +1162,8 @@ if (starfield) {
           focus: img.focus
         };
         allData.push(data);
+        // Taivas-sivulla ei ole galleriaa: kuvat vain taivaskarttaa varten
+        if (!gallery) return;
 
         const card = document.createElement("div");
         card.className = "card";
@@ -1353,7 +1355,6 @@ if (starfield) {
     const items = list
       .map((d, i) => ({ d, i }))
       .filter(o => o.d.ra !== undefined && o.d.dec !== undefined);
-    if (!items.length) return;
     section.hidden = false;
 
     const wrap = document.getElementById("skyMapWrap");
@@ -1522,9 +1523,30 @@ if (starfield) {
       g.addEventListener("focus", () => highlight(i, true));
       g.addEventListener("blur", () => highlight(i, false));
     });
+    // "Taivas nyt" -näkymä ja välilehdet
+    const live = initSkyLive(list, items);
+    const liveEl = document.getElementById("skyLive");
+    const mapPanel = document.getElementById("skyMapPanel");
+    let skyMode = "live";
+    function setSkyMode(mode) {
+      skyMode = live ? mode : "map";
+      section.querySelectorAll("[data-skyview]").forEach(b =>
+        b.classList.toggle("active", b.dataset.skyview === skyMode));
+      if (liveEl) liveEl.hidden = skyMode !== "live";
+      if (mapPanel) mapPanel.hidden = skyMode !== "map";
+      section.classList.toggle("mode-live", skyMode === "live");
+      if (live) live.setActive(skyMode === "live");
+    }
+    section.querySelectorAll("[data-skyview]").forEach(b =>
+      b.addEventListener("click", () => setSkyMode(b.dataset.skyview)));
+    setSkyMode("live");
+
     listEl.querySelectorAll(".sm-chip").forEach(btn => {
       const i = +btn.dataset.i;
-      btn.addEventListener("click", () => openFromList(list, i));
+      btn.addEventListener("click", () => {
+        if (skyMode === "live" && live) live.locate(i);
+        else openFromList(list, i);
+      });
       btn.addEventListener("mouseenter", () => highlight(i, true));
       btn.addEventListener("mouseleave", () => highlight(i, false));
       btn.addEventListener("focus", () => highlight(i, true));
@@ -1532,10 +1554,736 @@ if (starfield) {
     });
   }
 
+
+  // =========================
+  // TAIVAS NYT – planetaario
+  // Tähtitaivas Etelä-Suomesta katsottuna valittuna hetkenä.
+  // Stereografinen projektio (kuten kalansilmä-/allsky-kamera), katse
+  // oletuksena suoraan ylös, pohjoinen ylhäällä ja itä vasemmalla.
+  // Tähtiaineisto: sky.json (d3-celestial / Hipparcos, kirkkaus ≤ 6).
+  // =========================
+  function initSkyLive(list, items) {
+    const root = document.getElementById("skyLive");
+    const canvas = document.getElementById("skyCanvas");
+    if (!root || !canvas || !canvas.getContext) return null;
+    const ctx = canvas.getContext("2d");
+
+    const LAT = 60.17, LON = 24.94;      // Helsinki
+    const D = Math.PI / 180;
+    const sinLat = Math.sin(LAT * D), cosLat = Math.cos(LAT * D);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const view = { az: 180, alt: 90, fov: 180 };
+    const layers = { cons: true, mw: true, grid: false };
+    let timeOffsetH = 0;
+    let sky = null, loading = false, active = false;
+    let W = 0, H = 0, dpr = 1;
+    let hits = [];
+    let dirty = true;
+    let cardIndex = -1;
+
+    const timeEl = document.getElementById("skyTime");
+    const sunNote = document.getElementById("skySunNote");
+    const tip = document.getElementById("skyLiveTip");
+    const card = document.getElementById("skyCard");
+    const fullBtn = document.getElementById("skyFull");
+
+    // ---------- tähtitiede ----------
+    function nowDate() { return new Date(Date.now() + timeOffsetH * 3600e3); }
+    function daysJ2000(date) { return date.getTime() / 86400000 + 2440587.5 - 2451545.0; }
+    function lstDeg(d) { return ((280.46061837 + 360.98564736629 * d + LON) % 360 + 360) % 360; }
+
+    function sunPos(d) {
+      const g = (357.528 + 0.9856003 * d) * D;
+      const lam = (280.460 + 0.9856474 * d + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * D;
+      const eps = (23.439 - 0.0000004 * d) * D;
+      return { ra: Math.atan2(Math.cos(eps) * Math.sin(lam), Math.cos(lam)) / D,
+               dec: Math.asin(Math.sin(eps) * Math.sin(lam)) / D, lam };
+    }
+    function moonPos(d, sunLam) {
+      const L0 = 218.316 + 13.176396 * d, M = (134.963 + 13.064993 * d) * D, F = (93.272 + 13.229350 * d) * D;
+      const lam = (L0 + 6.289 * Math.sin(M)) * D, bet = 5.128 * Math.sin(F) * D;
+      const eps = 23.439 * D;
+      const ra = Math.atan2(Math.sin(lam) * Math.cos(eps) - Math.tan(bet) * Math.sin(eps), Math.cos(lam)) / D;
+      const dec = Math.asin(Math.sin(bet) * Math.cos(eps) + Math.cos(bet) * Math.sin(eps) * Math.sin(lam)) / D;
+      const elong = Math.acos(Math.cos(bet) * Math.cos(lam - sunLam));
+      return { ra, dec, illum: (1 - Math.cos(elong)) / 2 };
+    }
+    function altAz(ra, dec, lst) {
+      const h = (lst - ra) * D, dd = dec * D;
+      const up = sinLat * Math.sin(dd) + cosLat * Math.cos(dd) * Math.cos(h);
+      const north = cosLat * Math.sin(dd) - sinLat * Math.cos(dd) * Math.cos(h);
+      const east = -Math.cos(dd) * Math.sin(h);
+      return { alt: Math.asin(up) / D, az: ((Math.atan2(east, north) / D) + 360) % 360 };
+    }
+
+    // ---------- projektio ----------
+    // Matriisi: ekvatoriaalinen yksikkövektori -> kameran koordinaatit
+    let M = null, S = 1;
+    function buildMatrix(lst) {
+      const sL = Math.sin(lst * D), cL = Math.cos(lst * D);
+      const A = [
+        [-sL, cL, 0],                                // itä
+        [-sinLat * cL, -sinLat * sL, cosLat],         // pohjoinen
+        [cosLat * cL, cosLat * sL, sinLat]            // ylös
+      ];
+      const az = view.az * D, al = view.alt * D;
+      const f = [Math.cos(al) * Math.sin(az), Math.cos(al) * Math.cos(az), Math.sin(al)];
+      const r = [Math.cos(az), -Math.sin(az), 0];
+      const u = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
+      const C = [r, u, f];
+      M = C.map(row => [0, 1, 2].map(j => row[0] * A[0][j] + row[1] * A[1][j] + row[2] * A[2][j]));
+      S = Math.min(W, H) / 2 / (2 * Math.tan(view.fov * D / 4));
+      return { r, u, f, A };
+    }
+    const out = [0, 0, 0, 0];
+    // palauttaa false, jos piste on kameran takana
+    function projVec(x, y, z) {
+      const cx = M[0][0] * x + M[0][1] * y + M[0][2] * z;
+      const cy = M[1][0] * x + M[1][1] * y + M[1][2] * z;
+      const cz = M[2][0] * x + M[2][1] * y + M[2][2] * z;
+      if (cz < -0.6) return false;
+      const k = 2 / (1 + cz);
+      out[0] = W / 2 + S * k * cx;
+      out[1] = H / 2 - S * k * cy;
+      out[2] = k;
+      out[3] = cz;
+      return true;
+    }
+    function projRaDec(ra, dec) {
+      const a = ra * D, d = dec * D, c = Math.cos(d);
+      return projVec(c * Math.cos(a), c * Math.sin(a), Math.sin(d));
+    }
+    // horisonttikoordinaatit (itä, pohjoinen, ylös) -> näyttö
+    let cam = null;
+    function projHor(e, n, u) {
+      const cx = cam.r[0] * e + cam.r[1] * n;
+      const cy = cam.u[0] * e + cam.u[1] * n + cam.u[2] * u;
+      const cz = cam.f[0] * e + cam.f[1] * n + cam.f[2] * u;
+      if (cz < -0.6) return null;
+      const k = 2 / (1 + cz);
+      return [W / 2 + S * k * cx, H / 2 - S * k * cy];
+    }
+    function horVec(az, alt) {
+      return [Math.cos(alt * D) * Math.sin(az * D), Math.cos(alt * D) * Math.cos(az * D), Math.sin(alt * D)];
+    }
+    // näytön piste -> atsimuutti/korkeus
+    function unproject(px, py) {
+      const X = (px - W / 2) / S, Y = -(py - H / 2) / S;
+      const rho2 = X * X + Y * Y;
+      const cz = (4 - rho2) / (4 + rho2);
+      const cx = X * (1 + cz) / 2, cy = Y * (1 + cz) / 2;
+      const h = [0, 1, 2].map(j => cx * cam.r[j] + cy * cam.u[j] + cz * cam.f[j]);
+      return { az: ((Math.atan2(h[0], h[1]) / D) + 360) % 360, alt: Math.asin(Math.max(-1, Math.min(1, h[2]))) / D };
+    }
+
+    // ---------- aineisto ----------
+    let starVec = null, mwVec = null, lineVec = null, consVec = null, nameVec = null;
+    function toVecs(arr) {
+      const v = new Float32Array(arr.length * 3);
+      arr.forEach((p, i) => {
+        const a = p[0] * D, d = p[1] * D, c = Math.cos(d);
+        v[i * 3] = c * Math.cos(a); v[i * 3 + 1] = c * Math.sin(a); v[i * 3 + 2] = Math.sin(d);
+      });
+      return v;
+    }
+    function bvColor(bv) {
+      if (bv < 0) return "rgb(175,200,255)";
+      if (bv < 0.3) return "rgb(215,228,255)";
+      if (bv < 0.6) return "rgb(255,255,255)";
+      if (bv < 0.9) return "rgb(255,244,214)";
+      if (bv < 1.3) return "rgb(255,222,170)";
+      return "rgb(255,196,140)";
+    }
+    function load() {
+      if (sky || loading) return;
+      loading = true;
+      fetch("sky.json")
+        .then(r => r.json())
+        .then(data => {
+          sky = data;
+          starVec = toVecs(sky.stars);
+          sky.starColor = sky.stars.map(s => bvColor(s[3]));
+          mwVec = toVecs(sky.mw);
+          lineVec = sky.lines.map(toVecs);
+          consVec = toVecs(sky.cons);
+          nameVec = toVecs(sky.names);
+          root.classList.add("ready");
+          requestDraw();
+        })
+        .catch(() => { root.classList.add("failed"); });
+    }
+
+    // ---------- piirto ----------
+    const mwCanvas = document.createElement("canvas");
+    const mwCtx = mwCanvas.getContext("2d");
+
+    function resize() {
+      const r = canvas.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = r.width; H = r.height;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      mwCanvas.width = Math.max(1, Math.round(W / 4));
+      mwCanvas.height = Math.max(1, Math.round(H / 4));
+      requestDraw();
+    }
+
+    let drawPending = false;
+    function requestDraw() {
+      dirty = true;
+      if (drawPending) return;
+      drawPending = true;
+      requestAnimationFrame(() => { drawPending = false; if (dirty) draw(); });
+    }
+
+    function circleFrom3(a, b, c) {
+      const d = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
+      if (Math.abs(d) < 1e-9) return null;
+      const a2 = a[0] * a[0] + a[1] * a[1], b2 = b[0] * b[0] + b[1] * b[1], c2 = c[0] * c[0] + c[1] * c[1];
+      const x = (a2 * (b[1] - c[1]) + b2 * (c[1] - a[1]) + c2 * (a[1] - b[1])) / d;
+      const y = (a2 * (c[0] - b[0]) + b2 * (a[0] - c[0]) + c2 * (b[0] - a[0])) / d;
+      return [x, y, Math.hypot(a[0] - x, a[1] - y)];
+    }
+
+    function polyline(vec, closed) {
+      let started = false;
+      const n = vec.length / 3;
+      for (let i = 0; i < n; i++) {
+        if (projVec(vec[i * 3], vec[i * 3 + 1], vec[i * 3 + 2]) && out[3] > -0.3) {
+          if (started) ctx.lineTo(out[0], out[1]); else ctx.moveTo(out[0], out[1]);
+          started = true;
+        } else started = false;
+      }
+    }
+
+    function draw() {
+      dirty = false;
+      if (!W || !H) return;
+      const en = isEnglish();
+      const date = nowDate();
+      const d = daysJ2000(date);
+      const lst = lstDeg(d);
+      cam = buildMatrix(lst);
+
+      const sun = sunPos(d);
+      const sunH = altAz(sun.ra, sun.dec, lst);
+      // taivaan väri auringon korkeuden mukaan (hämärä / päivä)
+      const t = Math.max(0, Math.min(1, (sunH.alt + 18) / 24));   // -18° -> 0, +6° -> 1
+      const starDim = 1 - 0.7 * t;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // maa
+      ctx.fillStyle = "#050605";
+      ctx.fillRect(0, 0, W, H);
+
+      // horisonttiympyrä
+      const hp = [view.az, view.az + 90, view.az - 90].map(a => { const v = horVec(a, 0); return projHor(v[0], v[1], v[2]); });
+      const circ = hp.every(Boolean) ? circleFrom3(hp[0], hp[1], hp[2]) : null;
+      if (!circ) return;
+      const zen = projHor(0, 0, 1) || [W / 2, H / 2];
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(circ[0], circ[1], circ[2], 0, Math.PI * 2);
+      ctx.clip();
+
+      const g = ctx.createRadialGradient(zen[0], zen[1], 0, circ[0], circ[1], circ[2]);
+      const top = [Math.round(2 + 40 * t), Math.round(4 + 70 * t), Math.round(10 + 120 * t)];
+      const bottom = [Math.round(10 + 60 * t), Math.round(16 + 80 * t), Math.round(26 + 110 * t)];
+      g.addColorStop(0, `rgb(${top})`);
+      g.addColorStop(1, `rgb(${bottom})`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+
+      if (!sky) {
+        ctx.restore();
+        drawHorizon(circ, en);
+        return;
+      }
+
+      // Linnunrata: piirretään pieneen puskuriin ja venytetään -> pehmeä
+      if (layers.mw) {
+        const q = 4;
+        mwCtx.setTransform(1, 0, 0, 1, 0, 0);
+        mwCtx.clearRect(0, 0, mwCanvas.width, mwCanvas.height);
+        const n = sky.mw.length;
+        const stepRad = sky.mwStep * D;
+        for (let i = 0; i < n; i++) {
+          if (!projVec(mwVec[i * 3], mwVec[i * 3 + 1], mwVec[i * 3 + 2])) continue;
+          const size = Math.max(1, S * out[2] * stepRad * 1.25 / q);
+          const x = out[0] / q, y = out[1] / q;
+          if (x < -size || y < -size || x > mwCanvas.width + size || y > mwCanvas.height + size) continue;
+          mwCtx.fillStyle = `rgba(190,205,255,${0.07 * sky.mw[i][2]})`;
+          mwCtx.fillRect(x - size / 2, y - size / 2, size, size);
+        }
+        ctx.save();
+        ctx.globalAlpha = 0.85 * starDim;
+        ctx.imageSmoothingEnabled = true;
+        ctx.filter = `blur(${Math.max(5, Math.min(48, S * stepRad * 1.1)).toFixed(1)}px)`;
+        ctx.drawImage(mwCanvas, 0, 0, W, H);
+        ctx.filter = "none";
+        ctx.restore();
+      }
+
+      // koordinaattiruudukko (RA/Dec)
+      if (layers.grid) {
+        ctx.strokeStyle = "rgba(120,170,220,0.16)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let h = 0; h < 24; h += 2) {
+          let first = true;
+          for (let dec = -88; dec <= 88; dec += 2) {
+            if (projRaDec(h * 15, dec) && out[3] > -0.3) {
+              if (first) ctx.moveTo(out[0], out[1]); else ctx.lineTo(out[0], out[1]);
+              first = false;
+            } else first = true;
+          }
+        }
+        for (let dec = -75; dec <= 75; dec += 15) {
+          let first = true;
+          for (let ra = 0; ra <= 360; ra += 3) {
+            if (projRaDec(ra, dec) && out[3] > -0.3) {
+              if (first) ctx.moveTo(out[0], out[1]); else ctx.lineTo(out[0], out[1]);
+              first = false;
+            } else first = true;
+          }
+        }
+        ctx.stroke();
+      }
+
+      // tähtikuviot
+      if (layers.cons) {
+        ctx.strokeStyle = `rgba(110,170,230,${0.34 * starDim})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        lineVec.forEach(v => polyline(v));
+        ctx.stroke();
+      }
+
+      // tähdet (kirkkaimmat viimeisenä, aineisto on järjestetty kirkkauden mukaan)
+      const zoomBoost = Math.min(2.4, Math.pow(180 / view.fov, 0.3));
+      const magLimit = 6.2;
+      for (let i = sky.stars.length - 1; i >= 0; i--) {
+        if (!projVec(starVec[i * 3], starVec[i * 3 + 1], starVec[i * 3 + 2])) continue;
+        const x = out[0], y = out[1];
+        if (x < -10 || y < -10 || x > W + 10 || y > H + 10) continue;
+        const mag = sky.stars[i][2];
+        const r = Math.max(0.45, (magLimit - mag) * 0.42) * zoomBoost;
+        const alpha = Math.min(1, 0.25 + (magLimit - mag) * 0.2) * starDim;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = sky.starColor[i];
+        if (r < 1.1) {
+          ctx.fillRect(x - r, y - r, r * 2, r * 2);
+        } else {
+          if (mag < 1.6) {
+            const gl = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+            gl.addColorStop(0, "rgba(255,255,255,0.35)");
+            gl.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = gl;
+            ctx.beginPath(); ctx.arc(x, y, r * 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = sky.starColor[i];
+          }
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // tähtikuvioiden ja tähtien nimet: tiheys sen mukaan, montako pikseliä
+      // yksi aste on näytöllä (pienellä näytöllä nimet tulevat zoomatessa)
+      const ppd = Math.min(W, H) / view.fov;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      if (layers.cons) {
+        ctx.font = "500 11px Inter, system-ui, sans-serif";
+        ctx.fillStyle = `rgba(130,180,230,${0.62 * starDim})`;
+        sky.cons.forEach((c, i) => {
+          const need = c[4] === 1 ? 3.4 : c[4] === 2 ? 6 : 9;
+          if (ppd < need) return;
+          if (!projVec(consVec[i * 3], consVec[i * 3 + 1], consVec[i * 3 + 2]) || out[3] < 0) return;
+          ctx.fillText((en ? c[3] : c[2]).toUpperCase(), out[0], out[1]);
+        });
+      }
+      ctx.font = "400 11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillStyle = `rgba(232,238,244,${0.7 * starDim})`;
+      sky.names.forEach((s, i) => {
+        if (ppd < (s[3] < 1.0 ? 3 : 5.5)) return;
+        if (!projVec(nameVec[i * 3], nameVec[i * 3 + 1], nameVec[i * 3 + 2]) || out[3] < 0) return;
+        ctx.fillText(s[2], out[0] + 6, out[1] - 6);
+      });
+
+      // Aurinko ja Kuu
+      const moon = moonPos(d, sun.lam);
+      drawBody(sun.ra, sun.dec, "#ffd36b", 0, en ? "Sun" : "Aurinko", 1);
+      drawBody(moon.ra, moon.dec, "#e8e4d8", 1, en ? "Moon" : "Kuu", moon.illum, sun);
+
+      // kuvatut kohteet
+      hits = [];
+      ctx.font = "600 13px Inter, system-ui, sans-serif";
+      items.forEach(({ d: item, i }) => {
+        if (!projRaDec(item.ra, item.dec) || out[3] < 0) return;
+        const x = out[0], y = out[1];
+        const hot = i === cardIndex;
+        ctx.beginPath();
+        ctx.arc(x, y, hot ? 16 : 12, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(61,255,160,0.16)";
+        ctx.fill();
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = "#3dffa0";
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.stroke();
+        ctx.textAlign = x > W - 120 ? "right" : "left";
+        ctx.lineWidth = 4;
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "rgba(0,0,0,0.85)";
+        const label = displayTitle(item).split(/\s+[-–—]\s+/)[0];
+        const lx = x + (x > W - 120 ? -14 : 14);
+        ctx.strokeText(label, lx, y + 1);
+        ctx.fillStyle = hot ? "#3dffa0" : "#e8eef4";
+        ctx.fillText(label, lx, y + 1);
+        hits.push({ x, y, i });
+      });
+
+      ctx.restore();
+      drawHorizon(circ, en);
+
+      // aikaleima ja huomautukset
+      if (timeEl) {
+        timeEl.textContent = date.toLocaleString(en ? "en-GB" : "fi-FI", {
+          timeZone: "Europe/Helsinki", weekday: "short", day: "numeric", month: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        });
+      }
+      if (sunNote) {
+        let note = "";
+        if (sunH.alt > 0) note = en ? "The Sun is up – stars shown dimmed" : "Aurinko on ylhäällä – tähdet himmennetty";
+        else if (sunH.alt > -12) note = en ? "Twilight" : "Hämärä";
+        sunNote.textContent = note;
+        sunNote.hidden = !note;
+      }
+      if (cardIndex >= 0) renderCard();
+    }
+
+    function drawBody(ra, dec, color, kind, label, illum, sun) {
+      if (!projRaDec(ra, dec) || out[3] < 0) return;
+      const x = out[0], y = out[1];
+      const r = Math.max(5, S * out[2] * 0.26 * D * 2.2);
+      ctx.save();
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+      glow.addColorStop(0, kind ? "rgba(232,228,216,0.28)" : "rgba(255,211,107,0.45)");
+      glow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(x, y, r * 4, 0, Math.PI * 2); ctx.fill();
+      if (kind && sun && projRaDec(sun.ra, sun.dec)) {
+        // Kuun vaihe: valaistu puoli osoittaa kohti aurinkoa
+        const ang = Math.atan2(out[1] - y, out[0] - x);
+        ctx.translate(x, y);
+        ctx.rotate(ang);
+        ctx.fillStyle = "#1a1c22";
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, false);
+        const ex = r * (1 - 2 * illum);
+        ctx.ellipse(0, 0, Math.abs(ex), r, 0, Math.PI / 2, -Math.PI / 2, ex < 0);
+        ctx.fill();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      } else {
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+      ctx.font = "500 11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillStyle = color;
+      ctx.fillText(label, x + r + 6, y - r - 2);
+    }
+
+    function drawHorizon(circ, en) {
+      ctx.strokeStyle = "rgba(61,255,160,0.35)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(circ[0], circ[1], circ[2], 0, Math.PI * 2);
+      ctx.stroke();
+      const names = en ? ["N", "E", "S", "W"] : ["P", "I", "E", "L"];
+      ctx.font = "600 13px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      [0, 90, 180, 270].forEach((az, k) => {
+        const v = horVec(az, 0);
+        const p = projHor(v[0], v[1], v[2]);
+        if (!p) return;
+        // nimi horisontin ulkopuolelle (maan puolelle)
+        let dx = p[0] - circ[0], dy = p[1] - circ[1];
+        const len = Math.hypot(dx, dy) || 1;
+        const x = p[0] + dx / len * 14, y = p[1] + dy / len * 14;
+        if (x < 8 || y < 8 || x > W - 8 || y > H - 8) return;
+        ctx.fillStyle = k === 0 ? "#3dffa0" : "rgba(232,238,244,0.75)";
+        ctx.fillText(names[k], x, y);
+      });
+    }
+
+    // ---------- kohteen tietokortti ----------
+    function riseTime(item) {
+      const start = nowDate().getTime();
+      for (let m = 5; m <= 24 * 60; m += 5) {
+        const dt = new Date(start + m * 60000);
+        if (altAz(item.ra, item.dec, lstDeg(daysJ2000(dt))).alt > 0) return dt;
+      }
+      return null;
+    }
+    function renderCard() {
+      const o = items.find(x => x.i === cardIndex);
+      if (!o || !card) { if (card) card.hidden = true; return; }
+      const en = isEnglish();
+      const pos = altAz(o.d.ra, o.d.dec, lstDeg(daysJ2000(nowDate())));
+      let status;
+      if (pos.alt > 0) {
+        status = en ? `${Math.round(pos.alt)}° above the horizon` : `${Math.round(pos.alt)}° horisontin yläpuolella`;
+      } else {
+        const rt = riseTime(o.d);
+        const hhmm = rt ? rt.toLocaleTimeString(en ? "en-GB" : "fi-FI", { timeZone: "Europe/Helsinki", hour: "2-digit", minute: "2-digit" }) : "";
+        status = rt ? (en ? `Below the horizon – rises at ${hhmm}` : `Horisontin alla – nousee klo ${hhmm}`)
+                    : (en ? "Does not rise in Finland" : "Ei nouse Suomessa");
+      }
+      const key = cardIndex + "|" + status + "|" + en;
+      if (card.dataset.key === key && !card.hidden) return;
+      card.dataset.key = key;
+      card.innerHTML = `
+        <button class="skylive-card-close" type="button" aria-label="${en ? "Close" : "Sulje"}">×</button>
+        <img src="${esc(thumbPath(o.d.file))}" alt="">
+        <div>
+          <strong>${esc(displayTitle(o.d))}</strong>
+          <span class="${pos.alt > 0 ? "up" : "down"}">${status}</span>
+          <button class="btn btn-primary skylive-open" type="button">${en ? "Open image" : "Avaa kuva"}</button>
+        </div>`;
+      card.hidden = false;
+      card.querySelector(".skylive-open").addEventListener("click", () => openFromList(list, o.i));
+      card.querySelector(".skylive-card-close").addEventListener("click", () => { cardIndex = -1; card.hidden = true; requestDraw(); });
+    }
+
+    // kääntää katseen kohteeseen
+    let anim = 0;
+    function lookAt(az, alt, fov) {
+      const from = { ...view };
+      let dAz = ((az - from.az + 540) % 360) - 180;
+      const to = { az: from.az + dAz, alt: Math.max(15, Math.min(90, alt)), fov };
+      cancelAnimationFrame(anim);
+      if (reduceMotion) { Object.assign(view, to); view.az = (view.az + 360) % 360; requestDraw(); return; }
+      const t0 = performance.now();
+      const step = (now) => {
+        const k = Math.min(1, (now - t0) / 900);
+        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        view.az = (from.az + (to.az - from.az) * e + 360) % 360;
+        view.alt = from.alt + (to.alt - from.alt) * e;
+        view.fov = from.fov + (to.fov - from.fov) * e;
+        draw();
+        if (k < 1) anim = requestAnimationFrame(step);
+      };
+      anim = requestAnimationFrame(step);
+    }
+
+    function locate(i) {
+      const o = items.find(x => x.i === i);
+      if (!o) return;
+      cardIndex = i;
+      const pos = altAz(o.d.ra, o.d.dec, lstDeg(daysJ2000(nowDate())));
+      if (pos.alt > 0) lookAt(pos.az, pos.alt, 70);
+      renderCard();
+      requestDraw();
+      root.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    }
+
+    // ---------- ohjaus ----------
+    const pointers = new Map();
+    let dragStart = null, pinchStart = null, moved = false;
+
+    function hitAt(x, y) {
+      let best = null, bd = 22;
+      hits.forEach(h => { const dd = Math.hypot(h.x - x, h.y - y); if (dd < bd) { bd = dd; best = h; } });
+      return best;
+    }
+    function localXY(e) {
+      const r = canvas.getBoundingClientRect();
+      return [e.clientX - r.left, e.clientY - r.top];
+    }
+    function setFov(f) { view.fov = Math.max(4, Math.min(185, f)); requestDraw(); }
+
+    canvas.addEventListener("pointerdown", (e) => {
+      cancelAnimationFrame(anim);
+      canvas.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, localXY(e));
+      moved = false;
+      if (pointers.size === 1) dragStart = { xy: localXY(e), az: view.az, alt: view.alt };
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinchStart = { dist: Math.hypot(a[0] - b[0], a[1] - b[1]), fov: view.fov };
+      }
+      hideTip();
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      const xy = localXY(e);
+      if (!pointers.has(e.pointerId)) {
+        // hiiren leijunta: vihje kohteen päällä
+        if (e.pointerType === "mouse") {
+          const h = hitAt(xy[0], xy[1]);
+          canvas.style.cursor = h ? "pointer" : "grab";
+          if (h) showTip(h); else hideTip();
+        }
+        return;
+      }
+      pointers.set(e.pointerId, xy);
+      if (pointers.size === 2 && pinchStart) {
+        const [a, b] = [...pointers.values()];
+        const dist = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        setFov(pinchStart.fov * pinchStart.dist / Math.max(dist, 1));
+        moved = true;
+        return;
+      }
+      if (pointers.size === 1 && dragStart) {
+        const dx = xy[0] - dragStart.xy[0], dy = xy[1] - dragStart.xy[1];
+        if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+        const radPerPx = 1 / S;
+        const cosAlt = Math.max(Math.cos(view.alt * D), 0.35);
+        view.az = ((dragStart.az - dx * radPerPx / D / cosAlt) % 360 + 360) % 360;
+        view.alt = Math.max(2, Math.min(90, dragStart.alt + dy * radPerPx / D));
+        canvas.style.cursor = "grabbing";
+        requestDraw();
+      }
+    });
+    function endPointer(e) {
+      const wasTap = pointers.size === 1 && !moved;
+      const xy = localXY(e);
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinchStart = null;
+      if (pointers.size === 1) {
+        const [p] = [...pointers.values()];
+        dragStart = { xy: p, az: view.az, alt: view.alt };
+      } else if (pointers.size === 0) dragStart = null;
+      canvas.style.cursor = "grab";
+      if (wasTap && e.type === "pointerup") {
+        const h = hitAt(xy[0], xy[1]);
+        if (h) openFromList(list, h.i);
+      }
+    }
+    canvas.addEventListener("pointerup", endPointer);
+    canvas.addEventListener("pointercancel", endPointer);
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      cancelAnimationFrame(anim);
+      setFov(view.fov * Math.exp(e.deltaY * 0.0015));
+    }, { passive: false });
+    canvas.addEventListener("dblclick", (e) => {
+      const [x, y] = localXY(e);
+      const p = unproject(x, y);
+      lookAt(p.az, p.alt, Math.max(4, view.fov / 2));
+    });
+
+    function showTip(h) {
+      const d = list[h.i];
+      if (!tip || !d) return;
+      const en = isEnglish();
+      tip.innerHTML = `
+        <img src="${esc(thumbPath(d.file))}" alt="">
+        <div>
+          <strong>${esc(displayTitle(d))}</strong>
+          <span>RA ${formatRa(d.ra)}<br>Dec ${formatDec(d.dec)}</span>
+          <em>${en ? "Click to open" : "Avaa klikkaamalla"}</em>
+        </div>`;
+      tip.hidden = false;
+      const cr = canvas.getBoundingClientRect(), rr = root.getBoundingClientRect();
+      const px = h.x + cr.left - rr.left, py = h.y + cr.top - rr.top;
+      let left = px + 16, top = py - tip.offsetHeight - 12;
+      if (left + tip.offsetWidth > rr.width - 8) left = px - tip.offsetWidth - 16;
+      if (top < 8) top = py + 16;
+      tip.style.left = Math.max(8, left) + "px";
+      tip.style.top = top + "px";
+    }
+    function hideTip() { if (tip) tip.hidden = true; }
+    canvas.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hideTip(); });
+
+    // "Yö": seuraava klo 23 Suomen aikaa (tai nyt, jos on jo yö)
+    function hoursToNight() {
+      const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Helsinki", hour: "numeric", minute: "numeric", hourCycle: "h23" })
+        .formatToParts(new Date());
+      const h = +parts.find(p => p.type === "hour").value + (+parts.find(p => p.type === "minute").value) / 60;
+      if (h >= 23 || h < 3) return 0;
+      return 23 - h;
+    }
+    root.querySelectorAll("[data-time]").forEach(b => b.addEventListener("click", () => {
+      const v = b.dataset.time;
+      if (v === "night") timeOffsetH = hoursToNight();
+      else timeOffsetH = +v === 0 ? 0 : timeOffsetH + (+v);
+      root.querySelector(".sky-now").classList.toggle("active", timeOffsetH === 0);
+      const night = root.querySelector(".sky-night");
+      if (night) night.classList.toggle("active", v === "night" && timeOffsetH !== 0);
+      requestDraw();
+    }));
+    root.querySelectorAll("[data-layer]").forEach(b => b.addEventListener("click", () => {
+      layers[b.dataset.layer] = !layers[b.dataset.layer];
+      b.classList.toggle("active", layers[b.dataset.layer]);
+      requestDraw();
+    }));
+    root.querySelectorAll("[data-zoom]").forEach(b => b.addEventListener("click", () => {
+      const z = b.dataset.zoom;
+      if (z === "in") lookAt(view.az, view.alt, Math.max(4, view.fov / 1.6));
+      if (z === "out") lookAt(view.az, view.alt, Math.min(185, view.fov * 1.6));
+      if (z === "reset") lookAt(180, 90, 180);
+    }));
+
+    // koko näyttö (CSS-pohjainen, toimii myös iPhonessa)
+    function setFull(on) {
+      root.classList.toggle("is-full", on);
+      document.body.classList.toggle("sky-full", on);
+      if (fullBtn) fullBtn.classList.toggle("active", on);
+      if (on && !(history.state && history.state.skyFull)) history.pushState({ skyFull: true }, "");
+      resize();
+    }
+    if (fullBtn) fullBtn.addEventListener("click", () => {
+      if (root.classList.contains("is-full")) {
+        if (history.state && history.state.skyFull) history.back(); else setFull(false);
+      } else setFull(true);
+    });
+    window.addEventListener("popstate", () => {
+      if (root.classList.contains("is-full") && !(history.state && history.state.skyFull)) setFull(false);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && root.classList.contains("is-full") && lightbox.style.display !== "flex") {
+        if (history.state && history.state.skyFull) history.back(); else setFull(false);
+      }
+    });
+
+    if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas);
+    window.addEventListener("resize", resize);
+    document.addEventListener("langchange", () => { if (card) card.dataset.key = ""; requestDraw(); });
+
+    // taivas päivittyy itsestään, kun näkymä on esillä ja aika on "nyt"
+    setInterval(() => { if (active && timeOffsetH === 0 && !document.hidden) requestDraw(); }, 30000);
+
+    // aineisto ladataan vasta kun kartta on lähellä näkyvää aluetta
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(en => en.isIntersecting)) { load(); io.disconnect(); }
+      }, { rootMargin: "600px" });
+      io.observe(root);
+    } else load();
+
+    resize();
+
+    return {
+      locate,
+      setActive(on) {
+        active = on;
+        if (on) { load(); resize(); }
+        else { hideTip(); if (card) card.hidden = true; cardIndex = -1; }
+      }
+    };
+  }
+
   // =========================
   // GALLERIAN KATEGORIAT
   // =========================
-  const tabButtons = document.querySelectorAll(".gallery-tabs .tab-btn");
+  const tabButtons = document.querySelectorAll(".gallery-toolbar .gallery-tabs .tab-btn");
 
   tabButtons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1544,7 +2292,7 @@ if (starfield) {
 
       const category = btn.dataset.category;
 
-      gallery.querySelectorAll(".card").forEach(card => {
+      if (gallery) gallery.querySelectorAll(".card").forEach(card => {
         const show = category === "all" || card.dataset.category === category;
         card.style.display = show ? "" : "none";
       });
@@ -1557,7 +2305,7 @@ if (starfield) {
   const viewButtons = document.querySelectorAll(".view-btn");
 
   function applyView(view) {
-    gallery.classList.toggle("compact-view", view === "compact");
+    if (gallery) gallery.classList.toggle("compact-view", view === "compact");
     viewButtons.forEach(b => b.classList.toggle("active", b.dataset.view === view));
     localStorage.setItem("galleryView", view);
   }

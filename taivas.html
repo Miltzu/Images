@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taivas — Miltzu Images</title>
+<meta name="description" content="Miltzun astrokuvia: deep sky, planeetat, Kuu, Aurinko ja revontulet.">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css?v=29">
+<script src="script.js?v=25"></script>
+</head>
+<body>
+
+<div id="starfield"></div>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="brand" href="index.html">Miltzu <span>Images</span></a>
+    <nav class="site-nav">
+      <a href="index.html" data-fi="Galleria" data-en="Gallery">Galleria</a>
+      <a href="taivas.html" class="active" data-fi="Taivas" data-en="Sky">Taivas</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+      <a href="loki.html" data-fi="Loki" data-en="Log">Loki</a>
+    </nav>
+    <a class="social-link" href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">Instagram</a>
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="fi">FI</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+
+  <section class="page-header page-header-compact">
+    <h1 data-fi="Taivas" data-en="Sky">Taivas</h1>
+    <p data-fi="Tähtitaivas Etelä-Suomesta juuri nyt ja kuvieni kohteet sen keskellä. Vedä liikuttaaksesi, rullaa tai nipistä zoomataksesi ja avaa kuva klikkaamalla kohdetta." data-en="The starry sky from southern Finland right now, with my imaged objects on it. Drag to look around, scroll or pinch to zoom and click an object to open its image.">Tähtitaivas Etelä-Suomesta juuri nyt ja kuvieni kohteet sen keskellä. Vedä liikuttaaksesi, rullaa tai nipistä zoomataksesi ja avaa kuva klikkaamalla kohdetta.</p>
+  </section>
+
+  <!-- Taivaskartta: kohteet, joilla on ra/dec images.json:ssa.
+       "Taivas nyt" = tähtitaivas Suomesta katsottuna (sky.json),
+       "Koko taivas" = tieteellisempi koko taivaan kartta. -->
+  <section id="skymap-section" class="skymap-section">
+    <div class="skymap-toolbar">
+      <div class="skymap-tabs gallery-tabs">
+        <button class="tab-btn active" type="button" data-skyview="live" data-fi="Taivas nyt" data-en="Sky now">Taivas nyt</button>
+        <button class="tab-btn" type="button" data-skyview="map" data-fi="Koko taivas" data-en="Whole sky">Koko taivas</button>
+      </div>
+    </div>
+
+    <div id="skyLive" class="skylive">
+      <canvas id="skyCanvas" class="skylive-canvas" aria-label="Tähtitaivas Suomesta katsottuna"></canvas>
+
+      <div class="skylive-hud">
+        <span id="skyTime" class="skylive-time"></span>
+        <span class="skylive-place" data-fi="Etelä-Suomi · katse ylöspäin" data-en="Southern Finland · looking up">Etelä-Suomi · katse ylöspäin</span>
+        <span id="skySunNote" class="skylive-note" hidden></span>
+      </div>
+
+      <div class="skylive-bar">
+        <div class="skylive-group">
+          <button class="sky-btn" type="button" data-time="-1" aria-label="-1 h">−1 h</button>
+          <button class="sky-btn sky-now active" type="button" data-time="0" data-fi="Nyt" data-en="Now">Nyt</button>
+          <button class="sky-btn" type="button" data-time="1" aria-label="+1 h">+1 h</button>
+          <button class="sky-btn sky-night" type="button" data-time="night" data-fi="Yö" data-en="Night">Yö</button>
+        </div>
+        <div class="skylive-group">
+          <button class="sky-btn sky-toggle active" type="button" data-layer="cons" data-fi="Tähtikuviot" data-en="Constellations">Tähtikuviot</button>
+          <button class="sky-btn sky-toggle active" type="button" data-layer="mw" data-fi="Linnunrata" data-en="Milky Way">Linnunrata</button>
+          <button class="sky-btn sky-toggle" type="button" data-layer="grid" data-fi="Ruudukko" data-en="Grid">Ruudukko</button>
+        </div>
+        <div class="skylive-group">
+          <button class="sky-btn sky-icon" type="button" data-zoom="in" aria-label="Zoomaa lähemmäs">+</button>
+          <button class="sky-btn sky-icon" type="button" data-zoom="out" aria-label="Zoomaa kauemmas">−</button>
+          <button class="sky-btn" type="button" data-zoom="reset" data-fi="Koko taivas" data-en="All sky">Koko taivas</button>
+          <button id="skyFull" class="sky-btn sky-icon" type="button" aria-label="Koko näyttö" title="Koko näyttö">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8V3h5M17 8V3h-5M3 12v5h5M17 12v5h-5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="skyLiveTip" class="skymap-tip" hidden></div>
+      <div id="skyCard" class="skylive-card" hidden></div>
+      <p class="skylive-hint" data-fi="Vedä liikuttaaksesi · rulla tai nipistys zoomaa" data-en="Drag to look around · scroll or pinch to zoom">Vedä liikuttaaksesi · rulla tai nipistys zoomaa</p>
+    </div>
+
+    <div id="skyMapPanel" class="skymap-panel" hidden>
+      <div id="skyMapWrap" class="skymap-wrap">
+        <svg id="skyMap" class="skymap" viewBox="0 0 1000 520" role="img" aria-label="Taivaskartta"></svg>
+        <div id="skyMapTip" class="skymap-tip" hidden></div>
+      </div>
+      <div class="skymap-legend">
+        <span><i class="lg-dot"></i><span data-fi="Kuvattu kohde" data-en="Imaged object">Kuvattu kohde</span></span>
+        <span><i class="lg-mw"></i><span data-fi="Linnunrata" data-en="Milky Way">Linnunrata</span></span>
+        <span><i class="lg-ecl"></i><span data-fi="Ekliptika" data-en="Ecliptic">Ekliptika</span></span>
+        <span><i class="lg-south"></i><span data-fi="Ei nouse Suomessa (60° P)" data-en="Never rises in Finland (60° N)">Ei nouse Suomessa (60° P)</span></span>
+      </div>
+    </div>
+
+    <ul id="skyMapList" class="skymap-list"></ul>
+    <p class="skymap-credit" data-fi="Tähtiluettelo: d3-celestial (Olaf Frohn, BSD-lisenssi), Hipparcos-aineistoon perustuen." data-en="Star catalogue: d3-celestial (Olaf Frohn, BSD licence), based on Hipparcos data.">Tähtiluettelo: d3-celestial (Olaf Frohn, BSD-lisenssi), Hipparcos-aineistoon perustuen.</p>
+  </section>
+
+</main>
+
+<!-- lightbox -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Sulje" title="Sulje">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M5 5l10 10M15 5L5 15"/>
+    </svg>
+  </button>
+  <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Edellinen">‹</button>
+  <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Seuraava">›</button>
+
+  <!-- kehys rajaa näkymän; kuva ja koordinaattiruudukko zoomautuvat yhdessä -->
+  <div id="lbFrame" class="lb-frame">
+    <div id="lbStage" class="lb-stage">
+      <img id="lightbox-img" alt="">
+      <svg id="skyGrid" class="sky-grid" aria-hidden="true"></svg>
+    </div>
+  </div>
+
+  <a id="lightboxDownload" class="lightbox-download" download title="Lataa kuva" aria-label="Lataa kuva">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M10 2v10M10 12l-4-4M10 12l4-4"/>
+      <path d="M3 16h14"/>
+    </svg>
+  </a>
+
+  <div class="lb-tools">
+    <button id="infoBtn" class="lb-tool" type="button">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="10" cy="10" r="8"/>
+        <path d="M10 9v5M10 6.2v.1"/>
+      </svg>
+      <span data-fi="Tiedot" data-en="Info">Tiedot</span>
+    </button>
+    <button id="skyLocationBtn" class="lb-tool sky-location-btn" type="button">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4">
+        <path d="M2 7c5-2 11-2 16 0M2 13c5 2 11 2 16 0"/>
+        <path d="M7 2c-2 5-2 11 0 16M13 2c2 5 2 11 0 16"/>
+        <rect x="1.5" y="1.5" width="17" height="17" rx="3"/>
+      </svg>
+      <span data-fi="Koordinaatit" data-en="Coordinates">Koordinaatit</span>
+    </button>
+  </div>
+
+  <div id="text" class="caption"></div>
+</div>
+
+<footer class="footer">
+  <div class="footer-content">
+    <span>Miltzu</span>
+    <span>•</span>
+    <span>© 2026</span>
+    <a class="footer-link" href="loki.html" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</a>
+    <a class="social-link" href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">@M1ltzu</a>
+  </div>
+</footer>
+
+</body>
+</html>
