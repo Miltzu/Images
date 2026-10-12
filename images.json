@@ -54,5 +54,24 @@
       "fi": "Thorin kypärä (NGC 2359) on emissiosumu Ison koiran tähdistössä, noin 12 000 valovuoden päässä. Sen halkaisija on noin 30 valovuotta. Sumun keskellä on erittäin kuuma Wolf-Rayet-tähti WR 7, jonka voimakas tähtituuli on puhaltanut ympäröivään kaasuun kuplan. Tähden arvellaan olevan lyhyessä vaiheessa juuri ennen supernovaräjähdystä.",
       "en": "Thor's Helmet (NGC 2359) is an emission nebula in the constellation Canis Major, about 12,000 light-years away. It is roughly 30 light-years across. At its centre is the extremely hot Wolf-Rayet star WR 7, whose powerful stellar wind has blown a bubble into the surrounding gas. The star is thought to be in a brief stage just before exploding as a supernova."
     }
+  },
+  {
+    "file": "images/kuva5.jpg",
+    "title": "M16 - Eagle Nebula",
+    "desc": "Luomisen pilarit, kapeakaista (SHO).",
+    "category": "deepsky",
+    "narrowband": true,
+    "ra": 274.6879,
+    "dec": -13.7869,
+    "about": {
+      "fi": "Kotkasumu (M16) on emissiosumu ja nuori avoin tähtijoukko Käärmeen tähdistössä, noin 7 000 valovuoden päässä. Sen keskellä ovat kuuluisat Luomisen pilarit: tiheitä kaasu- ja pölypylväitä, joiden sisällä syntyy uusia tähtiä. Hubble-avaruusteleskoopin vuonna 1995 ottama kuva pilareista on yksi tunnetuimmista avaruuskuvista.",
+      "en": "The Eagle Nebula (M16) is an emission nebula and young open star cluster in the constellation Serpens, about 7,000 light-years away. At its centre are the famous Pillars of Creation: dense columns of gas and dust in which new stars are forming. The Hubble Space Telescope's 1995 image of the pillars is one of the best-known space photographs."
+    }
+  },
+  {
+    "file": "images/kuva6.jpg",
+    "title": "Kuu",
+    "desc": "Lähikuva Kuun pinnasta.",
+    "category": "kuu"
   }
 ]
