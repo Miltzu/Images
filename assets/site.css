@@ -26,21 +26,44 @@
 }
 
 :root {
+  /* ========================================================================
+     OMAT SÄÄDÖT
+     Muuta näitä arvoja, niin koko sivusto muuttuu. Muista nostaa sivujen
+     ?v=-numeroa tai paina Ctrl+F5, jotta selain hakee uuden tiedoston.
+     ======================================================================== */
+
+  /* Isojen otsikoiden väri: liukuu ylhäältä (top) alas (bottom).
+     Yksivärinen otsikko: anna molemmille sama väri, esim. #ffffff. */
+  --title-top: #ffffff;
+  --title-bottom: #f5b94a;
+
+  /* Otsikoiden muoto */
+  --display-stretch: 62%;     /* leveys: 62% = kapea ... 100% = normaali ... 125% = leveä */
+  --display-weight: 900;      /* paksuus: 100 = ohut ... 900 = raskas */
+  --display-case: uppercase;  /* uppercase = ISOT KIRJAIMET, none = normaali */
+
+  /* Leipätekstin ja himmeämmän tekstin väri */
+  --text: #eef1f8;
+  --mute: #a3afcc;
+
+  /* Korostusvärit: kulta (painikkeet, numerot) ja turkoosi (merkit, projektit) */
+  --gold: #f5b94a;
+  --oxy: #57d0e0;
+
+  /* Fontti. Vaihda ensimmäinen nimi, jos lisäät oman fontin. */
+  --font: "Archivo Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* ============================ säädöt loppuvat =========================== */
+
   --ink: #050917;
   --ink-2: #0a1126;
   --panel: #0e1730;
   --panel-2: #152145;
   --line: rgba(150, 175, 255, 0.16);
   --line-2: rgba(150, 175, 255, 0.32);
-  --text: #eef1f8;
-  --mute: #a3afcc;
   --dim: #6f7c9e;
-  --gold: #f5b94a;
   --gold-soft: rgba(245, 185, 74, 0.16);
-  --oxy: #57d0e0;
   --oxy-soft: rgba(87, 208, 224, 0.14);
-
-  --font: "Archivo Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --pad: clamp(18px, 4.2vw, 64px);
   --max: 1560px;
   --r: 20px;
@@ -107,6 +130,16 @@ ul, ol { list-style: none; }
   pointer-events: none;
   contain: strict;
 }
+/* pehmeä sumuhehku tähtien takana: turkoosi ylhäällä, kulta alhaalla */
+#stars::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 55% at 88% 8%, rgba(87, 208, 224, 0.2), transparent 70%),
+    radial-gradient(55% 50% at 6% 96%, rgba(245, 185, 74, 0.16), transparent 70%),
+    radial-gradient(70% 60% at 45% 55%, rgba(60, 84, 200, 0.2), transparent 75%);
+}
 #stars canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 #stars .pulse { animation: star-pulse 11s ease-in-out infinite alternate; }
 @keyframes star-pulse { from { opacity: 0.25; } to { opacity: 1; } }
@@ -115,12 +148,12 @@ ul, ol { list-style: none; }
    Otsikkotyypit
    -------------------------------------------------------------------------- */
 .display {
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(4rem, 13.5vw, 12.5rem);
   line-height: 0.84;
   letter-spacing: -0.012em;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
 }
 .display sup {
   font-size: 0.2em;
@@ -132,6 +165,18 @@ ul, ol { list-style: none; }
   position: relative;
   top: 0.5em;
   margin-left: 0.3em;
+}
+
+/* Otsikoiden liukuväri (--title-top -> --title-bottom) */
+.display, .hero-title, .hp-name, .proj-head h2, .process-head h2 { color: var(--title-top); }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .display, .hero-title, .hp-name, .proj-head h2, .process-head h2 {
+    background-image: linear-gradient(180deg, var(--title-top) 28%, var(--title-bottom) 118%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .display sup, .hero-title .desig { -webkit-text-fill-color: var(--gold); }
 }
 
 .lead {
@@ -293,12 +338,12 @@ ul, ol { list-style: none; }
   align-items: baseline;
   gap: 0.28em;
   margin-right: auto;
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: 1.75rem;
   line-height: 1;
   letter-spacing: 0.01em;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
   text-decoration: none;
 }
 .brand span { font-weight: 300; color: var(--mute); }
@@ -391,12 +436,12 @@ ul, ol { list-style: none; }
 .hero-body > * { pointer-events: auto; }
 .hero-title {
   max-width: 12ch;
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(4rem, 15.5vw, 15rem);
   line-height: 0.82;
   letter-spacing: -0.015em;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
   text-wrap: balance;
   opacity: 0;
   transform: translateY(40px);
@@ -457,7 +502,27 @@ ul, ol { list-style: none; }
   margin: 0 auto;
   padding: clamp(120px, 16vw, 220px) var(--pad) clamp(28px, 4vw, 56px);
 }
-.page-body { max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
+.page-head { position: relative; isolation: isolate; }
+/* himmennetty kuva galleriasta otsikon takana, koko ikkunan levyisenä */
+.page-bg {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: calc(100% + 140px);
+  transform: translateX(-50%);
+  background-size: cover;
+  background-position: center 40%;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 100%);
+  pointer-events: none;
+}
+.page-bg.ready { opacity: 0.5; }
+.page-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5, 9, 23, 0.8), rgba(5, 9, 23, 0.25) 70%); }
+.page-body { position: relative; max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
 
 /* Suodatinnapit */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: clamp(20px, 2.6vw, 36px); }
@@ -562,11 +627,11 @@ ul, ol { list-style: none; }
   pointer-events: none;
 }
 .g-title {
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(2rem, 4.4vw, 4.4rem);
   line-height: 0.9;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
   text-wrap: balance;
 }
 .g-cell.narrow .g-title { font-size: clamp(2rem, 3.6vw, 3.6rem); }
@@ -843,11 +908,11 @@ body.sky-full .top { display: none; }
 }
 .hp-name {
   margin: 10px 0 14px;
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(2.6rem, 7vw, 6.4rem);
   line-height: 0.88;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
 }
 .hp-desc { max-width: 44ch; margin-bottom: 26px; color: var(--mute); font-size: 1.1rem; }
 .hp-side { display: grid; gap: 28px; align-content: center; }
@@ -875,11 +940,11 @@ body.sky-full .top { display: none; }
 }
 .proj-head h2 {
   margin: 10px 0 14px;
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(2.6rem, 7.4vw, 7rem);
   line-height: 0.88;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
 }
 .proj-desc { max-width: 46ch; margin-bottom: 24px; font-size: 1.12rem; color: var(--mute); }
 .proj-head .facts { margin-bottom: 24px; }
@@ -911,10 +976,42 @@ body.sky-full .top { display: none; }
 .empty-card p { max-width: 52ch; }
 
 /* --------------------------------------------------------------------------
+   Software-sivu
+   -------------------------------------------------------------------------- */
+.sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: clamp(16px, 2vw, 30px); }
+.sw-cell { perspective: 1200px; }
+.sw-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, rgba(21, 33, 69, 0.82), rgba(8, 13, 30, 0.86));
+  color: var(--text);
+  text-decoration: none;
+  overflow: hidden;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--s, 1));
+  transition: transform 0.6s var(--ease), border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 40px 70px -44px rgba(0, 0, 0, 0.9);
+}
+.sw-cell:hover .sw-card { --s: 1.025; border-color: var(--gold); box-shadow: 0 50px 80px -40px rgba(0, 0, 0, 1), 0 0 50px -14px rgba(245, 185, 74, 0.35); }
+.sw-cell.tilting .sw-card { transition: transform 0.14s ease-out, border-color 0.3s ease, box-shadow 0.3s ease; }
+.sw-shot { display: block; aspect-ratio: 16 / 9; background: #03050c; border-bottom: 1px solid var(--line); }
+.sw-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sw-body { display: flex; flex-direction: column; gap: 8px; padding: clamp(20px, 2.2vw, 32px); }
+.sw-name { font-stretch: var(--display-stretch); font-weight: var(--display-weight); font-size: clamp(2rem, 3.4vw, 3.4rem); line-height: 0.92; text-transform: var(--display-case); }
+.sw-meta { font-size: 0.88rem; font-weight: 600; color: var(--dim); }
+.sw-desc { color: var(--mute); }
+.sw-features { display: grid; gap: 6px; margin-top: 6px; }
+.sw-features li { position: relative; padding-left: 20px; color: var(--mute); }
+.sw-features li::before { content: ""; position: absolute; left: 2px; top: 0.62em; width: 8px; height: 2px; background: var(--gold); }
+.sw-link { margin-top: 10px; font-weight: 700; color: var(--gold); }
+
+/* --------------------------------------------------------------------------
    Prosessointi: ennen/jälkeen-liukuri
    -------------------------------------------------------------------------- */
 .process-list { display: grid; gap: clamp(48px, 7vw, 96px); }
-.process-head h2 { font-stretch: 62%; font-weight: 900; font-size: clamp(2.2rem, 5.4vw, 4.6rem); line-height: 0.9; text-transform: uppercase; margin-bottom: 10px; }
+.process-head h2 { font-stretch: var(--display-stretch); font-weight: var(--display-weight); font-size: clamp(2.2rem, 5.4vw, 4.6rem); line-height: 0.9; text-transform: var(--display-case); margin-bottom: 10px; }
 .process-head p { max-width: 60ch; margin-bottom: 22px; color: var(--mute); }
 .compare {
   --pos: 50%;
@@ -1017,12 +1114,12 @@ body.sky-full .top { display: none; }
 }
 .foot-mark {
   margin: clamp(20px, 3vw, 44px) 0 clamp(18px, 2.4vw, 36px);
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(3.2rem, 15.4vw, 17rem);
   line-height: 0.8;
   letter-spacing: -0.02em;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
   white-space: nowrap;
   color: transparent;
   -webkit-text-stroke: 1.5px rgba(150, 175, 255, 0.34);
@@ -1199,11 +1296,11 @@ body.viewer-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   margin-top: 8px;
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(2.6rem, 4.2vw, 4.6rem);
   line-height: 0.88;
-  text-transform: uppercase;
+  text-transform: var(--display-case);
   text-wrap: balance;
 }
 .dc-title h2 .desig { font-size: 0.6em; line-height: 1.1; }
@@ -1211,8 +1308,8 @@ body.viewer-open { overflow: hidden; }
 
 .big { line-height: 1; }
 .big strong {
-  font-stretch: 62%;
-  font-weight: 900;
+  font-stretch: var(--display-stretch);
+  font-weight: var(--display-weight);
   font-size: clamp(3.4rem, 5.4vw, 6rem);
   line-height: 0.9;
   color: var(--gold);
@@ -1253,9 +1350,10 @@ body.viewer-open { overflow: hidden; }
 /* --------------------------------------------------------------------------
    Kapeat näytöt
    -------------------------------------------------------------------------- */
-@media (max-width: 1100px) {
-  .nav a { padding: 10px 10px; font-size: 0.92rem; }
-  .top { gap: 16px; }
+@media (max-width: 1200px) {
+  .nav a { padding: 10px 9px; font-size: 0.92rem; }
+  .nav a.active::after { left: 9px; right: 9px; }
+  .top { gap: 14px; }
 }
 
 @media (max-width: 900px) {
@@ -1293,11 +1391,11 @@ body.viewer-open { overflow: hidden; }
   body.menu-open .top { background: var(--ink); }
   .nav a {
     padding: 4px 0;
-    font-stretch: 62%;
-    font-weight: 900;
+    font-stretch: var(--display-stretch);
+    font-weight: var(--display-weight);
     font-size: clamp(3rem, 15vw, 5.2rem);
     line-height: 1;
-    text-transform: uppercase;
+    text-transform: var(--display-case);
     color: var(--text);
   }
   .nav a.active { color: var(--gold); }

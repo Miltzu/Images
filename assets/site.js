@@ -665,6 +665,93 @@
   }
 
   /* ------------------------------------------------------------------------
+     Software-sivu
+     software.json:
+     [ { "name": "Ohjelman nimi",
+         "desc": { "fi": "Mitä ohjelma tekee.", "en": "What it does." },
+         "platform": "PixInsight",            alusta (vapaaehtoinen)
+         "status": "kehitteillä",             kehitteillä / julkaistu / suunnitteilla
+         "version": "1.0",
+         "features": [ "Ominaisuus 1", "Ominaisuus 2" ],
+         "image": "images/software/kuva.jpg", kuvakaappaus
+         "link": "https://..." } ]            lataus- tai kotisivu
+     Vain "name" on pakollinen.
+     ------------------------------------------------------------------------ */
+  function initSoftware() {
+    const host = $("#software");
+    if (!host) return;
+    const STATUS = {
+      "kehitteillä": ["Kehitteillä", "In development"],
+      "julkaistu": ["Julkaistu", "Released"],
+      "suunnitteilla": ["Suunnitteilla", "Planned"]
+    };
+    let items = [];
+    function render() {
+      if (!items.length) {
+        host.innerHTML = `
+          <div class="empty-card">
+            <h2>${t("Ohjelmia ei ole vielä lisätty", "No software listed yet")}</h2>
+            <p>${t("Tänne tulevat omat astrokuvauksen työkalut ja ohjelmat.", "My own astrophotography tools and programs will be listed here.")}</p>
+          </div>`;
+        return;
+      }
+      host.innerHTML = `<ul class="sw-grid"></ul>`;
+      const grid = $(".sw-grid", host);
+      items.forEach(it => {
+        const cell = document.createElement("li");
+        cell.className = "sw-cell";
+        const st = STATUS[String(it.status || "").toLowerCase()];
+        const status = st ? st[lang === "en" ? 1 : 0] : tr(it.status);
+        const meta = [tr(it.platform), it.version ? t("versio ", "version ") + it.version : ""].filter(Boolean);
+        const features = (Array.isArray(it.features) ? it.features : []).map(f => `<li>${esc(tr(f))}</li>`).join("");
+        const tag = it.link ? "a" : "div";
+        cell.innerHTML = `
+          <${tag} class="sw-card"${it.link ? ` href="${esc(it.link)}" target="_blank" rel="noopener"` : ""}>
+            ${it.image ? `<span class="sw-shot"><img alt="" loading="lazy"></span>` : ""}
+            <span class="sw-body">
+              ${status ? `<span class="status">${esc(status)}</span>` : ""}
+              <span class="sw-name">${esc(tr(it.name))}</span>
+              ${meta.length ? `<span class="sw-meta">${esc(meta.join(", "))}</span>` : ""}
+              ${it.desc ? `<span class="sw-desc">${esc(tr(it.desc))}</span>` : ""}
+              ${features ? `<ul class="sw-features">${features}</ul>` : ""}
+              ${it.link ? `<span class="sw-link">${esc(tr(it.link_label) || t("Avaa sivu", "Open page"))}</span>` : ""}
+            </span>
+          </${tag}>`;
+        const img = $(".sw-shot img", cell);
+        if (img) { img.alt = tr(it.name); img.onerror = () => img.closest(".sw-shot").remove(); img.src = it.image; }
+        addTilt(cell, $(".sw-card", cell), 4);
+        grid.appendChild(cell);
+      });
+    }
+    fetch("software.json")
+      .then(r => (r.ok ? r.json() : []))
+      .then(list => { items = (Array.isArray(list) ? list : []).filter(x => x && x.name); })
+      .catch(() => { items = []; })
+      .then(() => { render(); document.addEventListener("langchange", render); });
+  }
+
+  /* ------------------------------------------------------------------------
+     Alasivujen otsikkotausta: himmennetty kuva galleriasta.
+     Sivun <header class="page-head" data-banner="2"> valitsee kuvan
+     järjestysnumerolla deep sky -kuvien joukosta.
+     ------------------------------------------------------------------------ */
+  function initPageBanner(list) {
+    const head = $(".page-head[data-banner]");
+    if (!head || !list.length) return;
+    const pool = list.filter(d => d.category === "deepsky" || d.category === "widefield");
+    const pick = (pool.length ? pool : list);
+    const d = pick[(parseInt(head.dataset.banner, 10) || 0) % pick.length];
+    const bg = document.createElement("div");
+    bg.className = "page-bg";
+    bg.setAttribute("aria-hidden", "true");
+    const img = new Image();
+    img.onload = () => { bg.style.backgroundImage = `url("${img.src}")`; bg.classList.add("ready"); };
+    img.onerror = () => { if (img.dataset.fb !== "1") { img.dataset.fb = "1"; img.src = d.file; } };
+    img.src = thumbPath(d.file);
+    head.prepend(bg);
+  }
+
+  /* ------------------------------------------------------------------------
      Prosessointi-sivu: ennen/jälkeen-liukuri
      processing.json:
      [ { "title": "M31 - Andromeda Galaxy", "desc": "...",
@@ -1545,11 +1632,13 @@
     initChrome();
     initStars();
     initProcessing();
+    initSoftware();
 
     Promise.all([loadImages(), loadProjects()]).then(([images, projects]) => {
       allProjects = projects;
       hashList = images;
       initHero(images);
+      initPageBanner(images);
       initGallery(images);
       initHomeProject(projects);
       initProjects(projects);

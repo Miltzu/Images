@@ -10,9 +10,10 @@ Astrokuvagalleria GitHub Pagesissa: <https://miltzu.github.io/Images/>
 | `taivas.html` | Tähtitaivas Suomesta juuri nyt ja koko taivaan kartta |
 | `projektit.html` | Kuvausprojektit ja niiden edistyminen |
 | `prosessointi.html` | Ennen/jälkeen-vertailut |
+| `software.html` | Omat ohjelmat (`software.json`) |
 | `equipment.html`, `loki.html` | Laitteisto ja päivitysloki |
 | `assets/site.css`, `assets/site.js`, `assets/sky.js` | Ulkoasu ja toiminnot |
-| `images.json`, `projects.json`, `processing.json` | **Sisältö: näitä muokataan** |
+| `images.json`, `projects.json`, `processing.json`, `software.json` | **Sisältö: näitä muokataan** |
 | `sky.json`, `sky/milkyway.jpg` | Tähtiluettelo ja Linnunrata taivaskarttaa varten |
 
 Sivua pitää katsoa palvelimen kautta (GitHub Pages tai `python -m http.server`),
@@ -94,6 +95,33 @@ Vain `file` on pakollinen. Tekstikenttä voi olla merkkijono tai
 ```
 
 Vähintään kaksi vaihetta; kuvien pitää olla samaa rajausta ja kokoa.
+
+## software.json
+
+```json
+[ { "name": "Ohjelman nimi",
+    "desc": { "fi": "Mitä ohjelma tekee.", "en": "What it does." },
+    "platform": "PixInsight", "status": "kehitteillä", "version": "1.0",
+    "features": [ "Ominaisuus 1", "Ominaisuus 2" ],
+    "image": "images/software/kuvakaappaus.jpg",
+    "link": "https://..." } ]
+```
+
+Vain `name` on pakollinen. `status`: `kehitteillä`, `julkaistu` tai `suunnitteilla`.
+Kuvakaappaukset kannattaa laittaa alikansioon (esim. `images/software/`), jotta niistä
+ei tehdä gallerian esikatselukuvia.
+
+## Värit ja fontit
+
+Tiedoston `assets/site.css` alussa on lohko **OMAT SÄÄDÖT**:
+
+- `--title-top`, `--title-bottom`: isojen otsikoiden liukuväri (sama väri molempiin = yksivärinen)
+- `--display-stretch`, `--display-weight`, `--display-case`: otsikoiden leveys, paksuus ja isot kirjaimet
+- `--text`, `--mute`: leipätekstin värit
+- `--gold`, `--oxy`: korostusvärit
+- `--font`: fontti
+
+Muutoksen jälkeen nosta HTML-sivujen `site.css?v=2` -numeroa, jotta selaimet hakevat uuden tiedoston.
 
 ## Lähteet
 

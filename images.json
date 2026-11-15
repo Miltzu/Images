@@ -163,5 +163,80 @@
       "fi": "Kuu kiertää Maata keskimäärin 384 400 kilometrin etäisyydellä. Sen halkaisija on noin 3 474 kilometriä, reilu neljännes Maan halkaisijasta.\n\nPinnan kraatterit ovat syntyneet asteroidien ja komeettojen törmäyksistä. Koska Kuulla ei ole ilmakehää eikä säätä, ne säilyvät miljardeja vuosia. Yksityiskohdat erottuvat parhaiten valon ja varjon rajalla, jossa matalalta paistava Aurinko saa kraatterien reunat heittämään pitkät varjot.",
       "en": "The Moon orbits Earth at an average distance of 384,400 km. It is about 3,474 km across, a little over a quarter of Earth's diameter.\n\nIts craters were formed by impacts from asteroids and comets. With no atmosphere or weather to wear them down, they last for billions of years. Detail shows best along the line between light and shadow, where the low Sun makes crater rims cast long shadows."
     }
+  },
+  {
+    "file": "images/kuva7.jpg",
+    "title": "M42 - Orion Nebula",
+    "category": "deepsky",
+    "distance": {
+      "ly": 1344
+    },
+    "constellation": {
+      "fi": "Orion",
+      "en": "Orion"
+    },
+    "type": {
+      "fi": "Emissio- ja heijastussumu",
+      "en": "Emission and reflection nebula"
+    },
+    "ra": 83.8221,
+    "dec": -5.3911,
+    "about": {
+      "fi": "Orionin sumu (M42) on lähin suuri tähtien syntyalue, noin 1 340 valovuoden päässä. Se näkyy paljain silmin sumuisena täplänä Orionin miekassa.\n\nSumun keskellä on Trapetsi, nuorten ja kuumien tähtien joukko, jonka säteily saa ympäröivän kaasun hehkumaan. Kuvan yläosassa erottuu pienempi M43, jonka tumma pölykaista erottaa pääsumusta.",
+      "en": "The Orion Nebula (M42) is the nearest large star-forming region, about 1,340 light-years away. It is visible to the naked eye as a hazy patch in Orion's sword.\n\nAt its centre lies the Trapezium, a group of young, hot stars whose radiation makes the surrounding gas glow. The smaller M43 sits at the top of the image, separated from the main nebula by a dark lane of dust."
+    }
+  },
+  {
+    "file": "images/kuva8.jpg",
+    "title": "M42 - Orion Nebula",
+    "desc": {
+      "fi": "Toinen versio samasta kohteesta.",
+      "en": "A second version of the same object."
+    },
+    "category": "deepsky",
+    "distance": {
+      "ly": 1344
+    },
+    "constellation": {
+      "fi": "Orion",
+      "en": "Orion"
+    },
+    "type": {
+      "fi": "Emissio- ja heijastussumu",
+      "en": "Emission and reflection nebula"
+    },
+    "ra": 83.8221,
+    "dec": -5.3911,
+    "about": {
+      "fi": "Orionin sumu (M42) on lähin suuri tähtien syntyalue, noin 1 340 valovuoden päässä. Se näkyy paljain silmin sumuisena täplänä Orionin miekassa.\n\nSumun keskellä on Trapetsi, nuorten ja kuumien tähtien joukko, jonka säteily saa ympäröivän kaasun hehkumaan. Kuvan yläosassa erottuu pienempi M43, jonka tumma pölykaista erottaa pääsumusta.",
+      "en": "The Orion Nebula (M42) is the nearest large star-forming region, about 1,340 light-years away. It is visible to the naked eye as a hazy patch in Orion's sword.\n\nAt its centre lies the Trapezium, a group of young, hot stars whose radiation makes the surrounding gas glow. The smaller M43 sits at the top of the image, separated from the main nebula by a dark lane of dust."
+    }
+  },
+  {
+    "file": "images/kuva9.jpg",
+    "title": "NGC 2237 - Rosette Nebula",
+    "category": "deepsky",
+    "narrowband": true,
+    "distance": {
+      "ly": 5200,
+      "approx": true
+    },
+    "constellation": {
+      "fi": "Yksisarvinen",
+      "en": "Monoceros"
+    },
+    "type": {
+      "fi": "Emissiosumu",
+      "en": "Emission nebula"
+    },
+    "ra": 98.4375,
+    "dec": 4.9983,
+    "integration": "~10 h",
+    "camera": "QHY 268M",
+    "telescope": "Sky-Watcher Quattro 250P",
+    "about": {
+      "fi": "Ruususumu on suuri emissiosumu Yksisarvisen tähdistössä, noin 5 200 valovuoden päässä. Läpimitaltaan se on noin 130 valovuotta.\n\nSumun keskellä on avoin tähtijoukko NGC 2244. Sen nuorten, kuumien tähtien säteily ja tähtituulet ovat puhaltaneet sumun keskelle onkalon ja saavat ympäröivän kaasun hehkumaan. Kirkasta kaasua vasten erottuvat tummat pölypilvet, joissa syntyy uusia tähtiä.",
+      "en": "The Rosette Nebula is a large emission nebula in the constellation Monoceros, about 5,200 light-years away. It is roughly 130 light-years across.\n\nAt its centre is the open cluster NGC 2244. Radiation and stellar winds from its young, hot stars have blown a cavity into the middle of the nebula and make the surrounding gas glow. Dark clouds of dust, where new stars are forming, stand out against the bright gas."
+    }
   }
 ]
