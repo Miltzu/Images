@@ -1,15 +1,53 @@
 [
   {
     "file": "images/kuva1.jpg",
-    "title": "-",
-    "desc": "Northern lights",
-    "category": "revontuli"
+    "title": {
+      "fi": "Revontulet",
+      "en": "Northern lights"
+    },
+    "category": "revontuli",
+    "distance": {
+      "text": {
+        "fi": "100–300 km",
+        "en": "100–300 km"
+      },
+      "label": {
+        "fi": "Korkeus maanpinnasta",
+        "en": "Height above the ground"
+      }
+    },
+    "type": {
+      "fi": "Ilmakehän valoilmiö",
+      "en": "Atmospheric light phenomenon"
+    },
+    "about": {
+      "fi": "Revontulet syntyvät, kun Auringosta tulevat varatut hiukkaset ohjautuvat Maan magneettikenttää pitkin napa-alueiden yläilmakehään ja törmäävät siellä happi- ja typpiatomeihin. Törmäyksessä atomit virittyvät ja vapauttavat energiansa valona.\n\nYleisin vihreä väri tulee hapesta noin 100–150 kilometrin korkeudessa. Punainen syntyy hapesta korkeammalla, ja sinertävät ja violetit sävyt typestä.",
+      "en": "Aurora appears when charged particles from the Sun are guided along Earth's magnetic field into the upper atmosphere near the poles, where they collide with oxygen and nitrogen atoms. The atoms are excited by the collision and release the energy as light.\n\nThe most common green comes from oxygen at about 100–150 km. Red comes from oxygen higher up, and the bluish and violet tones from nitrogen."
+    }
   },
   {
     "file": "images/kuva2.png",
-    "title": "-",
-    "desc": "Saturnus",
-    "category": "planeetta"
+    "title": {
+      "fi": "Saturnus",
+      "en": "Saturn"
+    },
+    "category": "planeetta",
+    "distance": {
+      "km": 1400000000.0,
+      "approx": true,
+      "note": {
+        "fi": "Etäisyys Maasta vaihtelee noin 1,2 ja 1,7 miljardin kilometrin välillä sen mukaan, missä kohtaa ratojaan planeetat ovat.",
+        "en": "The distance from Earth varies between about 1.2 and 1.7 billion km depending on where the two planets are in their orbits."
+      }
+    },
+    "type": {
+      "fi": "Kaasujättiläinen",
+      "en": "Gas giant"
+    },
+    "about": {
+      "fi": "Saturnus on aurinkokunnan toiseksi suurin planeetta ja kuudes Auringosta laskettuna. Se kiertää Aurinkoa keskimäärin noin 1,4 miljardin kilometrin etäisyydellä, ja yhteen kierrokseen kuluu noin 29 vuotta.\n\nPlaneetan renkaat koostuvat pääosin vesijäästä: kappaleiden koko vaihtelee pölyhiukkasista talon kokoisiin lohkareisiin. Renkaat näkyvät jo pienellä kaukoputkella.",
+      "en": "Saturn is the second-largest planet in the Solar System and the sixth from the Sun. It orbits the Sun at an average distance of about 1.4 billion km, and one orbit takes about 29 years.\n\nIts rings are made mostly of water ice, in pieces ranging from dust grains to house-sized boulders. The rings are visible even in a small telescope."
+    }
   },
   {
     "file": "images/kuva3.jpg",
@@ -41,6 +79,17 @@
     "about": {
       "fi": "Andromedan galaksi on Linnunradan lähin suuri naapurigalaksi, noin 2,5 miljoonan valovuoden päässä. Sen kiekon halkaisija on noin 152 000 valovuotta, ja siinä on arviolta biljoona tähteä. Kuuttomana yönä sen näkee paljain silmin jopa valosaasteisilta alueilta. Kuvassa näkyvät myös sen kaksi kirkasta seuralaisgalaksia, M32 ja M110. Andromeda lähestyy Linnunrataa noin 110 kilometrin sekuntinopeudella, mutta uusimpien laskelmien mukaan galaksien törmäyksen todennäköisyys seuraavan 10 miljardin vuoden aikana on vain noin 50 prosenttia.",
       "en": "The Andromeda Galaxy is the Milky Way's nearest large neighbouring galaxy, about 2.5 million light-years away. Its disc is roughly 152,000 light-years across and holds an estimated trillion stars. On a moonless night it is visible to the naked eye, even from moderately light-polluted areas. Its two bright satellite galaxies, M32 and M110, are also visible in the image. Andromeda is approaching the Milky Way at about 110 kilometres per second, but recent calculations put the chance of the two galaxies colliding within the next 10 billion years at only about 50 percent."
+    },
+    "distance": {
+      "ly": 2500000.0
+    },
+    "constellation": {
+      "fi": "Andromeda",
+      "en": "Andromeda"
+    },
+    "type": {
+      "fi": "Kierteisgalaksi",
+      "en": "Spiral galaxy"
     }
   },
   {
@@ -53,6 +102,18 @@
     "about": {
       "fi": "Thorin kypärä (NGC 2359) on emissiosumu Ison koiran tähdistössä, noin 12 000 valovuoden päässä. Sen halkaisija on noin 30 valovuotta. Sumun keskellä on erittäin kuuma Wolf-Rayet-tähti WR 7, jonka voimakas tähtituuli on puhaltanut ympäröivään kaasuun kuplan. Tähden arvellaan olevan lyhyessä vaiheessa juuri ennen supernovaräjähdystä.",
       "en": "Thor's Helmet (NGC 2359) is an emission nebula in the constellation Canis Major, about 12,000 light-years away. It is roughly 30 light-years across. At its centre is the extremely hot Wolf-Rayet star WR 7, whose powerful stellar wind has blown a bubble into the surrounding gas. The star is thought to be in a brief stage just before exploding as a supernova."
+    },
+    "distance": {
+      "ly": 12000,
+      "approx": true
+    },
+    "constellation": {
+      "fi": "Iso koira",
+      "en": "Canis Major"
+    },
+    "type": {
+      "fi": "Emissiosumu",
+      "en": "Emission nebula"
     }
   },
   {
@@ -66,12 +127,41 @@
     "about": {
       "fi": "Kotkasumu (M16) on emissiosumu ja nuori avoin tähtijoukko Käärmeen tähdistössä, noin 7 000 valovuoden päässä. Sen keskellä ovat kuuluisat Luomisen pilarit: tiheitä kaasu- ja pölypylväitä, joiden sisällä syntyy uusia tähtiä. Hubble-avaruusteleskoopin vuonna 1995 ottama kuva pilareista on yksi tunnetuimmista avaruuskuvista.",
       "en": "The Eagle Nebula (M16) is an emission nebula and young open star cluster in the constellation Serpens, about 7,000 light-years away. At its centre are the famous Pillars of Creation: dense columns of gas and dust in which new stars are forming. The Hubble Space Telescope's 1995 image of the pillars is one of the best-known space photographs."
-    }
+    },
+    "distance": {
+      "ly": 7000
+    },
+    "constellation": {
+      "fi": "Käärme",
+      "en": "Serpens"
+    },
+    "type": {
+      "fi": "Emissiosumu ja avoin tähtijoukko",
+      "en": "Emission nebula and open cluster"
+    },
+    "featured": true
   },
   {
     "file": "images/kuva6.jpg",
-    "title": "Kuu",
-    "desc": "Lähikuva Kuun pinnasta.",
-    "category": "kuu"
+    "title": {
+      "fi": "Kuu",
+      "en": "The Moon"
+    },
+    "desc": {
+      "fi": "Lähikuva Kuun pinnasta.",
+      "en": "A close-up of the lunar surface."
+    },
+    "category": "kuu",
+    "distance": {
+      "km": 384400
+    },
+    "type": {
+      "fi": "Maan luonnollinen kiertolainen",
+      "en": "Earth's natural satellite"
+    },
+    "about": {
+      "fi": "Kuu kiertää Maata keskimäärin 384 400 kilometrin etäisyydellä. Sen halkaisija on noin 3 474 kilometriä, reilu neljännes Maan halkaisijasta.\n\nPinnan kraatterit ovat syntyneet asteroidien ja komeettojen törmäyksistä. Koska Kuulla ei ole ilmakehää eikä säätä, ne säilyvät miljardeja vuosia. Yksityiskohdat erottuvat parhaiten valon ja varjon rajalla, jossa matalalta paistava Aurinko saa kraatterien reunat heittämään pitkät varjot.",
+      "en": "The Moon orbits Earth at an average distance of 384,400 km. It is about 3,474 km across, a little over a quarter of Earth's diameter.\n\nIts craters were formed by impacts from asteroids and comets. With no atmosphere or weather to wear them down, they last for billions of years. Detail shows best along the line between light and shadow, where the low Sun makes crater rims cast long shadows."
+    }
   }
 ]

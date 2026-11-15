@@ -2,97 +2,75 @@
 <html lang="fi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loki — Miltzu Images</title>
-<meta name="description" content="Miltzun astrokuvia: deep sky, planeetat, Kuu, Aurinko ja revontulet.">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Päivitysloki – Miltzu Images</title>
+<meta name="description" content="Miltzu Images -sivuston päivitysloki.">
+<meta name="theme-color" content="#050917">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="style.css?v=30">
-<script src="script.js?v=26"></script>
+<link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/site.css?v=1">
 </head>
 <body>
+<div id="stars" aria-hidden="true"></div>
+<a class="skip" href="#main" data-fi="Siirry sisältöön" data-en="Skip to content">Siirry sisältöön</a>
 
-<div id="starfield"></div>
-
-<header class="site-header">
-  <div class="site-header-inner">
-    <a class="brand" href="index.html">Miltzu <span>Images</span></a>
-    <nav class="site-nav">
-      <a href="index.html" data-fi="Galleria" data-en="Gallery">Galleria</a>
+<header class="top">
+  <a class="brand" href="index.html">Miltzu <span>Images</span></a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" data-fi="Valikko" data-en="Menu">Valikko</button>
+  <nav class="nav" id="nav" aria-label="Päävalikko">
+      <a href="index.html" data-fi="Kuvat" data-en="Images">Kuvat</a>
       <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
       <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
       <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
       <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
-      <a href="loki.html" class="active" data-fi="Loki" data-en="Log">Loki</a>
-    </nav>
-    <a class="social-link" href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">Instagram</a>
-    <div class="lang-switch">
-      <button class="lang-btn active" data-lang="fi">FI</button>
-      <button class="lang-btn" data-lang="en">EN</button>
-    </div>
+  </nav>
+  <div class="lang" role="group" aria-label="Kieli / Language">
+    <button type="button" data-lang="fi" class="active">FI</button>
+    <button type="button" data-lang="en">EN</button>
   </div>
 </header>
 
-<main class="page">
-
-  <section class="page-header">
-    <h1 data-fi="Päivitysloki" data-en="Update log">Päivitysloki</h1>
-    <p data-fi="Mitä sivustolle on tehty" data-en="What's been done to the site">Mitä sivustolle on tehty</p>
-  </section>
-
-  <ul class="log-list">
-    <li class="log-entry">
-      <span class="log-date">6.10.2026</span>
-      <p data-fi="Taivas-sivulla aidomman näköinen Linnunrata, planeetat ja keskeneräiset projektikohteet omalla värillään. Galleriaan Kapeakaista-osio." data-en="The Sky page now has a more realistic Milky Way, the planets and in-progress project targets in their own colour. New Narrowband section in the gallery.">Taivas-sivulla aidomman näköinen Linnunrata, planeetat ja keskeneräiset projektikohteet omalla värillään. Galleriaan Kapeakaista-osio.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">5.10.2026</span>
-      <p data-fi="Etusivulla uusin kuva nyt isona. Uusi Prosessointi-sivu, jossa ennen/jälkeen-liukuri. Uusi Taivas-välilehti: tähtitaivas Suomesta juuri nyt, liikuteltava ja zoomattava, ja kuvien kohteet sen päällä." data-en="The front page now shows the latest image large. New Processing page with a before/after slider. New Sky tab: the starry sky from Finland right now, with drag and zoom and the imaged objects on it.">Etusivulla uusin kuva nyt isona. Uusi Prosessointi-sivu, jossa ennen/jälkeen-liukuri. Uusi Taivas-välilehti: tähtitaivas Suomesta juuri nyt, liikuteltava ja zoomattava, ja kuvien kohteet sen päällä.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">5.10.2026</span>
-      <p data-fi="Kuviin avattava Mikä tämä on? -kortti, suodatinkohtaiset kuvaustiedot sekä kohteiden nimet koordinaattiruudukkoon. Esikatselukuvat syntyvät nyt automaattisesti." data-en="Images now have an expandable What is this? card, per-filter acquisition details and object labels on the coordinate grid. Previews are now generated automatically.">Kuviin avattava Mikä tämä on? -kortti, suodatinkohtaiset kuvaustiedot sekä kohteiden nimet koordinaattiruudukkoon. Esikatselukuvat syntyvät nyt automaattisesti.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">4.10.2026</span>
-      <p data-fi="Kuvan zoomaus ja liikuttelu korjattu mobiilissa. Koordinaatit näytetään nyt ruudukkona suoraan kuvan päällä." data-en="Fixed image zoom and panning on mobile. Coordinates are now shown as a grid directly on the image.">Kuvan zoomaus ja liikuttelu korjattu mobiilissa. Koordinaatit näytetään nyt ruudukkona suoraan kuvan päällä.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">4.10.2026</span>
-      <p data-fi="Kuvien tekniset tiedot omiin laatikoihinsa, katselutilastot nollattu. Galleria lataa nyt kevyet esikatselukuvat, sivustolle oma kuvake ja projekteille edistymispalkki. Kuvan zoomaus ei enää kaada mobiiliselainta, ja sivulla on linkki Instagramiin." data-en="Image details moved into their own boxes, view counts reset. The gallery now loads lightweight previews, the site has its own icon and projects have a progress bar. Zooming no longer crashes mobile browsers, and the site links to Instagram.">Kuvien tekniset tiedot omiin laatikoihinsa, katselutilastot nollattu. Galleria lataa nyt kevyet esikatselukuvat, sivustolle oma kuvake ja projekteille edistymispalkki. Kuvan zoomaus ei enää kaada mobiiliselainta, ja sivulla on linkki Instagramiin.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">3.10.2026</span>
-      <p data-fi="Uusi ulkoasu koko sivustolle. Projektit-sivulle blogimainen aikajana kuvineen." data-en="New layout across the site. Projects page now has a blog-style timeline with images.">Uusi ulkoasu koko sivustolle. Projektit-sivulle blogimainen aikajana kuvineen.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">24.9.2026</span>
-      <p data-fi="Lisätty Planeetta-kategoria galleriaan ja FI/EN-kielivalinta koko sivustolle." data-en="Added a Planet category to the gallery and an FI/EN language switch across the site.">Lisätty Planeetta-kategoria galleriaan ja FI/EN-kielivalinta koko sivustolle.</p>
-    </li>
-    <li class="log-entry">
-      <span class="log-date">24.9.2026</span>
-      <p data-fi="Lisätty Projektit- ja Laitteisto-sivut, päivitysloki sekä galleriaan kategoriat." data-en="Added Projects and Equipment pages, an update log and gallery categories.">Lisätty Projektit- ja Laitteisto-sivut, päivitysloki sekä galleriaan kategoriat.</p>
-    </li>
-  </ul>
-
+<main id="main">
+  <header class="page-head">
+    <h1 class="display" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</h1>
+    <p class="lead" data-fi="Mitä sivustolle on tehty." data-en="What has changed on the site.">Mitä sivustolle on tehty.</p>
+  </header>
+  <div class="page-body">
+    <ol class="changelog">
+      <li><time>15.11.2026</time><p data-fi="Sivusto uudistettu kokonaan: uusi ulkoasu, kolmiulotteiset kuvakortit ja uusi kuvanäkymä, jossa on kohteen tarina, etäisyys ja valotustiedot. Taivaskartta myös etusivulla." data-en="The site has been rebuilt from the ground up: a new look, three-dimensional image cards and a new image view with the story of the object, its distance and exposure details. The sky map is now on the front page too.">Sivusto uudistettu kokonaan: uusi ulkoasu, kolmiulotteiset kuvakortit ja uusi kuvanäkymä, jossa on kohteen tarina, etäisyys ja valotustiedot. Taivaskartta myös etusivulla.</p></li>
+      <li><time>12.10.2026</time><p data-fi="Korjattu sivun nykiminen puhelimella selatessa. Galleriaan lisätty M16 (Kotkasumu) ja lähikuva Kuusta." data-en="Fixed the page stuttering while scrolling on phones. Added M16 (Eagle Nebula) and a close-up of the Moon to the gallery.">Korjattu sivun nykiminen puhelimella selatessa. Galleriaan lisätty M16 (Kotkasumu) ja lähikuva Kuusta.</p></li>
+      <li><time>6.10.2026</time><p data-fi="Taivas-sivulla aidomman näköinen Linnunrata, planeetat ja keskeneräiset projektikohteet omalla värillään. Galleriaan Kapeakaista-osio." data-en="The Sky page now has a more realistic Milky Way, the planets and in-progress project targets in their own colour. New Narrowband section in the gallery.">Taivas-sivulla aidomman näköinen Linnunrata, planeetat ja keskeneräiset projektikohteet omalla värillään. Galleriaan Kapeakaista-osio.</p></li>
+      <li><time>5.10.2026</time><p data-fi="Etusivulla uusin kuva nyt isona. Uusi Prosessointi-sivu, jossa ennen/jälkeen-liukuri. Uusi Taivas-välilehti: tähtitaivas Suomesta juuri nyt, liikuteltava ja zoomattava, ja kuvien kohteet sen päällä." data-en="The front page now shows the latest image large. New Processing page with a before/after slider. New Sky tab: the starry sky from Finland right now, with drag and zoom and the imaged objects on it.">Etusivulla uusin kuva nyt isona. Uusi Prosessointi-sivu, jossa ennen/jälkeen-liukuri. Uusi Taivas-välilehti: tähtitaivas Suomesta juuri nyt, liikuteltava ja zoomattava, ja kuvien kohteet sen päällä.</p></li>
+      <li><time>5.10.2026</time><p data-fi="Kuviin avattava Mikä tämä on? -kortti, suodatinkohtaiset kuvaustiedot sekä kohteiden nimet koordinaattiruudukkoon. Esikatselukuvat syntyvät nyt automaattisesti." data-en="Images now have an expandable What is this? card, per-filter acquisition details and object labels on the coordinate grid. Previews are now generated automatically.">Kuviin avattava Mikä tämä on? -kortti, suodatinkohtaiset kuvaustiedot sekä kohteiden nimet koordinaattiruudukkoon. Esikatselukuvat syntyvät nyt automaattisesti.</p></li>
+      <li><time>4.10.2026</time><p data-fi="Kuvan zoomaus ja liikuttelu korjattu mobiilissa. Koordinaatit näytetään nyt ruudukkona suoraan kuvan päällä." data-en="Fixed image zoom and panning on mobile. Coordinates are now shown as a grid directly on the image.">Kuvan zoomaus ja liikuttelu korjattu mobiilissa. Koordinaatit näytetään nyt ruudukkona suoraan kuvan päällä.</p></li>
+      <li><time>4.10.2026</time><p data-fi="Kuvien tekniset tiedot omiin laatikoihinsa, katselutilastot nollattu. Galleria lataa nyt kevyet esikatselukuvat, sivustolle oma kuvake ja projekteille edistymispalkki. Kuvan zoomaus ei enää kaada mobiiliselainta, ja sivulla on linkki Instagramiin." data-en="Image details moved into their own boxes, view counts reset. The gallery now loads lightweight previews, the site has its own icon and projects have a progress bar. Zooming no longer crashes mobile browsers, and the site links to Instagram.">Kuvien tekniset tiedot omiin laatikoihinsa, katselutilastot nollattu. Galleria lataa nyt kevyet esikatselukuvat, sivustolle oma kuvake ja projekteille edistymispalkki. Kuvan zoomaus ei enää kaada mobiiliselainta, ja sivulla on linkki Instagramiin.</p></li>
+      <li><time>3.10.2026</time><p data-fi="Uusi ulkoasu koko sivustolle. Projektit-sivulle blogimainen aikajana kuvineen." data-en="New layout across the site. Projects page now has a blog-style timeline with images.">Uusi ulkoasu koko sivustolle. Projektit-sivulle blogimainen aikajana kuvineen.</p></li>
+      <li><time>24.9.2026</time><p data-fi="Lisätty Planeetta-kategoria galleriaan ja FI/EN-kielivalinta koko sivustolle." data-en="Added a Planet category to the gallery and an FI/EN language switch across the site.">Lisätty Planeetta-kategoria galleriaan ja FI/EN-kielivalinta koko sivustolle.</p></li>
+      <li><time>24.9.2026</time><p data-fi="Lisätty Projektit- ja Laitteisto-sivut, päivitysloki sekä galleriaan kategoriat." data-en="Added Projects and Equipment pages, an update log and gallery categories.">Lisätty Projektit- ja Laitteisto-sivut, päivitysloki sekä galleriaan kategoriat.</p></li>
+    </ol>
+  </div>
 </main>
 
-<footer class="footer">
-  <div class="footer-content">
-    <span>Miltzu</span>
-    <span>•</span>
-    <span>© 2026</span>
-    <a class="footer-link" href="loki.html" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</a>
-    <a class="social-link" href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">@M1ltzu</a>
+<footer class="foot">
+  <p class="foot-mark" aria-hidden="true">Miltzu Images</p>
+  <div class="foot-row">
+    <nav aria-label="Alavalikko">
+      <a href="index.html" data-fi="Kuvat" data-en="Images">Kuvat</a>
+      <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+      <a href="images/timelapses/index.html">Timelapset</a>
+      <a href="loki.html" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</a>
+    </nav>
+    <a href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">Instagram @M1ltzu</a>
+    <span>© <span id="year">2026</span> Miltzu</span>
   </div>
 </footer>
+
+<script src="assets/site.js?v=1"></script>
 
 </body>
 </html>
