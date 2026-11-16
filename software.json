@@ -8,18 +8,31 @@
         "en": "My own scripts for PixInsight. After installation they are in the Script → Miltzu menu."
       },
       "install": {
-        "title": { "fi": "Näin lisäät työkalun PixInsightiin", "en": "How to add a tool to PixInsight" },
+        "title": {
+          "fi": "Näin lisäät työkalun PixInsightiin",
+          "en": "How to add a tool to PixInsight"
+        },
         "steps": [
-          { "fi": "Avaa työkalun GitHub-linkki ja lataa .js-tiedosto (Download raw file) – tai koko kokoelma: Code → Download ZIP.",
-            "en": "Open the tool's GitHub link and download the .js file (Download raw file) – or the whole collection: Code → Download ZIP." },
-          { "fi": "Tallenna tiedosto omaan kansioon, esim. Documents\\PixInsight\\Miltzu.",
-            "en": "Save the file in a folder of its own, e.g. Documents\\PixInsight\\Miltzu." },
-          { "fi": "Avaa PixInsightissa Script → Feature Scripts…",
-            "en": "In PixInsight open Script → Feature Scripts…" },
-          { "fi": "Paina Add, valitse kansio ja paina Done.",
-            "en": "Click Add, choose the folder and click Done." },
-          { "fi": "Työkalu löytyy nyt valikosta Script → Miltzu.",
-            "en": "The tool is now in the Script → Miltzu menu." }
+          {
+            "fi": "Avaa työkalun GitHub-linkki ja lataa .js-tiedosto (Download raw file) – tai koko kokoelma: Code → Download ZIP.",
+            "en": "Open the tool's GitHub link and download the .js file (Download raw file) – or the whole collection: Code → Download ZIP."
+          },
+          {
+            "fi": "Tallenna tiedosto omaan kansioon, esim. Documents\\PixInsight\\Miltzu.",
+            "en": "Save the file in a folder of its own, e.g. Documents\\PixInsight\\Miltzu."
+          },
+          {
+            "fi": "Avaa PixInsightissa Script → Feature Scripts…",
+            "en": "In PixInsight open Script → Feature Scripts…"
+          },
+          {
+            "fi": "Paina Add, valitse kansio ja paina Done.",
+            "en": "Click Add, choose the folder and click Done."
+          },
+          {
+            "fi": "Työkalu löytyy nyt valikosta Script → Miltzu.",
+            "en": "The tool is now in the Script → Miltzu menu."
+          }
         ],
         "note": {
           "fi": "Päivitys: korvaa vanha .js-tiedosto uudella samassa kansiossa. Lisäystä ei tarvitse tehdä uudelleen. Jos valikko ei päivity, paina Feature Scripts -ikkunassa Regenerate.",
@@ -29,11 +42,7 @@
     },
     {
       "id": "infinite-studio",
-      "name": "Infinite Studio",
-      "intro": {
-        "fi": "Oma kuvaus- ja ohjausohjelma: kamerat, teleskooppi ja havainnointi.",
-        "en": "My own capture and control application: cameras, telescope and observing."
-      }
+      "name": "Infinite Studio"
     }
   ],
   "items": [
@@ -47,13 +56,28 @@
       "status": "julkaistu",
       "version": "1.0",
       "features": [
-        { "fi": "Nopea automaattinen tähtikohdistus", "en": "Fast automatic star alignment" },
-        { "fi": "Plate solve polttovälin, kohteen tai koordinaattien avulla", "en": "Plate solving with focal length, target name or coordinates" },
-        { "fi": "Solver-tila hyvin sumeille kohteille", "en": "Solver mode for very blurry targets" },
-        { "fi": "Tumma teema, englanti ja suomi", "en": "Dark theme, English and Finnish" }
+        {
+          "fi": "Nopea automaattinen tähtikohdistus",
+          "en": "Fast automatic star alignment"
+        },
+        {
+          "fi": "Plate solve polttovälin, kohteen tai koordinaattien avulla",
+          "en": "Plate solving with focal length, target name or coordinates"
+        },
+        {
+          "fi": "Solver-tila hyvin sumeille kohteille",
+          "en": "Solver mode for very blurry targets"
+        },
+        {
+          "fi": "Tumma teema, englanti ja suomi",
+          "en": "Dark theme, English and Finnish"
+        }
       ],
       "link": "https://github.com/Miltzu/tools/tree/main/PixInsight/AutoAlignmentPro",
-      "link_label": { "fi": "GitHub – lataa", "en": "GitHub – download" }
+      "link_label": {
+        "fi": "GitHub – lataa",
+        "en": "GitHub – download"
+      }
     },
     {
       "name": "Auto Dark Pro",
@@ -126,13 +150,14 @@
     },
     {
       "name": "Infinite Studio",
-      "desc": {
-        "fi": "Kuvaus- ja ohjausohjelma: ZWO- ja Nikon-kamerat, teleskoopin ohjaus ja havainnointi.",
-        "en": "Capture and control application: ZWO and Nikon cameras, telescope control and observing."
-      },
       "platform": "Infinite Studio",
       "status": "kehitteillä",
-      "hidden": true
+      "version": "1.0 BETA",
+      "link": "infinite-studio.html",
+      "link_label": {
+        "fi": "Avaa sivu",
+        "en": "Open page"
+      }
     }
   ]
 }

@@ -717,8 +717,10 @@
       const meta = [tr(it.platform), it.version ? t("versio ", "version ") + it.version : ""].filter(Boolean);
       const features = (Array.isArray(it.features) ? it.features : []).map(f => `<li>${esc(tr(f))}</li>`).join("");
       const tag = it.link ? "a" : "div";
+      // oma sivu (esim. infinite-studio.html) aukeaa samaan välilehteen, ulkoiset linkit uuteen
+      const ext = /^https?:\/\//i.test(String(it.link || ""));
       cell.innerHTML = `
-        <${tag} class="sw-card"${it.link ? ` href="${esc(it.link)}" target="_blank" rel="noopener"` : ""}>
+        <${tag} class="sw-card"${it.link ? ` href="${esc(it.link)}"${ext ? ` target="_blank" rel="noopener"` : ""}` : ""}>
           ${it.image ? `<span class="sw-shot"><img alt="" loading="lazy"></span>` : ""}
           <span class="sw-body">
             ${status ? `<span class="status">${esc(status)}</span>` : ""}
