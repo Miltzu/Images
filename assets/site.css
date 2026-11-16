@@ -1006,6 +1006,28 @@ body.sky-full .top { display: none; }
 .sw-features li { position: relative; padding-left: 20px; color: var(--mute); }
 .sw-features li::before { content: ""; position: absolute; left: 2px; top: 0.62em; width: 8px; height: 2px; background: var(--gold); }
 .sw-link { margin-top: 10px; font-weight: 700; color: var(--gold); }
+.sw-tabs { margin-bottom: clamp(14px, 1.8vw, 24px); }
+.sw-intro { max-width: 70ch; margin-bottom: clamp(16px, 2vw, 26px); color: var(--mute); }
+.sw-guide {
+  margin-bottom: clamp(20px, 2.6vw, 36px);
+  padding: clamp(18px, 2vw, 28px) clamp(20px, 2.4vw, 34px);
+  border-radius: var(--r);
+  border: 1px dashed var(--line-2);
+  background: rgba(8, 13, 30, 0.55);
+}
+.sw-guide summary { cursor: pointer; font-weight: 700; color: var(--gold); }
+.sw-guide summary::marker { color: var(--gold); }
+.sw-guide ol { margin-top: 14px; padding-left: 0; display: grid; gap: 8px; counter-reset: sw-step; list-style: none; }
+.sw-guide ol li { position: relative; padding-left: 38px; color: var(--mute); counter-increment: sw-step; max-width: 80ch; }
+.sw-guide ol li::before {
+  content: counter(sw-step);
+  position: absolute; left: 0; top: 0;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  border: 1px solid var(--gold); color: var(--gold);
+  font-size: 0.8rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.sw-guide-note { margin-top: 12px; font-size: 0.9rem; color: var(--dim); max-width: 80ch; }
 
 /* --------------------------------------------------------------------------
    Prosessointi: ennen/jälkeen-liukuri

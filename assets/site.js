@@ -667,15 +667,26 @@
   /* ------------------------------------------------------------------------
      Software-sivu
      software.json:
-     [ { "name": "Ohjelman nimi",
-         "desc": { "fi": "Mitä ohjelma tekee.", "en": "What it does." },
-         "platform": "PixInsight",            alusta (vapaaehtoinen)
-         "status": "kehitteillä",             kehitteillä / julkaistu / suunnitteilla
-         "version": "1.0",
-         "features": [ "Ominaisuus 1", "Ominaisuus 2" ],
-         "image": "images/software/kuva.jpg", kuvakaappaus
-         "link": "https://..." } ]            lataus- tai kotisivu
-     Vain "name" on pakollinen.
+     { "platforms": [                         alustat = napit sivun yläosassa
+         { "id": "pixinsight",                osoitteessa software.html#pixinsight
+           "name": "PixInsight",
+           "intro": { "fi": "...", "en": "..." },               (vapaaehtoinen)
+           "install": { "title": { "fi": "...", "en": "..." },  (vapaaehtoinen)
+                        "steps": [ { "fi": "...", "en": "..." } ],
+                        "note": { "fi": "...", "en": "..." } } } ],
+       "items": [
+         { "name": "Ohjelman nimi",
+           "desc": { "fi": "Mitä ohjelma tekee.", "en": "What it does." },
+           "platform": "PixInsight",            alustan name tai id
+           "status": "kehitteillä",             kehitteillä / julkaistu / suunnitteilla
+           "version": "1.0",
+           "features": [ "Ominaisuus 1", { "fi": "...", "en": "..." } ],
+           "image": "images/software/kuva.jpg", kuvakaappaus
+           "link": "https://...",               lataus- tai kotisivu
+           "link_label": { "fi": "...", "en": "..." },
+           "hidden": true } ] }                 true = ei näy sivulla
+     Pelkkä lista [ {...}, ... ] käy myös (silloin ei ohjeita).
+     Vain "name" on pakollinen. Alustan nappi näkyy, kun sillä on näkyviä ohjelmia.
      ------------------------------------------------------------------------ */
   function initSoftware() {
     const host = $("#software");
@@ -685,9 +696,58 @@
       "julkaistu": ["Julkaistu", "Released"],
       "suunnitteilla": ["Suunnitteilla", "Planned"]
     };
-    let items = [];
+    const OTHER = "muut";
+    let items = [], platforms = [], active = "";
+    const slug = (v) => String(v || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    // ohjelman alusta -> alustan id (name tai id kelpaa)
+    function platformOf(it) {
+      const key = slug(tr(it.platform));
+      if (!key) return OTHER;
+      const p = platforms.find(pl => pl.id === key || slug(tr(pl.name)) === key);
+      return p ? p.id : key;
+    }
+    function platformInfo(id) {
+      return platforms.find(pl => pl.id === id) || { id: id, name: id === OTHER ? { fi: "Muut", en: "Other" } : id };
+    }
+    function card(it) {
+      const cell = document.createElement("li");
+      cell.className = "sw-cell";
+      const st = STATUS[String(it.status || "").toLowerCase()];
+      const status = st ? st[lang === "en" ? 1 : 0] : tr(it.status);
+      const meta = [tr(it.platform), it.version ? t("versio ", "version ") + it.version : ""].filter(Boolean);
+      const features = (Array.isArray(it.features) ? it.features : []).map(f => `<li>${esc(tr(f))}</li>`).join("");
+      const tag = it.link ? "a" : "div";
+      cell.innerHTML = `
+        <${tag} class="sw-card"${it.link ? ` href="${esc(it.link)}" target="_blank" rel="noopener"` : ""}>
+          ${it.image ? `<span class="sw-shot"><img alt="" loading="lazy"></span>` : ""}
+          <span class="sw-body">
+            ${status ? `<span class="status">${esc(status)}</span>` : ""}
+            <span class="sw-name">${esc(tr(it.name))}</span>
+            ${meta.length ? `<span class="sw-meta">${esc(meta.join(", "))}</span>` : ""}
+            ${it.desc ? `<span class="sw-desc">${esc(tr(it.desc))}</span>` : ""}
+            ${features ? `<ul class="sw-features">${features}</ul>` : ""}
+            ${it.link ? `<span class="sw-link">${esc(tr(it.link_label) || t("Avaa sivu", "Open page"))}</span>` : ""}
+          </span>
+        </${tag}>`;
+      const img = $(".sw-shot img", cell);
+      if (img) { img.alt = tr(it.name); img.onerror = () => img.closest(".sw-shot").remove(); img.src = it.image; }
+      addTilt(cell, $(".sw-card", cell), 4);
+      return cell;
+    }
+    function guide(p) {
+      const g = p.install;
+      if (!g || !Array.isArray(g.steps) || !g.steps.length) return "";
+      const steps = g.steps.map(s => `<li>${esc(tr(s))}</li>`).join("");
+      return `
+        <details class="sw-guide" open>
+          <summary>${esc(tr(g.title) || t("Näin otat työkalun käyttöön", "How to install"))}</summary>
+          <ol>${steps}</ol>
+          ${g.note ? `<p class="sw-guide-note">${esc(tr(g.note))}</p>` : ""}
+        </details>`;
+    }
     function render() {
-      if (!items.length) {
+      const visible = items.filter(it => !it.hidden);
+      if (!visible.length) {
         host.innerHTML = `
           <div class="empty-card">
             <h2>${t("Ohjelmia ei ole vielä lisätty", "No software listed yet")}</h2>
@@ -695,39 +755,53 @@
           </div>`;
         return;
       }
-      host.innerHTML = `<ul class="sw-grid"></ul>`;
+      // alustat siinä järjestyksessä kuin software.json ne antaa, sitten muut
+      const ids = [];
+      platforms.forEach(pl => { if (visible.some(it => platformOf(it) === pl.id)) ids.push(pl.id); });
+      visible.forEach(it => { const id = platformOf(it); if (ids.indexOf(id) < 0) ids.push(id); });
+      if (ids.indexOf(active) < 0) active = ids[0];
+      const p = platformInfo(active);
+      const shown = visible.filter(it => platformOf(it) === active);
+      host.innerHTML = `
+        <div class="chips sw-tabs" role="tablist" aria-label="${t("Alusta", "Platform")}">
+          ${ids.map(id => {
+            const n = visible.filter(it => platformOf(it) === id).length;
+            return `<button type="button" class="chip${id === active ? " active" : ""}" role="tab" data-platform="${esc(id)}" aria-selected="${id === active}">${esc(tr(platformInfo(id).name))}<span>${n}</span></button>`;
+          }).join("")}
+        </div>
+        ${p.intro ? `<p class="sw-intro">${esc(tr(p.intro))}</p>` : ""}
+        ${guide(p)}
+        <ul class="sw-grid"></ul>`;
       const grid = $(".sw-grid", host);
-      items.forEach(it => {
-        const cell = document.createElement("li");
-        cell.className = "sw-cell";
-        const st = STATUS[String(it.status || "").toLowerCase()];
-        const status = st ? st[lang === "en" ? 1 : 0] : tr(it.status);
-        const meta = [tr(it.platform), it.version ? t("versio ", "version ") + it.version : ""].filter(Boolean);
-        const features = (Array.isArray(it.features) ? it.features : []).map(f => `<li>${esc(tr(f))}</li>`).join("");
-        const tag = it.link ? "a" : "div";
-        cell.innerHTML = `
-          <${tag} class="sw-card"${it.link ? ` href="${esc(it.link)}" target="_blank" rel="noopener"` : ""}>
-            ${it.image ? `<span class="sw-shot"><img alt="" loading="lazy"></span>` : ""}
-            <span class="sw-body">
-              ${status ? `<span class="status">${esc(status)}</span>` : ""}
-              <span class="sw-name">${esc(tr(it.name))}</span>
-              ${meta.length ? `<span class="sw-meta">${esc(meta.join(", "))}</span>` : ""}
-              ${it.desc ? `<span class="sw-desc">${esc(tr(it.desc))}</span>` : ""}
-              ${features ? `<ul class="sw-features">${features}</ul>` : ""}
-              ${it.link ? `<span class="sw-link">${esc(tr(it.link_label) || t("Avaa sivu", "Open page"))}</span>` : ""}
-            </span>
-          </${tag}>`;
-        const img = $(".sw-shot img", cell);
-        if (img) { img.alt = tr(it.name); img.onerror = () => img.closest(".sw-shot").remove(); img.src = it.image; }
-        addTilt(cell, $(".sw-card", cell), 4);
-        grid.appendChild(cell);
-      });
+      shown.forEach(it => grid.appendChild(card(it)));
     }
+    host.addEventListener("click", (e) => {
+      const b = e.target.closest(".sw-tabs .chip");
+      if (!b) return;
+      active = b.dataset.platform;
+      history.replaceState(null, "", "#" + active);
+      render();
+    });
     fetch("software.json")
       .then(r => (r.ok ? r.json() : []))
-      .then(list => { items = (Array.isArray(list) ? list : []).filter(x => x && x.name); })
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
+        platforms = (data && Array.isArray(data.platforms) ? data.platforms : [])
+          .filter(pl => pl && pl.name)
+          .map(pl => Object.assign({}, pl, { id: slug(pl.id || tr(pl.name)) }));
+        items = list.filter(x => x && x.name);
+      })
       .catch(() => { items = []; })
-      .then(() => { render(); document.addEventListener("langchange", render); });
+      .then(() => {
+        if (location.hash) active = slug(decodeURIComponent(location.hash.slice(1)));
+        render();
+        document.addEventListener("langchange", render);
+        // linkki toiselle alustalle samalla sivulla (esim. #infinite-studio)
+        window.addEventListener("hashchange", () => {
+          const h = slug(decodeURIComponent(location.hash.slice(1)));
+          if (h && h !== active) { active = h; render(); }
+        });
+      });
   }
 
   /* ------------------------------------------------------------------------
