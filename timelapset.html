@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timelapse – Miltzu Images</title>
+<meta name="description" content="Miltzun Timelapse-videot: yötaivas, revontulet ja maisemat.">
+<meta name="theme-color" content="#050917">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/site.css?v=5">
+</head>
+<body>
+<div id="stars" aria-hidden="true"></div>
+<a class="skip" href="#main" data-fi="Siirry sisältöön" data-en="Skip to content">Siirry sisältöön</a>
+
+<header class="top">
+  <a class="brand" href="index.html">Miltzu <span>Images</span></a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" data-fi="Valikko" data-en="Menu">Valikko</button>
+  <nav class="nav" id="nav" aria-label="Päävalikko">
+      <a href="index.html" data-fi="Kuvat" data-en="Images">Kuvat</a>
+      <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
+      <a href="software.html" data-fi="Software" data-en="Software">Software</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Kieli / Language">
+    <button type="button" data-lang="fi" class="active">FI</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+
+<main id="main">
+  <header class="page-head" data-banner="6">
+    <h1 class="display" data-fi="Timelapse" data-en="Timelapse">Timelapse</h1>
+    <p class="lead" data-fi="Aikaviivevideoita yötaivaasta ja maisemista." data-en="Timelapse videos of the night sky and landscapes.">Timelapse-videoita yötaivaasta ja maisemista.</p>
+  </header>
+  <div class="page-body">
+    <div id="timelapses"></div>
+  </div>
+</main>
+
+<footer class="foot">
+  <p class="foot-mark" aria-hidden="true">Miltzu Images</p>
+  <div class="foot-row">
+    <nav aria-label="Alavalikko">
+      <a href="index.html" data-fi="Kuvat" data-en="Images">Kuvat</a>
+      <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
+      <a href="software.html">Software</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+      <a href="timelapset.html" data-fi="Timelapse" data-en="Timelapse">Timelapse</a>
+      <a href="loki.html" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</a>
+    </nav>
+    <a href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">Instagram @M1ltzu</a>
+    <span>© <span id="year">2026</span> Miltzu</span>
+  </div>
+</footer>
+
+<script src="assets/site.js?v=5"></script>
+<script>
+/* Aikaviivevideot
+   Lisää video listaan. Videotiedosto (mp4) kansioon images/timelapses/.
+   { "file": "images/timelapses/video.mp4",
+     "poster": "images/timelapses/video.jpg",            (vapaaehtoinen kansikuva)
+     "title": { "fi": "Nimi", "en": "Title" },
+     "desc":  { "fi": "Kuvaus", "en": "Description" },     (vapaaehtoinen)
+     "date": "16.11.2026" }                                (vapaaehtoinen) */
+(function () {
+  const videos = [];
+
+  const host = document.getElementById("timelapses");
+  const L = () => (document.documentElement.lang === "en" ? "en" : "fi");
+  const tr = (v) => (v && typeof v === "object") ? String(v[L()] || v.fi || v.en || "") : String(v || "");
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function render() {
+    if (!videos.length) {
+      host.innerHTML = `
+        <div class="empty-card">
+          <h2>${L() === "en" ? "No videos yet" : "Videoita ei ole vielä lisätty"}</h2>
+          <p>${L() === "en" ? "Timelapse videos will be added here soon." : "Tänne tulee pian timelapse-videoita."}</p>
+        </div>`;
+      return;
+    }
+    host.innerHTML = `<ul class="tl-grid">${videos.map(v => `
+      <li class="tl-card">
+        <video controls preload="metadata" playsinline${v.poster ? ` poster="${esc(v.poster)}"` : ""}>
+          <source src="${esc(v.file)}" type="video/mp4">
+        </video>
+        <div class="tl-body">
+          ${v.date ? `<time>${esc(v.date)}</time>` : ""}
+          <h2>${esc(tr(v.title))}</h2>
+          ${v.desc ? `<p>${esc(tr(v.desc))}</p>` : ""}
+        </div>
+      </li>`).join("")}</ul>`;
+  }
+  render();
+  document.addEventListener("langchange", render);
+})();
+</script>
+
+</body>
+</html>
