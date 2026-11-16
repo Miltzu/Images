@@ -11,6 +11,14 @@
         "date": "10-1-2026",
         "text": "Ensimmäiset valotukset tästä erittäin himmeästä planetaarisesta sumusta otettu. Vain 3 valotusta ennen kuin pilvet tuli häiritsemään.",
         "image": "images/projektikuva1.jpg"
+      },
+      {
+        "date": "16-11-2026",
+        "text": {
+          "fi": "OIII-kanavaa lisätty: 9 × 900 s (2 h 15 min).",
+          "en": "OIII channel added: 9 × 900 s (2 h 15 min)."
+        },
+        "image": "images/projektikuva2.jpg"
       }
     ],
     "progress": [
@@ -21,7 +29,7 @@
       },
       {
         "filter": "OIII",
-        "done_min": 0,
+        "done_min": 135,
         "goal_min": 900
       },
       {
