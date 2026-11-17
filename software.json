@@ -54,11 +54,15 @@
       },
       "platform": "PixInsight",
       "status": "julkaistu",
-      "version": "1.0",
+      "version": "1.4.0",
       "features": [
         {
           "fi": "Nopea automaattinen tähtikohdistus",
           "en": "Fast automatic star alignment"
+        },
+        {
+          "fi": "Älykäs kuvien valinta: koko, tyyppi, nimisuodatin",
+          "en": "Smart image selection: size, type, name filter"
         },
         {
           "fi": "Plate solve polttovälin, kohteen tai koordinaattien avulla",
