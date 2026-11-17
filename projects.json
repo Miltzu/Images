@@ -38,5 +38,32 @@
         "goal_min": 90
       }
     ]
+  },
+  {
+    "name": "Horsehead (B33)",
+    "status": "kesken",
+    "category": "deepsky",
+    "constellation": {
+      "fi": "Orion",
+      "en": "Orion"
+    },
+    "ra": 85.2458,
+    "dec": -2.4583,
+    "distance": {
+      "ly": 1375,
+      "approx": true
+    },
+    "desc": {
+      "fi": "Hevosenpääsumu on taivaan tunnetuimpia kohteita: tumma pöly- ja kaasupilvi, joka piirtyy hevosenpään muotoisena hehkuvan IC 434 -sumun eteen Orionin vyön Alnitakin lähellä. Williamina Fleming löysi sen valokuvalevyltä vuonna 1888. Tavoitteena yli 100 tunnin integraatio.",
+      "en": "The Horsehead Nebula is one of the best-known objects in the sky: a dark cloud of dust and gas whose horse-head silhouette stands against the glowing IC 434 nebula near Alnitak in Orion's Belt. Williamina Fleming discovered it on a photographic plate in 1888. The goal is more than 100 hours of integration."
+    },
+    "updates": [],
+    "progress": [
+      {
+        "filter": "Σ",
+        "done_min": 0,
+        "goal_min": 6000
+      }
+    ]
   }
 ]
