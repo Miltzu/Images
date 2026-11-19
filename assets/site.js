@@ -678,7 +678,7 @@
          { "name": "Ohjelman nimi",
            "desc": { "fi": "Mitä ohjelma tekee.", "en": "What it does." },
            "platform": "PixInsight",            alustan name tai id
-           "status": "kehitteillä",             kehitteillä / julkaistu / suunnitteilla
+           "status": "kehitteillä",             kehitteillä / testissä / julkaistu / suunnitteilla
            "version": "1.0",
            "features": [ "Ominaisuus 1", { "fi": "...", "en": "..." } ],
            "image": "images/software/kuva.jpg", kuvakaappaus
@@ -693,6 +693,7 @@
     if (!host) return;
     const STATUS = {
       "kehitteillä": ["Kehitteillä", "In development"],
+      "testissä": ["Testissä", "In testing"],
       "julkaistu": ["Julkaistu", "Released"],
       "suunnitteilla": ["Suunnitteilla", "Planned"]
     };

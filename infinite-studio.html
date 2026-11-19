@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fi">
 <head>
 <meta charset="UTF-8">
@@ -11,6 +11,25 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/site.css?v=4">
+<style>
+  html[lang="en"] .only-fi, html:not([lang="en"]) .only-en { display: none; }
+  .is-lead { font-size: clamp(1.1rem, 1.6vw, 1.35rem); font-weight: 600; color: var(--text); margin-bottom: 14px; }
+  .is-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+  .is-text p { max-width: 62ch; color: var(--mute); margin-bottom: 14px; }
+  .is-text h2, .is-panel h2 { margin: 34px 0 12px; font-stretch: 75%; font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem); line-height: 1.1; }
+  .is-text > div > h2:first-child { margin-top: 0; }
+  .is-panel { padding: clamp(22px, 2.6vw, 36px); border-radius: var(--r); border: 1px solid var(--line); background: linear-gradient(160deg, rgba(21, 33, 69, 0.82), rgba(8, 13, 30, 0.86)); }
+  .is-panel h2:first-child { margin-top: 0; }
+  .is-panel .sw-features li { margin-bottom: 2px; }
+  .is-soon li::before { background: var(--oxy) !important; }
+  .is-status { margin-top: clamp(36px, 5vw, 64px); padding: 4px 0 4px 20px; border-left: 2px solid var(--oxy); max-width: 75ch; }
+  .is-status h2 { margin: 0 0 10px; font-stretch: 75%; font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem); }
+  .is-status p { color: var(--mute); }
+  .is-status strong { color: var(--gold); }
+  .is-note { margin-top: 10px; font-size: 0.9rem; color: var(--dim) !important; }
+  .is-back { margin-top: clamp(32px, 4vw, 52px); }
+  @media (max-width: 860px) { .is-grid { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
 <div id="stars" aria-hidden="true"></div>
@@ -36,14 +55,97 @@
 <main id="main">
   <header class="page-head" data-banner="5">
     <h1 class="display">Infinite Studio</h1>
-    <p class="lead"><span class="status" data-fi="Kehitteillä · 1.0 BETA" data-en="In development · 1.0 BETA">Kehitteillä · 1.0 BETA</span></p>
+    <div>
+      <p class="is-lead only-fi">Kuvaus- ja ohjausohjelma observatoriolle.</p>
+      <p class="is-lead only-en">A capture and control application for the observatory – everything in one window.</p>
+      <p><span class="status" data-fi="Testissä · 1.x BETA" data-en="In testing · 1.x BETA">Testissä · 1.x BETA</span></p>
+    </div>
   </header>
   <div class="page-body">
-    <div class="empty-card">
-      <h2 data-fi="Esittely tulossa" data-en="Introduction coming soon">Esittely tulossa</h2>
-      <p data-fi="Tälle sivulle tulee pian esittely, ominaisuudet ja kuvia ohjelmasta." data-en="An introduction, features and screenshots will be added here soon.">Tälle sivulle tulee pian esittely, ominaisuudet ja kuvia ohjelmasta.</p>
-      <p style="margin-top:18px"><a class="btn btn-line" href="software.html#infinite-studio" data-fi="← Takaisin Softwareen" data-en="← Back to Software">← Takaisin Softwareen</a></p>
+    <div class="is-grid">
+      <div class="is-text">
+        <div class="only-fi">
+          <p>Infinite Studio on oma Windows-ohjelmani astrokuvaukseen ja kaukoputken ohjaukseen. Kamerat, jalusta, kupoli, tarkennus, ohjaus ja kuvaussarjat toimivat samasta ikkunasta niin kotipihalla kuin etäobservatoriossa.</p>
+          <h2>Miksi oma ohjelmisto?</h2>
+          <p>Idea oli simppeli. Yksi nopea ja turvallinen ohjelma kaikkeen tähtikuvaukseen liittyvään.</p>
+          <p>Nykyiset ohjelmat ovat monilta osin erinomaisia, mutta mielestäni myös osittain puutteellisia ja vanhentuneita. Joissakin jopa päivitykset ovat maksullisia. Kuvausaikaa ei pitäisi tuhlata ohjelmien välillä vaihtamiseen tai hitaaseen kohteiden etsimiseen.</p>
+          <p>Infinite Studion tavoite on selkeä: Maksimoida kuvausaika ja tarjota nopea, luotettava kohdehaku laajalla kohdekirjastolla. Mukana ovat myös helppokäyttötila ja mittauksiin tarkoitettu Astrometria-osio. Molemmat on jo testattu toimiviksi.</p>
+          <p>Tavoite on, että koko kuvausyö hoituu yhdellä ohjelmalla alusta loppuun helposti. Ohjelmassa on myös törmäyksenesto, joka ennakoi vaaravyöhykkeet ja pysäyttää kaiken liikkeen ajoissa. Seuraava isompi askel on 3D-näkymä, jossa kaukoputken liikkeet kupolin sisällä näkyvät reaaliajassa.</p>
+          <p>Kuvauskalenteri taas kokoaa projektien edistymisen ja aiemmat kuvausyöt yhteen paikkaan.</p>
+          <p>Ohjelma kehittyy observatorion ja sen käyttäjien mukana, joten jäsenten kehitysideat ovat tervetulleita.</p>
+        </div>
+        <div class="only-en">
+          <p>Infinite Studio is my own Windows application for astrophotography and telescope control. Cameras, mount, dome, focusing, guiding and imaging runs all work from the same window, in the backyard or at the remote observatory.</p>
+          <h2>Why my own software?</h2>
+          <p>I wanted one application that runs the whole imaging night. Existing programs are excellent in many ways, but I find them partly lacking and dated, and some charge for their updates.</p>
+          <p>Imaging time should not go to switching between programs or hunting for targets. In some programs the search is really slow, if the target is found at all.</p>
+          <p>So the purpose of Infinite Studio is simple: as much imaging time as possible and targets – planets included – found fast. It also has an easy mode and an Astrometry section for measurements, and both have already been tested to work.</p>
+          <p>The goal is that one application runs the whole imaging night easily from start to finish. The application also has collision protection that anticipates the danger zones and stops all movement in time. The next bigger step is a 3D view that shows the telescope moving inside the dome in real time.</p>
+          <p>An imaging calendar will also gather project progress and earlier imaging nights in one place.</p>
+          <p>The application grows with the observatory and its users, so ideas from members are welcome.</p>
+        </div>
+      </div>
+      <aside class="is-panel">
+        <h2 data-fi="Mitä se tekee nyt" data-en="What it does now">Mitä se tekee nyt</h2>
+        <ul class="sw-features only-fi">
+          <li>Kamerat: ZWO, QHY ja Nikon-järjestelmäkamerat, live-näkymä ja kuvaus</li>
+          <li>Valvontakamerat, esim. allsky-kamera</li>
+          <li>Nopea kohdehaku, myös planeetat</li>
+          <li>Plate solve sekä GoTo ja automaattinen keskitys kohteeseen</li>
+          <li>Automaattitarkennus välyksen kompensoinnilla</li>
+          <li>Sekvensseri kuvaussarjoille, suodinkohtaiset tarkennussiirrot ja flatit</li>
+          <li>Jalusta: Celestron CPC ja Paramount MyT (TheSkyX), ASCOM</li>
+          <li>ScopeDome-kupoli seuraa kaukoputkea</li>
+          <li>Helppokäyttötila: kuvausilta käyntiin kohdeavustajasta</li>
+          <li>Astrometria: valmiiden kuvien merkintä ja magnitudimittari</li>
+          <li>Ohjaus myös puhelimen selaimesta</li>
+          <li>Tuki älyteleskoopeille (ei vielä testattu)</li>
+          <li>Tumma käyttöliittymä ja punainen yötila</li>
+        </ul>
+        <ul class="sw-features only-en">
+          <li>Cameras: ZWO, QHY and Nikon DSLRs, live view and capture</li>
+          <li>Monitoring cameras, e.g. an all-sky camera</li>
+          <li>Fast target search, planets included</li>
+          <li>Plate solving, GoTo and automatic centring on the target</li>
+          <li>Autofocus with backlash compensation</li>
+          <li>Sequencer for imaging runs, per-filter focus offsets and flats</li>
+          <li>Mounts: Celestron CPC and Paramount MyT (TheSkyX), ASCOM</li>
+          <li>ScopeDome dome follows the telescope</li>
+          <li>Easy mode: start the night from the target assistant</li>
+          <li>Astrometry: annotating finished images and a magnitude meter</li>
+          <li>Control from a phone browser too</li>
+          <li>Support for smart telescopes (not yet tested)</li>
+          <li>Dark interface with a red night mode</li>
+        </ul>
+        <h2 data-fi="Tulossa" data-en="Coming next">Tulossa</h2>
+        <ul class="sw-features is-soon only-fi">
+          <li>PHD2-ohjaus suoraan ohjelmasta</li>
+          <li>3D-näkymä kaukoputkesta kupolin sisällä ja vaaravyöhykkeet käännöille</li>
+          <li>Kuvauskalenteri, joka näyttää projektien edistymisen</li>
+          <li>Flat-paneelin ohjaus, jos observatorioon tulee flat-paneeli</li>
+        </ul>
+        <ul class="sw-features is-soon only-en">
+          <li>PHD2 guiding started from the application</li>
+          <li>3D view of the telescope inside the dome, with danger zones for slews</li>
+          <li>Imaging calendar showing project progress</li>
+          <li>Flat panel control, if the observatory gets a flat panel</li>
+        </ul>
+      </aside>
     </div>
+
+    <section class="is-status">
+      <h2 data-fi="Tila ja saatavuus" data-en="Status and availability">Tila ja saatavuus</h2>
+      <div class="only-fi">
+        <p>Infinite Studio on ollut jo jonkin aikaa testikäytössä* Olympos ry:n etäobservatoriossa. Viimeisin testi oli laitteiden yhteystesti, ja se meni läpi 100-prosenttisesti. Ensimmäinen julkinen versio on <strong>1.x BETA</strong>, ja se on tarkoitettu ensin Olympos ry:n etäobservatorion käyttöön. Jäsenet saavat sen observatorion koneelta tai suoraan minulta, ja päivitykset tulevat ohjelman kautta.</p>
+        <p class="is-note">* Etäobservatoriossa ohjelmaa ei ole vielä testattu varsinaisessa kuvauskäytössä. Se on seuraava vaihe. Itse olen kuvannut pelkästään tällä ohjelmalla noin 2–3 viikon ajan.</p>
+      </div>
+      <div class="only-en">
+        <p>Infinite Studio has already been in test use* at the Olympos ry remote observatory for some time. The latest test was a connection test for all the devices, and it passed 100%. The first public version is <strong>1.x BETA</strong>, and it is first meant for the remote observatory of Olympos ry. Members get it from the observatory computer or directly from me, and updates arrive through the application itself. It is not a commercial product.</p>
+        <p class="is-note">* At the remote observatory it has not yet been tested in actual imaging use. That is the next step. I have been imaging with this application alone for about 2–3 weeks myself.</p>
+      </div>
+    </section>
+
+    <p class="is-back"><a class="btn btn-line" href="software.html#infinite-studio" data-fi="← Takaisin Softwareen" data-en="← Back to Software">← Takaisin Softwareen</a></p>
   </div>
 </main>
 
@@ -65,7 +167,7 @@
   </div>
 </footer>
 
-<script src="assets/site.js?v=4"></script>
+<script src="assets/site.js?v=5"></script>
 
 </body>
 </html>

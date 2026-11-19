@@ -42,7 +42,11 @@
     },
     {
       "id": "infinite-studio",
-      "name": "Infinite Studio"
+      "name": "Infinite Studio",
+      "intro": {
+        "fi": "Oma kuvaus- ja ohjausohjelma kotipihalle ja etäobservatoriolle. Ensimmäinen julkinen versio on Olympos ry:n jäsenille.",
+        "en": "My own capture and control application for the backyard and the remote observatory. The first public version is for Olympos ry members."
+      }
     }
   ],
   "items": [
@@ -154,13 +158,35 @@
     },
     {
       "name": "Infinite Studio",
+      "desc": {
+        "fi": "Oma kuvaus- ja ohjausohjelma observatoriolle: kamerat, jalusta, kupoli, tarkennus ja ohjaus yhdessä ikkunassa.",
+        "en": "My own capture and control application for the observatory: cameras, mount, dome, focusing and guiding in one window."
+      },
       "platform": "Infinite Studio",
-      "status": "kehitteillä",
-      "version": "1.0 BETA",
+      "status": "testissä",
+      "version": "1.x BETA",
+      "features": [
+        {
+          "fi": "Plate solve ja GoTo + keskitys",
+          "en": "Plate solving and GoTo + centring"
+        },
+        {
+          "fi": "Automaattitarkennus ja sekvensseri",
+          "en": "Autofocus and sequencer"
+        },
+        {
+          "fi": "Paramount + ScopeDome -kupolin seuranta",
+          "en": "Paramount + ScopeDome dome following"
+        },
+        {
+          "fi": "Ohjaus myös puhelimen selaimesta",
+          "en": "Control from a phone browser too"
+        }
+      ],
       "link": "infinite-studio.html",
       "link_label": {
-        "fi": "Avaa sivu",
-        "en": "Open page"
+        "fi": "Lue lisää",
+        "en": "Read more"
       }
     }
   ]
