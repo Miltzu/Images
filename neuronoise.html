@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeuroNoise – Miltzu Images</title>
+<meta name="description" content="NeuroNoise – Miltzun oma kohinanpoistoneuroverkko, opetettu omilla astrokuvilla.">
+<meta name="theme-color" content="#050917">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/site.css?v=4">
+<style>
+  html[lang="en"] .only-fi, html:not([lang="en"]) .only-en { display: none; }
+  .is-lead { font-size: clamp(1.1rem, 1.6vw, 1.35rem); font-weight: 600; color: var(--text); margin-bottom: 14px; }
+  .is-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+  .is-text p { max-width: 62ch; color: var(--mute); margin-bottom: 14px; }
+  .is-text h2, .is-panel h2 { margin: 34px 0 12px; font-stretch: 75%; font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem); line-height: 1.1; }
+  .is-text > div > h2:first-child { margin-top: 0; }
+  .is-panel { padding: clamp(22px, 2.6vw, 36px); border-radius: var(--r); border: 1px solid var(--line); background: linear-gradient(160deg, rgba(21, 33, 69, 0.82), rgba(8, 13, 30, 0.86)); }
+  .is-panel h2:first-child { margin-top: 0; }
+  .is-panel .sw-features li { margin-bottom: 2px; }
+  .is-soon li::before { background: var(--oxy) !important; }
+  .is-status { margin-top: clamp(36px, 5vw, 64px); padding: 4px 0 4px 20px; border-left: 2px solid var(--oxy); max-width: 75ch; }
+  .is-status h2 { margin: 0 0 10px; font-stretch: 75%; font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem); }
+  .is-status p { color: var(--mute); }
+  .is-status strong { color: var(--gold); }
+  .is-note { margin-top: 10px; font-size: 0.9rem; color: var(--dim) !important; }
+  .is-back { margin-top: clamp(32px, 4vw, 52px); }
+  @media (max-width: 860px) { .is-grid { grid-template-columns: 1fr; } }
+  .nn-compare { margin-top: clamp(36px, 5vw, 64px); }
+  .nn-compare h2 { margin: 0 0 10px; font-stretch: 75%; font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem); }
+  .nn-compare > p { color: var(--mute); max-width: 75ch; margin-bottom: 16px; }
+  .ba { position: relative; overflow: hidden; border-radius: var(--r); border: 1px solid var(--line); background: #000; aspect-ratio: 8 / 5; touch-action: pan-y; user-select: none; }
+  .ba img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .ba .ba-after { clip-path: inset(0 0 0 var(--pos, 50%)); }
+  .ba .ba-line { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; margin-left: -1px; background: var(--gold); box-shadow: 0 0 12px rgba(245, 185, 74, 0.6); pointer-events: none; }
+  .ba .ba-line::after { content: "\2194"; position: absolute; top: 50%; left: 50%; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%; background: var(--gold); color: #1b1203; font-weight: 800; display: grid; place-items: center; }
+  .ba .ba-tag { position: absolute; top: 12px; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; background: rgba(5, 9, 23, 0.72); border: 1px solid var(--line-2); pointer-events: none; }
+  .ba .ba-tag.l { left: 12px; } .ba .ba-tag.r { right: 12px; color: var(--gold); }
+  .ba input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+  .ba input:focus-visible + .ba-line { outline: 2px solid var(--gold); outline-offset: 4px; }
+  .nn-caption { margin-top: 10px; font-size: 0.9rem; color: var(--dim); max-width: 75ch; }
+</style>
+</head>
+<body>
+<div id="stars" aria-hidden="true"></div>
+<a class="skip" href="#main" data-fi="Siirry sisältöön" data-en="Skip to content">Siirry sisältöön</a>
+
+<header class="top">
+  <a class="brand" href="index.html">Miltzu <span>Images</span></a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" data-fi="Valikko" data-en="Menu">Valikko</button>
+  <nav class="nav" id="nav" aria-label="Päävalikko">
+      <a href="index.html" data-fi="Kuvat" data-en="Images">Kuvat</a>
+      <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
+      <a href="software.html" class="active" aria-current="page" data-fi="Software" data-en="Software">Software</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Kieli / Language">
+    <button type="button" data-lang="fi" class="active">FI</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+
+<main id="main">
+  <header class="page-head" data-banner="2">
+    <h1 class="display">NeuroNoise</h1>
+    <div>
+      <p class="is-lead only-fi">Oma kohinanpoistoneuroverkko, opetettu omilla kuvillani.</p>
+      <p class="is-lead only-en">My own denoising neural network, trained on my own images.</p>
+      <p><span class="status" data-fi="Testissä · mono v5 · väri v3" data-en="In testing · mono v5 · colour v3">Testissä · mono v5 · väri v3</span></p>
+    </div>
+  </header>
+  <div class="page-body">
+    <div class="is-grid">
+      <div class="is-text">
+        <div class="only-fi">
+          <p>NeuroNoise on oma neuroverkkoni astrokuvien kohinanpoistoon. Opetusdata on kokonaan omaa: samasta kohteesta kootaan satunnaisia lyhyitä pinoja (1–32 subia), ja oikeaksi vastaukseksi annetaan saman kohteen pitkä master. Verkko oppii, miltä juuri minun kamerani, rekisteröintini ja pinoamiseni kohina näyttää, ja erottaa sen signaalista.</p>
+          <h2>Miksi oma neuroverkko?</h2>
+          <p>Kaupalliset kohinanpoistajat ovat hyviä, mutta ne on opetettu muiden datalla. Halusin nähdä, mihin päästään, kun opetus tehdään omalla kalustolla ja omilla kohteilla – ja ymmärtää jokaisen vaiheen itse.</p>
+          <p>Verkko on pieni (0,9 miljoonaa parametria). Se opetetaan tavallisella näytönohjaimella alle tunnissa, ja valmis malli käsittelee useimmat kuvat alle minuutissa.</p>
+          <h2>Mitä matkalla opittiin</h2>
+          <p>Neuroverkko oppii täsmälleen sen, mitä data sille opettaa. Värikameramallin ensimmäiset versiot tekivät taustaan tummia läiskiä ja tumman reunuksen. Syy löytyi opetuspareista: pinojen kontrasti erosi masterista jopa 30 %, ja verkko oli oppinut "korjaamaan" eron.</p>
+          <p>Kun parit korjattiin ja jokainen pari tarkistetaan ennen opetusta, läiskät katosivat. Mukana on nyt oma mittaustyökalu, joka näyttää jäljelle jäävän kohinan lisäksi myös läiskät ja halot.</p>
+        </div>
+        <div class="only-en">
+          <p>NeuroNoise is my own neural network for denoising astrophotos. All the training data is my own: random short stacks (1–32 subframes) of a target are the input, and the long master of the same target is the right answer. The network learns what the noise of my own cameras, registration and stacking looks like, and separates it from the signal.</p>
+          <h2>Why my own network?</h2>
+          <p>Commercial denoisers are good, but they are trained on other people's data. I wanted to see how far it goes when the training is done with my own equipment and targets – and to understand every step myself.</p>
+          <p>The network is small (0.9 million parameters). It trains on an ordinary graphics card in under an hour, and the finished model processes most images in under a minute.</p>
+          <h2>What I learned along the way</h2>
+          <p>A neural network learns exactly what the data teaches it. The first versions of the colour camera model left dark blotches and a dark frame in the background. The cause was in the training pairs: the contrast of the stacks differed from the master by up to 30 %, and the network had learned to "correct" it.</p>
+          <p>Once the pairs were fixed and every pair is checked before training, the blotches disappeared. It now has its own measuring tool that shows not only the remaining noise but also blotches and halos.</p>
+        </div>
+      </div>
+      <aside class="is-panel">
+        <h2 data-fi="Mitä se tekee nyt" data-en="What it does now">Mitä se tekee nyt</h2>
+        <ul class="sw-features only-fi">
+          <li>Kapeakaista: Ha, OIII ja SII (mono-malli v5)</li>
+          <li>Värikamerat: Nikon D850 ja D7000 (värimalli v3)</li>
+          <li>Poistaa myös väriläiskät</li>
+          <li>Himmeät filamentit ja tähdet säilyvät</li>
+          <li>Säädöt: voimakkuus, luonnollinen rae ja sekoitus alkuperäiseen</li>
+          <li>Näytönohjaimella, useimmat kuvat alle minuutissa</li>
+          <li>Oma mittaustyökalu: kohina, läiskät ja halot</li>
+        </ul>
+        <ul class="sw-features only-en">
+          <li>Narrowband: Ha, OIII and SII (mono model v5)</li>
+          <li>Colour cameras: Nikon D850 and D7000 (colour model v3)</li>
+          <li>Removes colour blotches too</li>
+          <li>Faint filaments and stars stay intact</li>
+          <li>Controls: strength, natural grain and blend with the original</li>
+          <li>On the graphics card, most images in under a minute</li>
+          <li>Own measuring tool: noise, blotches and halos</li>
+        </ul>
+        <h2 data-fi="Tulossa" data-en="Coming next">Tulossa</h2>
+        <ul class="sw-features is-soon only-fi">
+          <li>Noise Pron "Neuroverkko (GPU)" -tila PixInsightiin</li>
+          <li>Lisää kameroita, ensimmäisenä ASI678MC</li>
+          <li>TIF-tuki</li>
+          <li>Oma neuroverkko pölyille ja flat-virheille</li>
+        </ul>
+        <ul class="sw-features is-soon only-en">
+          <li>"Neural network (GPU)" mode for Noise Pro in PixInsight</li>
+          <li>More cameras, the ASI678MC first</li>
+          <li>TIF support</li>
+          <li>A network of its own for dust and flat errors</li>
+        </ul>
+      </aside>
+    </div>
+
+    <section class="nn-compare">
+      <h2 data-fi="Ennen ja jälkeen" data-en="Before and after">Ennen ja jälkeen</h2>
+      <p class="only-fi">Ha-kuva, rajaus 1:1 ja sama venytys molemmille. Vedä viivaa: vasemmalla alkuperäinen, oikealla NeuroNoise (mono-malli v5). Molemmille on ajettu BlurXTerminator samoin.</p>
+      <p class="only-en">Ha image, 1:1 crop with the same stretch for both. Drag the line: the original on the left, NeuroNoise (mono model v5) on the right. BlurXTerminator was run on both in the same way.</p>
+      <div class="ba" style="--pos: 50%">
+        <img src="images/software/neuronoise-ha-ennen.jpg" alt="" width="1600" height="1000">
+        <img class="ba-after" src="images/software/neuronoise-ha-jalkeen.jpg" alt="" width="1600" height="1000">
+        <span class="ba-tag l" data-fi="Alkuperäinen" data-en="Original">Alkuperäinen</span>
+        <span class="ba-tag r">NeuroNoise</span>
+        <input type="range" min="0" max="100" value="50" step="0.5" aria-label="Ennen / jälkeen" data-fi-label="Ennen / jälkeen" data-en-label="Before / after">
+        <span class="ba-line" aria-hidden="true"></span>
+      </div>
+      <p class="nn-caption only-fi">Kohina pieneni noin 8,5-kertaisesti, ja himmeät Ha-filamentit näkyvät nyt selvästi taustaa vasten.</p>
+      <p class="nn-caption only-en">The noise dropped about 8.5-fold, and the faint Ha filaments now stand out clearly against the background.</p>
+    </section>
+
+    <section class="is-status">
+      <h2 data-fi="Tila" data-en="Status">Tila</h2>
+      <p class="only-fi">NeuroNoise on <strong>testissä</strong> omassa käytössäni, eikä sitä jaeta toistaiseksi. Myöhemmin se tulee osaksi Noise Prota PixInsightiin.</p>
+      <p class="only-en">NeuroNoise is <strong>in testing</strong> for my own use and is not shared for now. Later it will become part of Noise Pro in PixInsight.</p>
+    </section>
+
+    <p class="is-back"><a class="btn btn-line" href="software.html#neuroverkot" data-fi="← Takaisin Softwareen" data-en="← Back to Software">← Takaisin Softwareen</a></p>
+  </div>
+</main>
+
+<footer class="foot">
+  <p class="foot-mark" aria-hidden="true">Miltzu Images</p>
+  <div class="foot-row">
+    <nav aria-label="Alavalikko">
+      <a href="index.html" data-fi="Kuvat" data-en="Images">Kuvat</a>
+      <a href="taivas.html" data-fi="Taivas" data-en="Sky">Taivas</a>
+      <a href="projektit.html" data-fi="Projektit" data-en="Projects">Projektit</a>
+      <a href="prosessointi.html" data-fi="Prosessointi" data-en="Processing">Prosessointi</a>
+      <a href="software.html">Software</a>
+      <a href="equipment.html" data-fi="Laitteisto" data-en="Equipment">Laitteisto</a>
+      <a href="timelapset.html" data-fi="Timelapse" data-en="Timelapse">Timelapse</a>
+      <a href="loki.html" data-fi="Päivitysloki" data-en="Update log">Päivitysloki</a>
+    </nav>
+    <a href="https://www.instagram.com/M1ltzu/" target="_blank" rel="noopener me">Instagram @M1ltzu</a>
+    <span>© <span id="year">2026</span> Miltzu</span>
+  </div>
+</footer>
+
+<script src="assets/site.js?v=5"></script>
+<script>
+  document.querySelectorAll(".ba").forEach(function (ba) {
+    var r = ba.querySelector("input");
+    var set = function () { ba.style.setProperty("--pos", r.value + "%"); };
+    r.addEventListener("input", set); set();
+  });
+  // aria-label follows the page language
+  var syncLabel = function () {
+    var en = document.documentElement.lang === "en";
+    document.querySelectorAll(".ba input").forEach(function (r) { r.setAttribute("aria-label", en ? r.dataset.enLabel : r.dataset.fiLabel); });
+  };
+  new MutationObserver(syncLabel).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] }); syncLabel();
+</script>
+
+</body>
+</html>

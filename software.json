@@ -41,6 +41,17 @@
       }
     },
     {
+      "id": "neuroverkot",
+      "name": {
+        "fi": "Neuroverkot",
+        "en": "Neural networks"
+      },
+      "intro": {
+        "fi": "Omilla kuvillani opetetut neuroverkot. Omassa käytössä ja testissä, ei jaossa toistaiseksi.",
+        "en": "Neural networks trained on my own images. In my own use and testing, not shared for now."
+      }
+    },
+    {
       "id": "infinite-studio",
       "name": "Infinite Studio",
       "intro": {
@@ -184,6 +195,39 @@
         }
       ],
       "link": "infinite-studio.html",
+      "link_label": {
+        "fi": "Lue lisää",
+        "en": "Read more"
+      }
+    },
+    {
+      "name": "NeuroNoise",
+      "desc": {
+        "fi": "Oma kohinanpoistoneuroverkko, opetettu omilla kuvillani: lyhyet pinot ovat syöte, pitkä master oikea vastaus. Mono- ja värikameramallit.",
+        "en": "My own denoising neural network, trained on my own images: short stacks as input, the long master as the answer. Mono and colour camera models."
+      },
+      "platform": {
+        "fi": "Neuroverkot",
+        "en": "Neural networks"
+      },
+      "status": "testissä",
+      "version": "mono v5 / väri v3",
+      "features": [
+        {
+          "fi": "Kapeakaista (Ha, OIII, SII) ja värikamerat",
+          "en": "Narrowband (Ha, OIII, SII) and colour cameras"
+        },
+        {
+          "fi": "Himmeät filamentit säilyvät, tausta tasainen",
+          "en": "Faint filaments stay, the background stays even"
+        },
+        {
+          "fi": "Tulossa Noise Pron GPU-tilaksi",
+          "en": "Coming as the GPU mode of Noise Pro"
+        }
+      ],
+      "image": "images/software/neuronoise-ha-jalkeen.jpg",
+      "link": "neuronoise.html",
       "link_label": {
         "fi": "Lue lisää",
         "en": "Read more"
