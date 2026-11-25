@@ -210,7 +210,10 @@
         "fi": "Neuroverkot",
         "en": "Neural networks"
       },
-      "status": "testissä",
+      "status": {
+        "fi": "Varhainen testivaihe",
+        "en": "Early testing"
+      },
       "version": "mono v5 / väri v3",
       "features": [
         {
