@@ -78,22 +78,16 @@
     <div class="is-grid">
       <div class="is-text">
         <div class="only-fi">
-          <p>NeuroNoise on oma neuroverkkoni astrokuvien kohinanpoistoon. Opetusdata on kokonaan omaa: samasta kohteesta kootaan satunnaisia lyhyitä pinoja (1–32 subia), ja oikeaksi vastaukseksi annetaan saman kohteen pitkä master. Verkko oppii, miltä juuri minun kamerani, rekisteröintini ja pinoamiseni kohina näyttää, ja erottaa sen signaalista.</p>
-          <h2>Miksi oma neuroverkko?</h2>
-          <p>Kaupalliset kohinanpoistajat ovat hyviä, mutta ne on opetettu muiden datalla. Halusin nähdä, mihin päästään, kun opetus tehdään omalla kalustolla ja omilla kohteilla – ja ymmärtää jokaisen vaiheen itse.</p>
-          <p>Verkko on pieni (0,9 miljoonaa parametria). Se opetetaan tavallisella näytönohjaimella alle tunnissa, ja valmis malli käsittelee useimmat kuvat alle minuutissa.</p>
-          <h2>Mitä matkalla opittiin</h2>
-          <p>Neuroverkko oppii täsmälleen sen, mitä data sille opettaa. Värikameramallin ensimmäiset versiot tekivät taustaan tummia läiskiä ja tumman reunuksen. Syy löytyi opetuspareista: pinojen kontrasti erosi masterista jopa 30 %, ja verkko oli oppinut "korjaamaan" eron.</p>
-          <p>Kun parit korjattiin ja jokainen pari tarkistetaan ennen opetusta, läiskät katosivat. Mukana on nyt oma mittaustyökalu, joka näyttää jäljelle jäävän kohinan lisäksi myös läiskät ja halot.</p>
+          <p>NeuroNoise on oma neuroverkkoni astrokuvien kohinanpoistoon. Se on opetettu kokonaan omilla kuvillani, joten se tuntee oikeiden kameroiden ja kuvausolojen kohinan ja erottaa sen signaalista.</p>
+          <h2>Tavoite</h2>
+          <p>Tavoitteena on paras vaihtoehto kaupallisille kohinanpoistajille: puhdas, tasainen tausta ilman läiskiä, ja samalla himmeimmätkin sumun yksityiskohdat ja tähdet säilyvät.</p>
+          <p>NeuroNoise toimii tavallisella näytönohjaimella, ja useimmat kuvat ovat valmiita alle minuutissa.</p>
         </div>
         <div class="only-en">
-          <p>NeuroNoise is my own neural network for denoising astrophotos. All the training data is my own: random short stacks (1–32 subframes) of a target are the input, and the long master of the same target is the right answer. The network learns what the noise of my own cameras, registration and stacking looks like, and separates it from the signal.</p>
-          <h2>Why my own network?</h2>
-          <p>Commercial denoisers are good, but they are trained on other people's data. I wanted to see how far it goes when the training is done with my own equipment and targets – and to understand every step myself.</p>
-          <p>The network is small (0.9 million parameters). It trains on an ordinary graphics card in under an hour, and the finished model processes most images in under a minute.</p>
-          <h2>What I learned along the way</h2>
-          <p>A neural network learns exactly what the data teaches it. The first versions of the colour camera model left dark blotches and a dark frame in the background. The cause was in the training pairs: the contrast of the stacks differed from the master by up to 30 %, and the network had learned to "correct" it.</p>
-          <p>Once the pairs were fixed and every pair is checked before training, the blotches disappeared. It now has its own measuring tool that shows not only the remaining noise but also blotches and halos.</p>
+          <p>NeuroNoise is my own neural network for denoising astrophotos. It is trained entirely on my own images, so it knows the noise of real cameras and real sky conditions and separates it from the signal.</p>
+          <h2>The goal</h2>
+          <p>The goal is the best alternative to commercial denoisers: a clean, even background without blotches, while even the faintest nebula detail and the stars stay intact.</p>
+          <p>NeuroNoise runs on an ordinary graphics card, and most images are done in under a minute.</p>
         </div>
       </div>
       <aside class="is-panel">
@@ -105,7 +99,6 @@
           <li>Himmeät filamentit ja tähdet säilyvät</li>
           <li>Säädöt: voimakkuus, luonnollinen rae ja sekoitus alkuperäiseen</li>
           <li>Näytönohjaimella, useimmat kuvat alle minuutissa</li>
-          <li>Oma mittaustyökalu: kohina, läiskät ja halot</li>
         </ul>
         <ul class="sw-features only-en">
           <li>Narrowband: Ha, OIII and SII (mono model v5)</li>
@@ -114,7 +107,6 @@
           <li>Faint filaments and stars stay intact</li>
           <li>Controls: strength, natural grain and blend with the original</li>
           <li>On the graphics card, most images in under a minute</li>
-          <li>Own measuring tool: noise, blotches and halos</li>
         </ul>
         <h2 data-fi="Tulossa" data-en="Coming next">Tulossa</h2>
         <ul class="sw-features is-soon only-fi">
