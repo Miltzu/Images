@@ -29,6 +29,9 @@
   .is-note { margin-top: 10px; font-size: 0.9rem; color: var(--dim) !important; }
   .is-back { margin-top: clamp(32px, 4vw, 52px); }
   @media (max-width: 860px) { .is-grid { grid-template-columns: 1fr; } }
+  .nn-badge { font-size: clamp(1.05rem, 1.8vw, 1.35rem); font-weight: 800; padding: 8px 18px; border-radius: 999px; border: 1.5px solid var(--oxy); background: rgba(5, 9, 23, 0.55); letter-spacing: 0.02em; }
+  .nn-badge::before { width: 12px; height: 12px; border-width: 2px; }
+  .nn-early { margin-top: 18px; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(245, 185, 74, 0.45); background: rgba(245, 185, 74, 0.08); color: var(--text); max-width: 75ch; }
   .nn-compare { margin-top: clamp(36px, 5vw, 64px); }
   .nn-compare h2 { margin: 0 0 10px; font-stretch: 75%; font-weight: 800; font-size: clamp(1.4rem, 2.4vw, 2rem); }
   .nn-compare > p { color: var(--mute); max-width: 75ch; margin-bottom: 16px; }
@@ -71,7 +74,7 @@
     <div>
       <p class="is-lead only-fi">Oma kohinanpoistoneuroverkko, opetettu omilla kuvillani.</p>
       <p class="is-lead only-en">My own denoising neural network, trained on my own images.</p>
-      <p><span class="status" data-fi="Testissä · mono v5 · väri v3" data-en="In testing · mono v5 · colour v3">Testissä · mono v5 · väri v3</span></p>
+      <p><span class="status nn-badge" data-fi="Varhainen testivaihe" data-en="Early testing">Varhainen testivaihe</span></p>
     </div>
   </header>
   <div class="page-body">
@@ -138,12 +141,14 @@
       </div>
       <p class="nn-caption only-fi">Kohina pieneni noin 8,5-kertaisesti, ja himmeät Ha-filamentit näkyvät nyt selvästi taustaa vasten.</p>
       <p class="nn-caption only-en">The noise dropped about 8.5-fold, and the faint Ha filaments now stand out clearly against the background.</p>
+      <p class="nn-early only-fi"><strong>Huom.</strong> Tämä on varhainen testiversio. Tarkasti katsottuna vertailukuvasta on kadonnut joitakin pieniä tähtiä, ja niiden tilalla voi näkyä pieniä artefakteja. Kapeakaistamallia opetetaan lisää, jotta tähdet säilyvät.</p>
+      <p class="nn-early only-en"><strong>Note.</strong> This is an early test version. Looking closely, some small stars have disappeared from the comparison image, and small artefacts may show in their place. The narrowband model will get more training so that the stars stay.</p>
     </section>
 
     <section class="is-status">
       <h2 data-fi="Tila" data-en="Status">Tila</h2>
-      <p class="only-fi">NeuroNoise on <strong>testissä</strong> omassa käytössäni, eikä sitä jaeta toistaiseksi. Myöhemmin se tulee osaksi Noise Prota PixInsightiin.</p>
-      <p class="only-en">NeuroNoise is <strong>in testing</strong> for my own use and is not shared for now. Later it will become part of Noise Pro in PixInsight.</p>
+      <p class="only-fi">NeuroNoise on <strong>testivaiheen alussa</strong>. Malleja opetetaan ja testataan vielä paljon, eikä työkalua jaeta toistaiseksi. Myöhemmin se tulee osaksi Noise Prota PixInsightiin.</p>
+      <p class="only-en">NeuroNoise is <strong>at the start of testing</strong>. The models still need a lot of training and testing, and the tool is not shared for now. Later it will become part of Noise Pro in PixInsight.</p>
     </section>
 
     <p class="is-back"><a class="btn btn-line" href="software.html#neuroverkot" data-fi="← Takaisin Softwareen" data-en="← Back to Software">← Takaisin Softwareen</a></p>
